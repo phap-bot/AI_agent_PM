@@ -1,0 +1,2 @@
+﻿User Story là một mô tả ngắn gọn về một tính năng từ góc nhìn người dùng, theo format: "As a [role], I want [feature] so that [benefit]".
+Acceptance Criteria là các điều kiện cụ thể mà user story phải đáp ứng để được coi là hoàn thành.

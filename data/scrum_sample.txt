@@ -1,0 +1,3 @@
+﻿Scrum là một framework nhẹ giúp con người, đội nhóm và tổ chức tạo ra giá trị thông qua các giải pháp thích ứng cho các vấn đề phức tạp.
+Scrum Guide 2020 định nghĩa ba vai trò: Product Owner, Scrum Master và Developers.
+Sprint là một khoảng thời gian cố định không quá một tháng, trong đó tạo ra một "Done" increment có thể sử dụng và có thể phát hành.
