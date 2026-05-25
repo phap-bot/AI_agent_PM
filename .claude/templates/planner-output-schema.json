@@ -1,0 +1,24 @@
+{
+  "needs_clarification": false,
+  "clarification_questions": [],
+  "stories": [
+    {
+      "title": "",
+      "priority": "",
+      "sprint": "",
+      "user_story": "",
+      "acceptance_criteria": [],
+      "story_points": 0,
+      "tasks": {
+        "be": [],
+        "fe": [],
+        "qa": []
+      },
+      "definition_of_done": [],
+      "assumptions": [],
+      "risks": []
+    }
+  ],
+  "sprint_split_recommendation": null,
+  "warnings": []
+}

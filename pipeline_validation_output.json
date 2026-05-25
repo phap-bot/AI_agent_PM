@@ -1,0 +1,62 @@
+{
+  "seconds": 84.7,
+  "context": {
+    "documents": 4,
+    "ids": [
+      "auth_context-0-a22c7842496f",
+      "checkout_context-0-d927b5cba9e7",
+      "notification_context-0-a546e2ad037a",
+      "sprint_policy-0-06962ec92cc6"
+    ],
+    "confidence": 0.9,
+    "warnings": []
+  },
+  "story": {
+    "title": "Google Login",
+    "user_story": "As a returning user, I want to sign in with Google so that I can access my account quickly without entering a password.",
+    "acceptance_criteria": [
+      "Given the user initiates the login process via the frontend, when the backend receives the OAuth callback from Google, then the email is mapped to an existing user or a pending user record is created.",
+      "Given the requirement is approved, when planning starts, then the story is documented clearly.",
+      "Given the team reviews the story, when acceptance criteria are checked, then at least 3 criteria are present."
+    ],
+    "story_points": 3,
+    "tasks": {
+      "be": [
+        "Map the Google email to an existing user or create a pending user record upon successful OAuth callback.",
+        "Handle the case where the user cancels or rejects the login flow by displaying a clear error message.",
+        "Store the access token securely and redirect the user to authenticated routes."
+      ],
+      "fe": [
+        "Show a clear error message if Google authentication is cancelled or rejected.",
+        "Display the frontend UI for storing the access token securely after successful login.",
+        "Redirect the user to the authenticated routes upon successful login with Google."
+      ],
+      "qa": [
+        "Test the happy path scenario where the user successfully logs in with Google and stores the access token securely.",
+        "Test the failure path scenarios where the user cancels or rejects the login flow, ensuring a clear error message is displayed.",
+        "Ensure that the frontend UI for storing the access token securely after successful login works as expected."
+      ]
+    },
+    "definition_of_done": [
+      "Acceptance criteria are satisfied.",
+      "Implementation tasks are identified.",
+      "Story is ready for Jira creation."
+    ],
+    "planning_status": "READY",
+    "clarification_questions": [],
+    "assumptions": [
+      "The backend will have a mechanism to validate and map the Google email to an existing user or create a pending user record."
+    ],
+    "story_splits": [],
+    "sprint_allocation": [],
+    "warnings": [
+      "Planner returned clarification questions for READY story; removed inconsistent questions."
+    ]
+  },
+  "evaluation": {
+    "status": "APPROVED",
+    "issues": [],
+    "revision_instructions": [],
+    "warnings": []
+  }
+}

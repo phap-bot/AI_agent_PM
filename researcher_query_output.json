@@ -1,0 +1,44 @@
+{
+  "documents": [
+    "# Auth Context\n\nThe product uses JWT-based authentication for API sessions.\n\nCurrent auth architecture:\n- Backend owns login, logout, token refresh, and OAuth callback endpoints.\n- Frontend has a login page, authenticated routes, and token storage logic.\n- QA validates successful login, failed login, expired token, and logout behavior.\n\nGoogle login constraints:\n- OAuth callback must exchange the provider code server-side.\n- Backend must map the Google email to an existing user or create a pending user record.\n- Frontend must show a clear error if Google authentication is cancelled or rejected.\n- Access tokens must not be exposed in URL query parameters.\n\nDefinition of done expectations:\n- Unit tests cover token handling and callback validation.\n- Integration tests cover the full login callback flow.\n- QA has happy-path and failure-path scenarios.",
+    "# Checkout Context\n\nCheckout currently supports cart review, shipping address, payment confirmation, and order creation.\n\nRelevant product rules:\n- Users must be authenticated before payment.\n- Backend calculates final price, discount, tax, and shipping fee.\n- Frontend only displays totals returned by backend.\n- Orders must not be created twice if a user retries payment.\n\nFailure modes:\n- Payment provider timeout should show a retry message.\n- Inventory mismatch should block order creation and ask the user to update cart.\n- Invalid coupon should not block checkout, but must show a clear warning.\n\nQA expectations:\n- Test successful checkout.\n- Test payment failure.\n- Test duplicate submit protection.\n- Test invalid coupon and inventory mismatch.",
+    "# Notification Context\n\nThe system sends notifications for important workflow events.\n\nChannels:\n- Slack is used for internal team notification.\n- Email is used for customer-facing notification.\n- In-app notification is used for user dashboard events.\n\nSlack usage rules:\n- Scrum story notifications go to the product delivery channel.\n- Messages must include title, story points, evaluation status, and Jira reference when available.\n- Failed Jira creation must alert the PM instead of silently failing.\n\nQA expectations:\n- Verify notification payload content.\n- Verify missing webhook configuration produces a warning.\n- Verify notification is blocked when evaluator status is REVISION.",
+    "# Sprint Planning Policy\n\nStories must be sprint-ready before Jira creation.\n\nStory quality rules:\n- User story must follow: As a / I want / So that.\n- Acceptance criteria must use Given / When / Then.\n- Each story must have at least 3 acceptance criteria.\n- Story points must use Fibonacci values: 1, 2, 3, 5, 8, 13.\n- Tasks must be split into BE, FE, and QA.\n\nSprint sizing rules:\n- A story estimated over 13 points is too large and must be split.\n- Large stakeholder requests should become multiple stories across multiple sprints.\n- Ambiguous requirements should generate clarification questions before story planning.\n\nApproval rules:\n- Jira issues must not be created before evaluator status is APPROVED.\n- If evaluation returns REVISION, the story must be revised before action preview."
+  ],
+  "ids": [
+    "auth_context-0-a22c7842496f",
+    "checkout_context-0-d927b5cba9e7",
+    "notification_context-0-a546e2ad037a",
+    "sprint_policy-0-06962ec92cc6"
+  ],
+  "metadatas": [
+    {
+      "file_type": ".md",
+      "source": "auth_context.md",
+      "chunk_index": 0
+    },
+    {
+      "chunk_index": 0,
+      "source": "checkout_context.md",
+      "file_type": ".md"
+    },
+    {
+      "chunk_index": 0,
+      "file_type": ".md",
+      "source": "notification_context.md"
+    },
+    {
+      "source": "sprint_policy.md",
+      "file_type": ".md",
+      "chunk_index": 0
+    }
+  ],
+  "distances": [
+    0.32757264375686646,
+    0.4450550079345703,
+    0.4936010241508484,
+    0.5261569023132324
+  ],
+  "confidence": 0.9,
+  "warnings": []
+}

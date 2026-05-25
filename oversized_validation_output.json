@@ -1,0 +1,199 @@
+{
+  "seconds": 229.56,
+  "context": {
+    "documents": 4,
+    "ids": [
+      "auth_context-0-a22c7842496f",
+      "checkout_context-0-d927b5cba9e7",
+      "notification_context-0-a546e2ad037a",
+      "sprint_policy-0-06962ec92cc6"
+    ],
+    "confidence": 0.9,
+    "warnings": []
+  },
+  "story": {
+    "title": "Build a full customer portal with authentication, billing, admin dashboard, notifications, analytics, profile management, and reporting",
+    "user_story": "As a customer, I want to authenticate and access the full customer portal so that I can manage my account and view reports.",
+    "acceptance_criteria": [
+      "Given a valid login attempt, when the user reaches the authentication page, then they are redirected to the dashboard with their profile information displayed.",
+      "Given an invalid login attempt, when the user is redirected back to the login page, then they see an error message indicating failed login and are prompted to try again or reset their password.",
+      "Given a successful logout, when the user navigates away from the portal, then they are redirected to the login page."
+    ],
+    "story_points": 5,
+    "tasks": {
+      "be": [
+        "Implement JWT-based authentication for API sessions",
+        "Create backend endpoints for login, logout, token refresh, and OAuth callback"
+      ],
+      "fe": [
+        "Design and implement a login page with Google OAuth integration",
+        "Store tokens securely in the frontend and handle token expiration logic"
+      ],
+      "qa": [
+        "Validate successful login, failed login, expired token, and logout behavior"
+      ]
+    },
+    "definition_of_done": [
+      "Unit tests cover token handling and callback validation",
+      "Integration tests cover the full login callback flow"
+    ],
+    "planning_status": "SPLIT_RECOMMENDED",
+    "clarification_questions": [
+      "Is there a specific backend architecture for JWT-based authentication?",
+      "What is the expected behavior when Google OAuth fails to map an email to an existing user?"
+    ],
+    "assumptions": [
+      "The frontend will use React or Angular as the main framework",
+      "Google OAuth integration requires server-side code exchange of provider code"
+    ],
+    "story_splits": [
+      {
+        "title": "Foundation and access",
+        "user_story": "As a stakeholder, I want the foundation and access part of build a full customer portal with authentication, billing, admin dashboard, notifications, analytics, profile management, and reporting. so that the team can deliver it incrementally.",
+        "acceptance_criteria": [
+          "Given foundation and access is prioritized, when implementation starts, then scope is limited to that slice.",
+          "Given the slice is reviewed, when acceptance criteria are checked, then BE, FE, and QA impacts are clear.",
+          "Given the slice is complete, when QA validates it, then it can be accepted independently."
+        ],
+        "story_points": 5,
+        "tasks": {
+          "be": [
+            "Implement backend support for foundation and access"
+          ],
+          "fe": [
+            "Implement UI support for foundation and access"
+          ],
+          "qa": [
+            "Validate foundation and access acceptance criteria"
+          ]
+        },
+        "definition_of_done": [
+          "Acceptance criteria pass.",
+          "BE, FE, and QA tasks are complete.",
+          "Story can be demoed independently."
+        ]
+      },
+      {
+        "title": "Core user workflow",
+        "user_story": "As a stakeholder, I want the core user workflow part of build a full customer portal with authentication, billing, admin dashboard, notifications, analytics, profile management, and reporting. so that the team can deliver it incrementally.",
+        "acceptance_criteria": [
+          "Given core user workflow is prioritized, when implementation starts, then scope is limited to that slice.",
+          "Given the slice is reviewed, when acceptance criteria are checked, then BE, FE, and QA impacts are clear.",
+          "Given the slice is complete, when QA validates it, then it can be accepted independently."
+        ],
+        "story_points": 8,
+        "tasks": {
+          "be": [
+            "Implement backend support for core user workflow"
+          ],
+          "fe": [
+            "Implement UI support for core user workflow"
+          ],
+          "qa": [
+            "Validate core user workflow acceptance criteria"
+          ]
+        },
+        "definition_of_done": [
+          "Acceptance criteria pass.",
+          "BE, FE, and QA tasks are complete.",
+          "Story can be demoed independently."
+        ]
+      },
+      {
+        "title": "Admin and operations workflow",
+        "user_story": "As a stakeholder, I want the admin and operations workflow part of build a full customer portal with authentication, billing, admin dashboard, notifications, analytics, profile management, and reporting. so that the team can deliver it incrementally.",
+        "acceptance_criteria": [
+          "Given admin and operations workflow is prioritized, when implementation starts, then scope is limited to that slice.",
+          "Given the slice is reviewed, when acceptance criteria are checked, then BE, FE, and QA impacts are clear.",
+          "Given the slice is complete, when QA validates it, then it can be accepted independently."
+        ],
+        "story_points": 8,
+        "tasks": {
+          "be": [
+            "Implement backend support for admin and operations workflow"
+          ],
+          "fe": [
+            "Implement UI support for admin and operations workflow"
+          ],
+          "qa": [
+            "Validate admin and operations workflow acceptance criteria"
+          ]
+        },
+        "definition_of_done": [
+          "Acceptance criteria pass.",
+          "BE, FE, and QA tasks are complete.",
+          "Story can be demoed independently."
+        ]
+      },
+      {
+        "title": "Notifications and analytics",
+        "user_story": "As a stakeholder, I want the notifications and analytics part of build a full customer portal with authentication, billing, admin dashboard, notifications, analytics, profile management, and reporting. so that the team can deliver it incrementally.",
+        "acceptance_criteria": [
+          "Given notifications and analytics is prioritized, when implementation starts, then scope is limited to that slice.",
+          "Given the slice is reviewed, when acceptance criteria are checked, then BE, FE, and QA impacts are clear.",
+          "Given the slice is complete, when QA validates it, then it can be accepted independently."
+        ],
+        "story_points": 5,
+        "tasks": {
+          "be": [
+            "Implement backend support for notifications and analytics"
+          ],
+          "fe": [
+            "Implement UI support for notifications and analytics"
+          ],
+          "qa": [
+            "Validate notifications and analytics acceptance criteria"
+          ]
+        },
+        "definition_of_done": [
+          "Acceptance criteria pass.",
+          "BE, FE, and QA tasks are complete.",
+          "Story can be demoed independently."
+        ]
+      }
+    ],
+    "sprint_allocation": [
+      {
+        "sprint": 1,
+        "stories": [
+          "Foundation and access",
+          "Core user workflow"
+        ]
+      },
+      {
+        "sprint": 2,
+        "stories": [
+          "Admin and operations workflow",
+          "Notifications and analytics"
+        ]
+      }
+    ],
+    "warnings": []
+  },
+  "evaluation": {
+    "status": "REVISION",
+    "issues": [
+      "Oversized requests must be split into sprint-ready stories before Jira creation."
+    ],
+    "revision_instructions": [
+      "Oversized requests must be split into sprint-ready stories before Jira creation."
+    ],
+    "warnings": []
+  },
+  "actions": {
+    "jira": {
+      "ready": false,
+      "payload": null,
+      "warnings": [
+        "Action blocked until evaluator returns APPROVED and planning_status is READY."
+      ]
+    },
+    "slack": {
+      "ready": false,
+      "payload": null,
+      "warnings": [
+        "Action blocked until evaluator returns APPROVED and planning_status is READY."
+      ]
+    }
+  }
+}

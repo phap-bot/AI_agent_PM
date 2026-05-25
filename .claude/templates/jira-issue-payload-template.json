@@ -1,0 +1,17 @@
+{
+  "story": {
+    "summary": "",
+    "description": "",
+    "issue_type": "Story",
+    "story_points": 0,
+    "labels": []
+  },
+  "subtasks": [
+    {
+      "summary": "",
+      "description": "",
+      "issue_type": "Sub-task",
+      "owner_hint": ""
+    }
+  ]
+}
