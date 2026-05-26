@@ -23,8 +23,17 @@ VALID_STORY = {
         "Given authentication fails, when the provider rejects the request, then the user sees an error message.",
     ],
     "story_points": 3,
-    "tasks": {"be": ["OAuth callback"], "fe": ["Login button"], "qa": ["Auth tests"]},
-    "definition_of_done": ["Acceptance criteria pass."],
+    "tasks": {
+        "be": ["Implement OAuth callback and session handoff"],
+        "fe": ["Add Google login button and error state"],
+        "qa": ["Validate happy path and failed authentication scenarios"],
+    },
+    "definition_of_done": [
+        "All acceptance criteria pass with clear Given/When/Then validation evidence.",
+        "BE and FE implementation tasks are complete, reviewed, and integrated without known blockers.",
+        "QA scenarios cover happy path, failure path, edge cases, and relevant regression checks.",
+        "Story is reviewed, demo-ready, and ready for Jira creation only after evaluator approval.",
+    ],
 }
 
 
@@ -62,6 +71,30 @@ def test_evaluator_revises_split_recommended_before_jira_creation() -> None:
 
     assert result["status"] == "REVISION"
     assert "Oversized requests must be split into sprint-ready stories before Jira creation." in result["issues"]
+
+
+def test_evaluator_revises_shallow_definition_of_done() -> None:
+    evaluator = EvaluatorAgent(use_llm=False)
+    story = dict(VALID_STORY)
+    story["definition_of_done"] = ["AC pass"]
+
+    result = evaluator.run(story)
+
+    assert result["status"] == "REVISION"
+    assert any("Definition of done" in issue for issue in result["issues"])
+
+
+
+def test_evaluator_revises_empty_task_groups() -> None:
+    evaluator = EvaluatorAgent(use_llm=False)
+    story = dict(VALID_STORY)
+    story["tasks"] = {"be": [], "fe": ["Add button"], "qa": ["Test flow"]}
+
+    result = evaluator.run(story)
+
+    assert result["status"] == "REVISION"
+    assert "Tasks must include at least one actionable BE item." in result["issues"]
+
 
 
 def test_evaluator_requests_revision_for_invalid_story_without_llm() -> None:

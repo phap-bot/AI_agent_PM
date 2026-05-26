@@ -4,8 +4,10 @@ from ai_scrum_master.agents.planner import PlannerAgent
 class FakeLLM:
     def __init__(self, output: str) -> None:
         self.output = output
+        self.prompt = ""
 
     def call(self, prompt: str) -> str:
+        self.prompt = prompt
         return self.output
 
 
@@ -26,6 +28,10 @@ def test_planner_generates_story_shape_without_llm() -> None:
     assert len(result["acceptance_criteria"]) >= 3
     assert set(result["tasks"].keys()) == {"be", "fe", "qa"}
     assert result["story_points"] in {1, 2, 3, 5, 8, 13}
+    assert len(result["definition_of_done"]) >= 4
+    assert len(result["tasks"]["be"]) >= 2
+    assert len(result["tasks"]["fe"]) >= 2
+    assert len(result["tasks"]["qa"]) >= 2
 
 
 def test_planner_parses_llm_json_output() -> None:
@@ -54,6 +60,7 @@ def test_planner_parses_llm_json_output() -> None:
         context={"documents": ["auth stack uses JWT"], "warnings": [], "confidence": 0.8},
     )
 
+    assert "definition_of_done must include detailed completion checks" in planner.llm.prompt
     assert result["title"] == "Google Login"
     assert result["story_points"] == 5
     assert result["tasks"]["be"] == ["Add OAuth callback"]
@@ -217,7 +224,9 @@ def test_planner_normalizes_incomplete_llm_output() -> None:
     assert result["tasks"]["be"]
     assert result["tasks"]["fe"]
     assert result["tasks"]["qa"]
-    assert result["definition_of_done"]
+    assert len(result["definition_of_done"]) >= 4
+    assert any("acceptance criteria" in item.lower() for item in result["definition_of_done"])
+    assert any("qa" in item.lower() or "test" in item.lower() for item in result["definition_of_done"])
 
 
 def test_planner_rejects_given_when_then_substrings() -> None:
@@ -246,6 +255,38 @@ def test_planner_rejects_given_when_then_substrings() -> None:
     )
 
     assert all(" then " in f" {criterion.lower()} " for criterion in result["acceptance_criteria"])
+
+
+def test_planner_completes_shallow_definition_of_done() -> None:
+    planner = PlannerAgent(
+        llm=FakeLLM(
+            """
+            {
+              "title": "Google Login",
+              "user_story": "As a returning user, I want to sign in with Google, so that I can access my account quickly without entering a password.",
+              "acceptance_criteria": [
+                "Given Google sign-in is enabled, when I choose Google login, then the OAuth flow starts.",
+                "Given OAuth succeeds, when callback returns, then I am signed in.",
+                "Given OAuth fails, when callback returns, then I see an error."
+              ],
+              "story_points": 5,
+              "tasks": {"be": ["Add OAuth callback"], "fe": ["Add Google login button"], "qa": ["Test Google login flow"]},
+              "definition_of_done": ["AC pass"],
+              "planning_status": "READY",
+              "warnings": []
+            }
+            """
+        )
+    )
+
+    result = planner.run(
+        requirement="As a returning user, I want to sign in with Google, so that I can access my account quickly without entering a password.",
+        context={"documents": ["Auth uses FastAPI and JWT sessions."], "warnings": [], "confidence": 0.8},
+    )
+
+    assert "AC pass" in result["definition_of_done"]
+    assert len(result["definition_of_done"]) >= 5
+    assert any("Jira" in item for item in result["definition_of_done"])
 
 
 def test_planner_keeps_sprint_allocation_only_for_split_recommended() -> None:

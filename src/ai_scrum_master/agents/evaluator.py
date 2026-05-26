@@ -7,6 +7,7 @@ from typing import Any
 from ai_scrum_master.core.config import AgentProfileConfig
 from ai_scrum_master.core.llm_setup import build_llm
 from ai_scrum_master.core.logging import get_logger
+from ai_scrum_master.core.prompts import render_prompt
 
 FIBONACCI_POINTS = {1, 2, 3, 5, 8, 13}
 READY = "READY"
@@ -56,35 +57,14 @@ class EvaluatorAgent:
         role = self.profile.role if self.profile else "Evaluator Agent"
         goal = self.profile.goal if self.profile else "Evaluate whether this story is ready for Jira creation."
         backstory = self.profile.backstory if self.profile else "You enforce quality gates for an AI Scrum Master system."
-        return f"""
-You are {role}.
-Goal: {goal}
-Backstory: {backstory}
-
-Evaluate whether this story is ready for Jira creation.
-
-Story JSON:
-{json.dumps(story, ensure_ascii=False, indent=2)}
-
-Rule-based pre-check:
-{json.dumps(rule_result, ensure_ascii=False, indent=2)}
-
-Return only valid JSON with this exact shape:
-{{
-  "status": "APPROVED",
-  "issues": [],
-  "revision_instructions": [],
-  "warnings": []
-}}
-
-Rules:
-- status must be either APPROVED or REVISION.
-- Require As a / I want / so that story format.
-- Require at least 3 Given / When / Then acceptance criteria.
-- Require Fibonacci story points: 1, 2, 3, 5, 8, 13.
-- Require BE, FE, and QA task groups.
-- Do not approve if rule-based pre-check found blocking issues.
-""".strip()
+        return render_prompt(
+            "evaluator.md",
+            role=role,
+            goal=goal,
+            backstory=backstory,
+            story_json=json.dumps(story, ensure_ascii=False, indent=2),
+            rule_result_json=json.dumps(rule_result, ensure_ascii=False, indent=2),
+        )
 
     def _parse_result(self, raw_output: Any) -> dict:
         if isinstance(raw_output, dict):
@@ -146,9 +126,14 @@ Rules:
         for key in ("be", "fe", "qa"):
             if key not in tasks:
                 issues.append(f"Tasks must include {key.upper()} group.")
+            elif not self._has_actionable_tasks(tasks.get(key)):
+                issues.append(f"Tasks must include at least one actionable {key.upper()} item.")
 
-        if not story.get("definition_of_done"):
+        definition_of_done = story.get("definition_of_done")
+        if not definition_of_done:
             issues.append("Definition of done is required.")
+        else:
+            issues.extend(self._definition_of_done_issues(definition_of_done))
 
         planning_status = story.get("planning_status", READY)
         if planning_status == NEEDS_CLARIFICATION:
@@ -171,6 +156,32 @@ Rules:
             "revision_instructions": issues,
             "warnings": [],
         }
+
+    def _has_actionable_tasks(self, value: Any) -> bool:
+        if not isinstance(value, list):
+            return False
+        return any(isinstance(item, str) and len(item.strip().split()) >= 3 for item in value)
+
+    def _definition_of_done_issues(self, items: Any) -> list[str]:
+        if not isinstance(items, list):
+            return ["Definition of done must be a list of detailed checks."]
+
+        checks = [item.strip() for item in items if isinstance(item, str) and item.strip()]
+        issues: list[str] = []
+        if len(checks) < 4:
+            issues.append("Definition of done must include at least 4 detailed completion checks.")
+
+        text = " ".join(checks).lower()
+        coverage = {
+            "acceptance criteria": ("acceptance", "criteria"),
+            "implementation or task completion": ("implementation", "task", "be", "backend", "fe", "frontend"),
+            "testing or QA evidence": ("test", "qa", "validation"),
+            "review, demo, or Jira readiness": ("review", "demo", "jira", "ready"),
+        }
+        for label, terms in coverage.items():
+            if not any(term in text for term in terms):
+                issues.append(f"Definition of done must cover {label}.")
+        return issues
 
     def _is_given_when_then(self, criterion: str) -> bool:
         return all(re.search(rf"\b{token}\b", criterion, flags=re.IGNORECASE) for token in ("given", "when", "then"))

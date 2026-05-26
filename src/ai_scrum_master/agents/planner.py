@@ -7,6 +7,7 @@ from typing import Any
 from ai_scrum_master.core.config import AgentProfileConfig
 from ai_scrum_master.core.llm_setup import build_llm
 from ai_scrum_master.core.logging import get_logger
+from ai_scrum_master.core.prompts import render_prompt
 
 FIBONACCI_POINTS = {1, 2, 3, 5, 8, 13}
 READY = "READY"
@@ -61,57 +62,15 @@ class PlannerAgent:
         role = self.profile.role if self.profile else "Planner Agent"
         goal = self.profile.goal if self.profile else "Convert the requirement into sprint-ready user stories."
         backstory = self.profile.backstory if self.profile else "You support an AI Scrum Master system."
-        return f"""
-You are {role}.
-Goal: {goal}
-Backstory: {backstory}
-
-Convert the requirement into sprint-ready Scrum planning output.
-
-Requirement:
-{requirement}
-
-Initial planning status:
-{planning_status}
-
-Retrieved project context:
-{context_block}
-
-Return only valid JSON with this exact shape:
-{{
-  "title": "",
-  "user_story": "As a ..., I want ..., so that ...",
-  "acceptance_criteria": [
-    "Given ..., when ..., then ...",
-    "Given ..., when ..., then ...",
-    "Given ..., when ..., then ..."
-  ],
-  "story_points": 1,
-  "tasks": {{
-    "be": [],
-    "fe": [],
-    "qa": []
-  }},
-  "definition_of_done": [],
-  "planning_status": "READY",
-  "clarification_questions": [],
-  "assumptions": [],
-  "story_splits": [],
-  "sprint_allocation": [],
-  "warnings": []
-}}
-
-Rules:
-- planning_status must be READY, NEEDS_CLARIFICATION, or SPLIT_RECOMMENDED.
-- If the request is ambiguous, set planning_status to NEEDS_CLARIFICATION and include clarification_questions before final planning.
-- If the request is too large for one sprint, set planning_status to SPLIT_RECOMMENDED and include story_splits plus sprint_allocation.
-- Every story must use As a / I want / So that.
-- Every story must include at least 3 Given / When / Then acceptance criteria.
-- Use Fibonacci story points only: 1, 2, 3, 5, 8, 13.
-- Separate tasks into BE, FE, and QA.
-- Do not create Jira issues.
-- If context is weak, include assumptions and warnings.
-""".strip()
+        return render_prompt(
+            "planner.md",
+            role=role,
+            goal=goal,
+            backstory=backstory,
+            requirement=requirement,
+            planning_status=planning_status,
+            context_block=context_block,
+        )
 
     def _parse_story(self, raw_output: Any) -> dict:
         if isinstance(raw_output, dict):
@@ -160,7 +119,9 @@ Rules:
             normalized["acceptance_criteria"], fallback["acceptance_criteria"]
         )
         normalized["tasks"] = self._complete_tasks(normalized["tasks"], fallback["tasks"])
-        normalized["definition_of_done"] = normalized["definition_of_done"] or fallback["definition_of_done"]
+        normalized["definition_of_done"] = self._complete_definition_of_done(
+            normalized["definition_of_done"], fallback["definition_of_done"]
+        )
 
         if normalized["planning_status"] == READY:
             if normalized["clarification_questions"]:
@@ -203,9 +164,30 @@ Rules:
     def _complete_tasks(self, tasks: dict, fallback: dict[str, list[str]]) -> dict[str, list[str]]:
         completed = tasks if isinstance(tasks, dict) else {}
         return {
-            key: completed.get(key) or fallback[key]
+            key: self._task_items(completed.get(key)) or fallback[key]
             for key in ("be", "fe", "qa")
         }
+
+    def _task_items(self, value: Any) -> list[str]:
+        if not isinstance(value, list):
+            return []
+        return [item.strip() for item in value if isinstance(item, str) and item.strip()]
+
+    def _complete_definition_of_done(self, items: list[str], fallback: list[str]) -> list[str]:
+        completed = [item.strip() for item in items if isinstance(item, str) and item.strip()]
+        if len(completed) >= 4 and self._definition_of_done_covers_quality_bar(completed):
+            return completed
+        return list(dict.fromkeys(completed + fallback))
+
+    def _definition_of_done_covers_quality_bar(self, items: list[str]) -> bool:
+        text = " ".join(items).lower()
+        required_terms = (
+            ("acceptance", "criteria"),
+            ("be", "backend", "fe", "frontend", "qa", "task", "implementation"),
+            ("test", "qa", "validation"),
+            ("review", "demo", "jira", "ready"),
+        )
+        return all(any(term in text for term in terms) for terms in required_terms)
 
     def _normalize_story_splits(self, story_splits: list[dict], fallback: list[dict]) -> list[dict]:
         source = story_splits or fallback
@@ -223,7 +205,9 @@ Rules:
                     ),
                     "story_points": split.get("story_points") if split.get("story_points") in FIBONACCI_POINTS else fallback_split["story_points"],
                     "tasks": self._complete_tasks(split.get("tasks") or {}, fallback_split["tasks"]),
-                    "definition_of_done": split.get("definition_of_done") or fallback_split["definition_of_done"],
+                    "definition_of_done": self._complete_definition_of_done(
+                        split.get("definition_of_done") or [], fallback_split["definition_of_done"]
+                    ),
                 }
             )
         return normalized or fallback
@@ -290,16 +274,47 @@ Rules:
             ],
             "story_points": points,
             "tasks": {
-                "be": [f"Implement backend support for {title.lower()}"],
-                "fe": [f"Implement UI support for {title.lower()}"],
-                "qa": [f"Validate {title.lower()} acceptance criteria"],
+                "be": [
+                    f"Define API, data, and integration changes needed for the {title.lower()} slice.",
+                    f"Implement backend behavior for {title.lower()} with explicit error handling and logging impact reviewed.",
+                ],
+                "fe": [
+                    f"Define user-facing flow and states for {title.lower()}, including loading, success, and failure states.",
+                    f"Implement UI changes for {title.lower()} and confirm they match the accepted workflow.",
+                ],
+                "qa": [
+                    f"Create Given/When/Then test scenarios for {title.lower()} covering happy path and edge cases.",
+                    f"Run regression checks proving {title.lower()} can be accepted independently.",
+                ],
             },
-            "definition_of_done": [
-                "Acceptance criteria pass.",
-                "BE, FE, and QA tasks are complete.",
-                "Story can be demoed independently.",
+            "definition_of_done": self._default_definition_of_done(),
+        }
+
+    def _default_tasks(self, requirement: str) -> dict[str, list[str]]:
+        cleaned_requirement = self._clean_requirement_text(requirement)
+        return {
+            "be": [
+                f"Identify backend APIs, data contracts, auth/session impacts, and integration points required for {cleaned_requirement}.",
+                f"Implement backend changes for {cleaned_requirement} with explicit handling for success, failure, and audit/logging needs.",
+            ],
+            "fe": [
+                f"Map the user flow for {cleaned_requirement}, including entry point, loading state, success state, and error state.",
+                f"Implement UI/client changes for {cleaned_requirement} and connect them to the backend contract.",
+            ],
+            "qa": [
+                f"Create test scenarios for {cleaned_requirement} covering happy path, failure path, edge cases, and regression impact.",
+                "Verify acceptance criteria, BE/FE integration, and any documented assumptions before Jira handoff.",
             ],
         }
+
+    def _default_definition_of_done(self) -> list[str]:
+        return [
+            "All acceptance criteria pass with clear Given/When/Then validation evidence.",
+            "BE and FE implementation tasks are complete, reviewed, and integrated without known blockers.",
+            "QA scenarios cover happy path, failure path, edge cases, and relevant regression checks.",
+            "Assumptions, warnings, and context gaps are documented or resolved before downstream action.",
+            "Story is reviewed, demo-ready, and ready for Jira creation only after evaluator approval.",
+        ]
 
     def _fallback_story(self, requirement: str, warnings: list[str], planning_status: str = READY) -> dict:
         story = {
@@ -311,16 +326,8 @@ Rules:
                 "Given implementation begins, when tasks are assigned, then BE, FE, and QA work are separated.",
             ],
             "story_points": 3,
-            "tasks": {
-                "be": ["Define backend changes"],
-                "fe": ["Define UI or client impact"],
-                "qa": ["Prepare validation scenarios"],
-            },
-            "definition_of_done": [
-                "Acceptance criteria are satisfied.",
-                "Implementation tasks are identified.",
-                "Story is ready for Jira creation.",
-            ],
+            "tasks": self._default_tasks(requirement),
+            "definition_of_done": self._default_definition_of_done(),
             "planning_status": planning_status,
             "clarification_questions": [],
             "assumptions": list(warnings),
