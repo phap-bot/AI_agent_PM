@@ -1,0 +1,22 @@
+[
+    {"query": "What are the three accountabilities in Scrum?", "expected_sources": ["scrum_guide_2020"]},
+    {"query": "What is the Sprint timebox?", "expected_sources": ["scrum_guide_2020"]},
+    {"query": "What is the format of a User Story?", "expected_sources": ["user_stories"]},
+    {"query": "What are Acceptance Criteria?", "expected_sources": ["acceptance_criteria"]},
+    {"query": "What is the purpose of a Sprint Retrospective?", "expected_sources": ["scrum_guide_2020"]},
+    {"query": "What is the Definition of Done?", "expected_sources": ["scrum_guide_2020"]},
+    {"query": "Who is responsible for managing the Product Backlog?", "expected_sources": ["scrum_guide_2020"]},
+    {"query": "What does a Product Owner do?", "expected_sources": ["scrum_guide_2020"]},
+    {"query": "What is an Increment?", "expected_sources": ["scrum_guide_2020"]},
+    {"query": "Who attends the Daily Scrum?", "expected_sources": ["scrum_guide_2020"]},
+    {"query": "What is the goal of Sprint Planning?", "expected_sources": ["scrum_guide_2020"]},
+    {"query": "What is an Epic in Agile?", "expected_sources": ["user_stories"]},
+    {"query": "What does INVEST stand for in User Stories?", "expected_sources": ["user_stories"]},
+    {"query": "What are the 3 C's of user stories?", "expected_sources": ["user_stories"]},
+    {"query": "Can Acceptance Criteria be automated?", "expected_sources": ["acceptance_criteria"]},
+    {"query": "What is the main role of a Scrum Master?", "expected_sources": ["scrum_guide_2020"]},
+    {"query": "What is the difference between an Epic and a User Story?", "expected_sources": ["user_stories"]},
+    {"query": "How should Acceptance Criteria be written?", "expected_sources": ["acceptance_criteria"]},
+    {"query": "What is the purpose of a Sprint Review?", "expected_sources": ["scrum_guide_2020"]},
+    {"query": "What are the key components of a good User Story?", "expected_sources": ["user_stories"]}
+]

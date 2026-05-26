@@ -2,126 +2,123 @@ import os
 import logging
 import chromadb
 from chromadb.utils import embedding_functions
-from langchain_community.document_loaders import TextLoader
+from langchain_community.document_loaders import TextLoader, PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-# ================== CONFIGURATION ==================
+# ================== CẤU HÌNH ==================
 DATA_DIR = "data"
 CHROMA_DB_PATH = "./chroma_db"
 COLLECTION_NAME = "scrum_kb"
 CHUNK_SIZE = 500
 CHUNK_OVERLAP = 50
+# =============================================
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
-# ===================================================
 
-def get_text_files(data_dir: str) -> list:
-    """Return list of .txt files in the given directory."""
-    if not os.path.isdir(data_dir):
-        raise FileNotFoundError(f"Directory '{data_dir}' does not exist.")
-    
-    files = [f for f in os.listdir(data_dir) if f.endswith('.txt')]
-    if not files:
-        raise ValueError(f"No .txt files found in '{data_dir}'.")
-    
-    return files
 
-def connect_chromadb(path: str, collection_name: str):
-    """Connect to ChromaDB and return the collection."""
-    try:
-        client = chromadb.PersistentClient(path=path)
-        embedding_fn = embedding_functions.OllamaEmbeddingFunction(
-            model_name="nomic-embed-text"
-        )
-        # Verify Ollama connectivity with a dummy call
-        embedding_fn(["test"])
-        
-        collection = client.get_or_create_collection(
-            name=collection_name,
-            embedding_function=embedding_fn
-        )
-        logger.info(f"Connected to ChromaDB collection '{collection_name}'")
-        return collection
-    except Exception as e:
-        logger.error(f"Failed to connect to Ollama or ChromaDB: {e}")
-        raise
+def load_documents(data_dir: str):
+    """Load all .txt and .pdf files from the data directory."""
+    documents = []
+    for filename in os.listdir(data_dir):
+        file_path = os.path.join(data_dir, filename)
+        try:
+            if filename.endswith('.txt'):
+                loader = TextLoader(file_path, encoding="utf-8")
+            elif filename.endswith('.pdf'):
+                loader = PyPDFLoader(file_path)
+            else:
+                continue
+            documents.extend(loader.load())
+            logger.info(f"Loaded {filename}")
+        except Exception as e:
+            logger.error(f"Error loading {filename}: {e}")
+    return documents
 
-def process_documents(file_paths: list, chunk_size: int, chunk_overlap: int):
-    """Load, chunk documents and prepare data for insertion."""
+
+def connect_chromadb(db_path: str, collection_name: str):
+    """Connect to ChromaDB and return collection."""
+    client = chromadb.PersistentClient(path=db_path)
+    embed_fn = embedding_functions.OllamaEmbeddingFunction(
+        model_name="nomic-embed-text"
+    )
+    # Test connectivity
+    embed_fn(["test"])
+    collection = client.get_or_create_collection(
+        name=collection_name,
+        embedding_function=embed_fn
+    )
+    logger.info(f"Connected to ChromaDB collection '{collection_name}'")
+    return collection
+
+
+def process_documents(documents, chunk_size: int, chunk_overlap: int):
+    """Chunk documents and prepare data for insertion."""
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
         separators=["\n\n", "\n", " ", ""]
     )
+    chunks = text_splitter.split_documents(documents)
     
-    all_ids = []
-    all_documents = []
-    all_metadatas = []
+    ids = []
+    texts = []
+    metadatas = []
     
-    for file_path in file_paths:
-        try:
-            loader = TextLoader(file_path, encoding="utf-8")
-            documents = loader.load()
-            chunks = text_splitter.split_documents(documents)
-            base_name = os.path.basename(file_path).replace('.txt', '')
-            
-            for idx, chunk in enumerate(chunks):
-                chunk_id = f"{base_name}_{idx}"
-                all_ids.append(chunk_id)
-                all_documents.append(chunk.page_content)
-                all_metadatas.append({
-                    "source": os.path.basename(file_path),
-                    "chunk_index": idx
-                })
-            logger.info(f"Processed {file_path} -> {len(chunks)} chunks")
-        except Exception as e:
-            logger.error(f"Error processing {file_path}: {e}")
-            continue
+    for idx, chunk in enumerate(chunks):
+        chunk_id = f"chunk_{idx}"
+        ids.append(chunk_id)
+        texts.append(chunk.page_content)
+        source = chunk.metadata.get("source", "unknown")
+        metadatas.append({
+            "source": os.path.basename(source),
+            "chunk_index": idx
+        })
     
-    return all_ids, all_documents, all_metadatas
+    return ids, texts, metadatas
 
-def insert_into_chromadb(collection, ids, documents, metadatas):
+
+def insert_into_chromadb(collection, ids, texts, metadatas):
     """Insert chunks into ChromaDB."""
     if not ids:
         logger.warning("No data to insert")
         return False
-    
     try:
-        collection.add(ids=ids, documents=documents, metadatas=metadatas)
+        collection.add(ids=ids, documents=texts, metadatas=metadatas)
         logger.info(f"Successfully inserted {len(ids)} chunks into ChromaDB")
         return True
     except Exception as e:
-        logger.error(f"Failed to insert into ChromaDB: {e}")
+        logger.error(f"Failed to insert: {e}")
         return False
 
+
 def main():
-    logger.info("Starting ingestion pipeline")
-    
+    logger.info("Starting ingestion pipeline for real documents")
     try:
-        # 1. Get .txt files
-        txt_files = get_text_files(DATA_DIR)
-        logger.info(f"Found {len(txt_files)} file(s): {', '.join(txt_files)}")
-        
+        # 1. Load all documents
+        docs = load_documents(DATA_DIR)
+        if not docs:
+            raise ValueError(f"No .txt or .pdf documents found in '{DATA_DIR}'.")
+        logger.info(f"Loaded {len(docs)} document page(s).")
+
         # 2. Connect to ChromaDB
         collection = connect_chromadb(CHROMA_DB_PATH, COLLECTION_NAME)
-        
-        # 3. Prepare full paths
-        file_paths = [os.path.join(DATA_DIR, f) for f in txt_files]
-        
-        # 4. Process documents
-        ids, docs, metas = process_documents(file_paths, CHUNK_SIZE, CHUNK_OVERLAP)
-        
-        # 5. Insert into ChromaDB
-        if insert_into_chromadb(collection, ids, docs, metas):
+
+        # 3. Process documents (chunking)
+        ids, docs_content, metas = process_documents(docs, CHUNK_SIZE, CHUNK_OVERLAP)
+        logger.info(f"Created {len(ids)} chunks (size={CHUNK_SIZE}, overlap={CHUNK_OVERLAP})")
+
+        # 4. Insert into ChromaDB
+        if insert_into_chromadb(collection, ids, docs_content, metas):
             final_count = collection.count()
             logger.info(f"Ingestion completed. Total chunks in DB: {final_count}")
             logger.info(f"Database location: {os.path.abspath(CHROMA_DB_PATH)}")
         else:
             logger.error("Ingestion failed")
-            
+
     except Exception as e:
         logger.exception(f"Pipeline failed: {e}")
+
 
 if __name__ == "__main__":
     main()
