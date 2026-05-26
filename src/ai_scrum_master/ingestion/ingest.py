@@ -7,7 +7,7 @@ from typing import Iterable
 from ai_scrum_master.core.config import BASE_DIR, get_settings
 from ai_scrum_master.core.vector_store import add_documents
 
-SUPPORTED_EXTENSIONS = {".md", ".txt"}
+SUPPORTED_EXTENSIONS = {".md", ".txt" , ".pdf"}
 DEFAULT_CHUNK_SIZE = 1200
 DEFAULT_CHUNK_OVERLAP = 200
 

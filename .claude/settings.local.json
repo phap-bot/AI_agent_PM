@@ -4,5 +4,8 @@
       "Bash(PYTHONIOENCODING=utf-8 python *)",
       "Bash(python *)"
     ]
+  },
+  "env": {
+    "PYTHONPATH": ".\\src"
   }
 }
