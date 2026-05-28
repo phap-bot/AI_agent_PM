@@ -1,0 +1,5 @@
+tasks:
+  planning_task:
+    name_task: planning_task
+    description: Desc
+    agent: planner

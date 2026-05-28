@@ -1,0 +1,5 @@
+agents:
+  planner:
+    role: Planner
+    goal: Plan
+    backstory: Story

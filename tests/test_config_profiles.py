@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from ai_scrum_master.core.config import ConfigError, get_runtime_profiles
+from ai_scrum_master.core.config import ConfigError, get_runtime_profiles, get_settings
 
 
 def test_runtime_profiles_load_from_default_files() -> None:
@@ -11,6 +11,27 @@ def test_runtime_profiles_load_from_default_files() -> None:
     assert {"researcher", "planner", "evaluator"}.issubset(set(profiles.agents.keys()))
     assert {"research_task", "planning_task", "evaluation_task"}.issubset(set(profiles.tasks.keys()))
     assert profiles.tasks["planning_task"].agent == "planner"
+
+
+def test_retrieval_settings_load_from_env(monkeypatch) -> None:
+    monkeypatch.setenv("RETRIEVAL_MIN_SCORE", "0.72")
+    monkeypatch.setenv("RETRIEVAL_EXCERPT_CHARS", "120")
+    monkeypatch.setenv("RETRIEVAL_CONTEXT_TOP_K", "4")
+
+    settings = get_settings()
+
+    assert settings.retrieval_min_score == 0.72
+    assert settings.retrieval_excerpt_chars == 120
+    assert settings.retrieval_context_top_k == 4
+
+
+def test_relative_chroma_persist_dir_resolves_inside_package_data(monkeypatch) -> None:
+    monkeypatch.setenv("CHROMA_PERSIST_DIR", "./data/chromadb")
+
+    settings = get_settings()
+
+    assert Path(settings.chroma_persist_dir).is_absolute()
+    assert settings.chroma_persist_dir.endswith(str(Path("src") / "ai_scrum_master" / "data" / "chromadb"))
 
 
 def test_runtime_profiles_fail_for_unknown_agent_mapping(tmp_path: Path) -> None:

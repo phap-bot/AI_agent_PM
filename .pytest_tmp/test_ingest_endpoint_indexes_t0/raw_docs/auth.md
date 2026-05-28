@@ -1,0 +1,1 @@
+Auth stack uses JWT and Google OAuth.

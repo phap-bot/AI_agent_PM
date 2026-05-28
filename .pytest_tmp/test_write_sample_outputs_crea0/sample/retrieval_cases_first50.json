@@ -1,0 +1,8 @@
+[
+  {
+    "query": "Fix migration crash",
+    "expected_sources": [
+      "swe_bench_000_django__django-100"
+    ]
+  }
+]

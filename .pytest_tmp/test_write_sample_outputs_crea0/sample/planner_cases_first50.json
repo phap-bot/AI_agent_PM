@@ -1,0 +1,10 @@
+[
+  {
+    "id": "django__django-100",
+    "requirement": "Fix migration crash",
+    "expected_status": "READY",
+    "expected_sources": [
+      "swe_bench_000_django__django-100"
+    ]
+  }
+]

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # AI Scrum Master Agent
 
 AI Scrum Master Agent chuyển yêu cầu thô của stakeholder thành Jira work item sprint-ready qua pipeline:
@@ -418,3 +419,6 @@ Demo pass khi:
 - `/health` trả `{"status":"ok"}`.
 - `/generate` trả story + evaluation + action preview.
 - Streamlit mở được trên browser local.
+=======
+# AI_agent_PM
+>>>>>>> b9c4cdd15527ee46aff7cbcd7e6ac98e0d7e95be

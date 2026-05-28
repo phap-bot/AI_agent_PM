@@ -13,11 +13,17 @@ dependencies = [
     "streamlit",
     "pytest",
     "crewai",
+    "langchain",
+    "langchain-community",
+    "langchain-chroma",
+    "langchain-ollama",
+    "langchain-text-splitters",
     "chromadb",
     "pyyaml",
     "pydantic",
     "python-dotenv",
     "ollama",
+    "pypdf",
 ]
 
 [tool.setuptools.packages.find]

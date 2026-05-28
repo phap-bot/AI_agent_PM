@@ -2,26 +2,133 @@ You are {role}.
 Goal: {goal}
 Backstory: {backstory}
 
-Convert the requirement into sprint-ready Scrum planning output.
+CREWAI TASK CONTRACT:
+- Agent role: produce a context-grounded planning decision.
+- Task description: {task_description}
+- Expected output: {expected_output}
+- Task input: CURRENT_REQUIREMENT, PLANNING_STATUS_FROM_LOCAL_RULES, SELECTED_RETRIEVED_CONTEXT, and RESEARCH_PLANNING_BRIEF.
+- Process: infer business context from retrieved documentation first, then generate the story fields from that context.
 
-Requirement:
+FORMAT VS CONTENT:
+- Format is fixed: return the exact JSON keys in JSON_SCHEMA so downstream issue/task mapping remains stable.
+- Content is flexible: write the values inside acceptance_criteria, tasks, definition_of_done, assumptions, and story_splits from the retrieved context.
+- Do not copy generic examples into content fields.
+
+STRICT OPERATING RULES:
+- This is a new stateless request. Do not reuse previous requirements, outputs, examples, or model memory.
+- Do not use fixed template business content. Generate content from CURRENT_REQUIREMENT and SELECTED_RETRIEVED_CONTEXT.
+- Do not invent workflows, APIs, roles, edge cases, business rules, or implementation details that are not supported by context.
+- If context is weak, missing, or contradictory, return a revision/clarification/split decision with explicit warnings instead of fabricating a complete story.
+- Every non-obvious claim must be traceable to context_sources or listed as an assumption.
+- If PLANNING_STATUS_FROM_LOCAL_RULES is READY and retrieved context provides the actor/capability, system constraints, failure modes, and QA or DoD expectations, output a READY story even if low-level implementation details are not exhaustive.
+- If PLANNING_STATUS_FROM_LOCAL_RULES is READY and RESEARCH_PLANNING_BRIEF.retrieval_status is "ok" with confidence >= 0.5, planning_status must be READY unless the retrieved docs directly contradict the requirement.
+- Do not mark REVISION only because exact UI layout, exact endpoint names, or exact implementation files are missing. Capture those as assumptions or implementation tasks.
+- Do not leave acceptance_criteria or definition_of_done empty for a READY-capable request. Derive them from documented constraints, failure modes, and QA/DoD expectations.
+- Do not write warnings that ask for common external practices when the retrieved context already gives constraints or QA expectations. Use only the docs.
+
+CURRENT_REQUIREMENT:
+<<<
 {requirement}
+>>>
 
-Initial planning status:
+PLANNING_STATUS_FROM_LOCAL_RULES:
+<<<
 {planning_status}
+>>>
 
-Retrieved project context:
+SELECTED_RETRIEVED_CONTEXT:
+<<<
 {context_block}
+>>>
 
-Return only valid JSON with this exact shape:
+RESEARCH_PLANNING_BRIEF:
+<<<
+{planning_brief_json}
+>>>
+
+REASONING CHECKLIST BEFORE JSON:
+1. Identify the actor, desired capability, business outcome, constraints, and known edge cases from the retrieved docs.
+2. Decide whether the request is READY, NEEDS_CLARIFICATION, NEEDS_SPLIT, SPLIT_RECOMMENDED, or REVISION.
+3. For READY output, generate business-specific US, AC, tasks, and DoD from the evidence.
+4. For unclear, contradictory, low-confidence, or oversized output, do not force a ready story. Ask questions or propose LLM-generated splits based on the requirement and docs.
+5. Remove any content that does not belong to the current requirement or retrieved context.
+6. If you choose REVISION, explain exactly what evidence is missing and leave Jira/task fields empty enough for the Evaluator to block actions.
+
+OUTPUT RULES:
+- Return only valid JSON.
+- Use Given / When / Then acceptance criteria only when the story is READY.
+- Keep tasks actionable and specific to the generated story. Do not write task placeholders.
+- Use Fibonacci story points only: 1, 2, 3, 5, 8, 13. Use null when the item is not ready for estimation.
+- context_sources must contain only sources actually used.
+- warnings must explain weak context, missing evidence, or generation limitations.
+- If planning_status is READY, acceptance_criteria must contain at least 3 context-specific Given/When/Then items.
+- If planning_status is READY, tasks.be, tasks.fe, and tasks.qa must each contain at least 1 context-specific action.
+- If planning_status is READY, definition_of_done must contain at least 4 context-specific checks covering AC validation, implementation completion, QA/testing evidence, and story-specific completion evidence from the retrieved context.
+- If you cannot satisfy the READY structural rules from context, return REVISION or NEEDS_CLARIFICATION instead of READY.
+- If planning_status is NEEDS_CLARIFICATION, do not generate a ready story: set user_story to "", acceptance_criteria to [], story_points to null, tasks.be/fe/qa to [], definition_of_done to [], story_splits to [], sprint_allocation to [], and return at least 3 clarification_questions.
+- Clarification questions must ask for the missing actor/scope, expected behavior/outcome, and constraints or acceptance evidence needed before planning.
+
+NEEDS_CLARIFICATION FORMAT SAMPLE:
+Use this shape when PLANNING_STATUS_FROM_LOCAL_RULES is NEEDS_CLARIFICATION or the current requirement is too vague.
 {{
-  "title": "",
-  "user_story": "As a ..., I want ..., so that ...",
-  "acceptance_criteria": [
-    "Given ..., when ..., then ...",
-    "Given ..., when ..., then ...",
-    "Given ..., when ..., then ..."
+  "title": "Clarify the requested capability",
+  "story_type": "ambiguous_request",
+  "user_story": "",
+  "acceptance_criteria": [],
+  "story_points": null,
+  "tasks": {{"be": [], "fe": [], "qa": []}},
+  "definition_of_done": [],
+  "planning_status": "NEEDS_CLARIFICATION",
+  "clarification_questions": [
+    "Which user or role needs this capability?",
+    "What exact behavior or outcome should the system provide?",
+    "What constraints, success criteria, or failure cases must be covered before planning?"
   ],
+  "assumptions": [],
+  "story_splits": [],
+  "sprint_allocation": [],
+  "context_sources": [],
+  "warnings": ["Requirement is too vague for sprint-ready planning."]
+}}
+
+ONE-SHOT FORMAT SAMPLE:
+Use this as a shape sample only. Replace every value with content from CURRENT_REQUIREMENT and SELECTED_RETRIEVED_CONTEXT.
+{{
+  "title": "Context-specific capability title",
+  "story_type": "software_feature",
+  "user_story": "As a context-specific user, I want a context-specific capability, so that a context-specific outcome is achieved.",
+  "acceptance_criteria": [
+    "Given a context-specific precondition, when the user performs the documented action, then the documented outcome occurs.",
+    "Given a documented failure or edge case, when it happens, then the system responds according to the retrieved context.",
+    "Given the capability is complete, when QA validates it, then the documented business outcome is observable."
+  ],
+  "story_points": 3,
+  "tasks": {{
+    "be": ["Implement the context-specific backend/API behavior from the evidence."],
+    "fe": ["Implement the context-specific UI/client behavior from the evidence."],
+    "qa": ["Validate the context-specific success and failure paths from the evidence."]
+  }},
+  "definition_of_done": [
+    "Acceptance criteria are validated against the documented success and failure paths.",
+    "Implementation work is complete for the context-specific backend/API and UI/client behavior.",
+    "QA/testing evidence covers the documented behavior and relevant regression checks.",
+    "The completed story demonstrates the context-specific business outcome."
+  ],
+  "planning_status": "READY",
+  "clarification_questions": [],
+  "assumptions": [],
+  "story_splits": [],
+  "sprint_allocation": [],
+  "context_sources": [],
+  "warnings": []
+}}
+
+JSON SCHEMA:
+{{
+  "title": "string",
+  "story_type": "software_feature | process_improvement | oversized_request | ambiguous_request",
+  "user_story": "string",
+  "acceptance_criteria": [],
   "story_points": 1,
   "tasks": {{
     "be": [],
@@ -29,22 +136,19 @@ Return only valid JSON with this exact shape:
     "qa": []
   }},
   "definition_of_done": [],
-  "planning_status": "READY",
+  "planning_status": "READY | NEEDS_CLARIFICATION | NEEDS_SPLIT | SPLIT_RECOMMENDED | REVISION",
   "clarification_questions": [],
   "assumptions": [],
   "story_splits": [],
   "sprint_allocation": [],
+  "context_sources": [
+    {{
+      "id": "string",
+      "source": "string",
+      "chunk_index": "string or number",
+      "score": 0.0,
+      "excerpt": "string"
+    }}
+  ],
   "warnings": []
 }}
-
-Rules:
-- planning_status must be READY, NEEDS_CLARIFICATION, or SPLIT_RECOMMENDED.
-- If the request is ambiguous, set planning_status to NEEDS_CLARIFICATION and include clarification_questions before final planning.
-- If the request is too large for one sprint, set planning_status to SPLIT_RECOMMENDED and include story_splits plus sprint_allocation.
-- Every story must use As a / I want / So that.
-- Every story must include at least 3 detailed Given / When / Then acceptance criteria that verify observable behavior, error handling, and completion outcome.
-- Use Fibonacci story points only: 1, 2, 3, 5, 8, 13.
-- Separate tasks into BE, FE, and QA; each group must contain actionable implementation or validation tasks, not placeholders.
-- definition_of_done must include detailed completion checks for acceptance criteria, BE/FE/QA task completion, automated or manual QA evidence, review/demo readiness, assumptions or warnings resolved, and Jira readiness.
-- Do not create Jira issues.
-- If context is weak, include assumptions and warnings.

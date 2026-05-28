@@ -4,30 +4,26 @@ from pathlib import Path
 
 from fastapi import Depends, FastAPI
 
-from ai_scrum_master.agents.crew import ScrumMasterCrew
-from ai_scrum_master.agents.tools.jira_tool import JiraTool
-from ai_scrum_master.agents.tools.slack_tool import SlackTool
+from ai_scrum_master.actions.jira import JiraTool
+from ai_scrum_master.actions.slack import SlackTool
+from ai_scrum_master.api.routers.generate import generate_stories, get_crew, router as generate_router
 from ai_scrum_master.api.schemas import (
     ActionExecutionPlan,
     ActionExecutionResult,
     ActionPlan,
     ActionPreviewRequest,
-    GenerateStoriesRequest,
-    GenerateStoriesResponse,
     IngestRequest,
     IngestResponse,
 )
 from ai_scrum_master.core.config import get_settings
+from ai_scrum_master.core.finalizer import ACTION_BLOCK_WARNING, actions_are_ready
 from ai_scrum_master.core.logging import get_logger
 from ai_scrum_master.ingestion.ingest import ingest_raw_docs
 
 settings = get_settings()
 app = FastAPI(title=settings.app_name, version=settings.app_version)
 logger = get_logger(__name__)
-
-
-def get_crew() -> ScrumMasterCrew:
-    return ScrumMasterCrew()
+app.include_router(generate_router)
 
 
 def get_jira_tool() -> JiraTool:
@@ -59,15 +55,6 @@ def ingest_documents(
     return IngestResponse(**result)
 
 
-@app.post("/generate", response_model=GenerateStoriesResponse)
-def generate_stories(
-    payload: GenerateStoriesRequest,
-    crew: ScrumMasterCrew = Depends(get_crew),
-) -> GenerateStoriesResponse:
-    result = crew.run(requirement=payload.requirement, n_results=payload.n_results)
-    return GenerateStoriesResponse(**result)
-
-
 @app.post("/actions/jira/preview", response_model=ActionPlan)
 def preview_jira_action(
     payload: ActionPreviewRequest,
@@ -75,7 +62,7 @@ def preview_jira_action(
 ) -> ActionPlan:
     story = payload.story.model_dump()
     evaluation = payload.evaluation.model_dump()
-    if evaluation["status"] != "APPROVED" or story.get("planning_status", "READY") != "READY":
+    if not actions_are_ready(story, evaluation):
         return ActionPlan(
             jira={"ready": False, "payload": None, "warnings": [_action_block_warning()]},
             slack={"ready": False, "payload": None, "warnings": ["Slack preview is not part of this endpoint."]},
@@ -94,7 +81,7 @@ def preview_slack_action(
 ) -> ActionPlan:
     story = payload.story.model_dump()
     evaluation = payload.evaluation.model_dump()
-    if evaluation["status"] != "APPROVED" or story.get("planning_status", "READY") != "READY":
+    if not actions_are_ready(story, evaluation):
         return ActionPlan(
             jira={"ready": False, "payload": None, "warnings": ["Jira preview is not part of this endpoint."]},
             slack={"ready": False, "payload": None, "warnings": [_action_block_warning()]},
@@ -114,7 +101,7 @@ def execute_jira_action(
     story = payload.story.model_dump()
     evaluation = payload.evaluation.model_dump()
     logger.info("Jira execute endpoint entered evaluation_status=%s", evaluation["status"])
-    if evaluation["status"] != "APPROVED" or story.get("planning_status", "READY") != "READY":
+    if not actions_are_ready(story, evaluation):
         return ActionExecutionPlan(
             jira=_blocked_execution(_action_block_warning()),
             slack=_not_part_of_execution("Slack execution is not part of this endpoint."),
@@ -134,7 +121,7 @@ def execute_slack_action(
     story = payload.story.model_dump()
     evaluation = payload.evaluation.model_dump()
     logger.info("Slack execute endpoint entered evaluation_status=%s", evaluation["status"])
-    if evaluation["status"] != "APPROVED" or story.get("planning_status", "READY") != "READY":
+    if not actions_are_ready(story, evaluation):
         return ActionExecutionPlan(
             jira=_not_part_of_execution("Jira execution is not part of this endpoint."),
             slack=_blocked_execution(_action_block_warning()),
@@ -155,7 +142,7 @@ def execute_all_actions(
     story = payload.story.model_dump()
     evaluation = payload.evaluation.model_dump()
     logger.info("Execute-all endpoint entered evaluation_status=%s", evaluation["status"])
-    if evaluation["status"] != "APPROVED" or story.get("planning_status", "READY") != "READY":
+    if not actions_are_ready(story, evaluation):
         blocked = _blocked_execution(_action_block_warning())
         return ActionExecutionPlan(jira=blocked, slack=blocked)
 
@@ -166,7 +153,7 @@ def execute_all_actions(
 
 
 def _action_block_warning() -> str:
-    return "Action blocked until evaluator returns APPROVED and planning_status is READY."
+    return ACTION_BLOCK_WARNING
 
 
 def _blocked_execution(warning: str) -> ActionExecutionResult:

@@ -17,23 +17,46 @@ class ConfigError(ValueError):
     pass
 
 
+def _bool_env(name: str, default: bool) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
+def _path_env(name: str, default: Path) -> str:
+    value = os.getenv(name)
+    if value is None or not value.strip():
+        return str(default.resolve())
+    path = Path(value.strip())
+    if not path.is_absolute():
+        path = BASE_DIR / path
+    return str(path.resolve())
+
+
 @dataclass(frozen=True)
 class Settings:
     app_name: str = field(default_factory=lambda: os.getenv("APP_NAME", "AI Scrum Master Agent"))
     app_version: str = field(default_factory=lambda: os.getenv("APP_VERSION", "0.1.0"))
     ollama_base_url: str = field(default_factory=lambda: os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"))
-    reasoning_model: str = field(default_factory=lambda: os.getenv("OLLAMA_REASONING_MODEL", "qwen2.5:1.5b-instruct"))
+    reasoning_model: str = field(default_factory=lambda: os.getenv("OLLAMA_REASONING_MODEL", "qwen2.5:3b-instruct"))
     embedding_model: str = field(default_factory=lambda: os.getenv("OLLAMA_EMBED_MODEL", "nomic-embed-text"))
-    ollama_timeout: int = field(default_factory=lambda: int(os.getenv("OLLAMA_TIMEOUT", "60")))
-    ollama_num_ctx: int = field(default_factory=lambda: int(os.getenv("OLLAMA_NUM_CTX", "1024")))
-    ollama_temperature: float = field(default_factory=lambda: float(os.getenv("OLLAMA_TEMPERATURE", "0.1")))
-    chroma_persist_dir: str = field(
-        default_factory=lambda: os.getenv(
-            "CHROMA_PERSIST_DIR",
-            str(BASE_DIR / "data" / "chromadb"),
-        )
-    )
+    ollama_timeout: int = field(default_factory=lambda: int(os.getenv("OLLAMA_TIMEOUT", "240")))
+    ollama_num_ctx: int = field(default_factory=lambda: int(os.getenv("OLLAMA_NUM_CTX", "4096")))
+    ollama_temperature: float = field(default_factory=lambda: float(os.getenv("OLLAMA_TEMPERATURE", "0.2")))
+    chroma_persist_dir: str = field(default_factory=lambda: _path_env("CHROMA_PERSIST_DIR", BASE_DIR / "data" / "chromadb"))
     context_collection: str = field(default_factory=lambda: os.getenv("CHROMA_COLLECTION", "project_context"))
+    rag_backend: str = field(default_factory=lambda: os.getenv("RAG_BACKEND", "langchain"))
+    rag_fallback_to_direct_chroma: bool = field(default_factory=lambda: _bool_env("RAG_FALLBACK_TO_DIRECT_CHROMA", True))
+    rag_chunk_size: int = field(default_factory=lambda: int(os.getenv("RAG_CHUNK_SIZE", "1200")))
+    rag_chunk_overlap: int = field(default_factory=lambda: int(os.getenv("RAG_CHUNK_OVERLAP", "200")))
+    rag_hybrid_search: bool = field(default_factory=lambda: _bool_env("RAG_HYBRID_SEARCH", True))
+    rag_vector_fetch_k: int = field(default_factory=lambda: int(os.getenv("RAG_VECTOR_FETCH_K", "20")))
+    planner_prompt_version: str = field(default_factory=lambda: os.getenv("PLANNER_PROMPT_VERSION", "current"))
+    planner_max_repair_attempts: int = field(default_factory=lambda: int(os.getenv("PLANNER_MAX_REPAIR_ATTEMPTS", "3")))
+    retrieval_min_score: float = field(default_factory=lambda: float(os.getenv("RETRIEVAL_MIN_SCORE", "0.6")))
+    retrieval_excerpt_chars: int = field(default_factory=lambda: int(os.getenv("RETRIEVAL_EXCERPT_CHARS", "300")))
+    retrieval_context_top_k: int = field(default_factory=lambda: int(os.getenv("RETRIEVAL_CONTEXT_TOP_K", "3")))
     jira_base_url: str = field(default_factory=lambda: os.getenv("JIRA_BASE_URL", ""))
     jira_project_key: str = field(default_factory=lambda: os.getenv("JIRA_PROJECT_KEY", ""))
     jira_email: str = field(default_factory=lambda: os.getenv("JIRA_EMAIL", ""))

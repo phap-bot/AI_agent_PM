@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Python
 __pycache__/
 *.py[cod]
@@ -46,3 +47,11 @@ agent_eval_output.json
 *_eval_output.json
 oversize_validaiton_output.json
 pipepline_validation_output.json
+=======
+﻿venv/
+__pycache__/
+*.pyc
+chroma_db/
+.env
+.DS_Store
+>>>>>>> b9c4cdd15527ee46aff7cbcd7e6ac98e0d7e95be

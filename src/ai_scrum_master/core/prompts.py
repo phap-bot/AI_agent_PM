@@ -17,6 +17,10 @@ def render_prompt(template_name: str, **values: object) -> str:
         raise PromptTemplateError(f"Prompt template not found: {template_name}") from exc
 
     try:
+        values.setdefault("planning_brief_json", "{}")
+        values.setdefault("task_description", "")
+        values.setdefault("expected_output", "")
+        values.setdefault("repair_blockers", "[]")
         return template.format(**values).strip()
     except KeyError as exc:
         missing_key = exc.args[0]

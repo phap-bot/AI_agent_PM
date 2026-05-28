@@ -1,5 +1,5 @@
-from ai_scrum_master.agents.tools.jira_tool import JiraConfig, JiraTool
-from ai_scrum_master.agents.tools.slack_tool import SlackConfig, SlackTool
+from ai_scrum_master.actions.jira import JiraConfig, JiraTool
+from ai_scrum_master.actions.slack import SlackConfig, SlackTool
 from ai_scrum_master.core.http_client import HttpResponse
 
 

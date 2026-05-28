@@ -1,0 +1,1 @@
+{"sample_index": 0, "dataset": "princeton-nlp/SWE-bench", "instance_id": "django__django-100", "repo": "django/django", "base_commit": "", "environment_setup_commit": "", "created_at": "", "version": "", "problem_statement": "Fix migration crash", "hints_text": "", "fail_to_pass": [], "pass_to_pass": [], "patch_chars": 0, "test_patch_chars": 0}

@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from ai_scrum_master.agents.tools.jira_tool import JiraConfig, JiraTool
-from ai_scrum_master.agents.tools.slack_tool import SlackConfig, SlackTool
+from ai_scrum_master.actions.jira import JiraConfig, JiraTool
+from ai_scrum_master.actions.slack import SlackConfig, SlackTool
 from ai_scrum_master.api.main import (
     execute_all_actions,
     execute_jira_action,
@@ -12,11 +12,14 @@ from ai_scrum_master.api.main import (
     preview_jira_action,
     preview_slack_action,
 )
+from ai_scrum_master.api.routers.generate import router as generate_router
 from ai_scrum_master.api.schemas import ActionPreviewRequest, GenerateStoriesRequest, IngestRequest
+from ai_scrum_master.core.finalizer import actions_are_ready
 
 
 STORY = {
     "title": "Google Login",
+    "story_type": "software_feature",
     "user_story": "As a user, I want Google login so that I can sign in faster.",
     "acceptance_criteria": [
         "Given Google auth is enabled, when a user clicks login, then Google OAuth starts.",
@@ -27,6 +30,7 @@ STORY = {
     "tasks": {"be": ["OAuth callback"], "fe": ["Login button"], "qa": ["Auth tests"]},
     "definition_of_done": ["Acceptance criteria pass."],
     "planning_status": "READY",
+    "context_sources": [],
     "warnings": [],
 }
 
@@ -39,9 +43,26 @@ SPLIT_STORY = {
 
 
 class FakeCrew:
-    def run(self, requirement: str, n_results: int = 5) -> dict:
+    def __init__(self) -> None:
+        self.allow_fallback_without_context = None
+
+    def run(self, requirement: str, n_results: int = 5, allow_fallback_without_context: bool = False) -> dict:
+        self.allow_fallback_without_context = allow_fallback_without_context
         return {
-            "context": {"documents": ["auth uses JWT"], "ids": ["doc-1"], "warnings": []},
+            "context": {
+                "documents": ["auth uses JWT"],
+                "ids": ["doc-1"],
+                "metadatas": [{"source": "auth.md"}],
+                "distances": [0.2],
+                "matches": [{"id": "doc-1", "document": "auth uses JWT", "metadata": {"source": "auth.md"}, "distance": 0.2, "score": 0.9}],
+                "retrieved_sources": [{"id": "doc-1", "source": "auth.md", "chunk_index": 0, "score": 0.9, "distance": 0.2, "excerpt": "auth uses JWT"}],
+                "context_snippets": ["[1] source=auth.md chunk=0 score=0.9: auth uses JWT"],
+                "retrieval_status": "ok",
+                "retrieval_threshold": 0.6,
+                "raw_match_count": 1,
+                "confidence": 0.9,
+                "warnings": [],
+            },
             "story": STORY,
             "evaluation": {"status": "APPROVED", "issues": [], "revision_instructions": [], "warnings": []},
             "actions": {
@@ -113,14 +134,41 @@ def test_health_endpoint() -> None:
     assert health() == {"status": "ok"}
 
 
+def test_generate_route_lives_in_generate_router() -> None:
+    assert any(route.path == "/generate" for route in generate_router.routes)
+
+
 def test_generate_endpoint_returns_action_plan() -> None:
-    response = generate_stories(GenerateStoriesRequest(requirement="Add Google login"), crew=FakeCrew())
+    crew = FakeCrew()
+    response = generate_stories(GenerateStoriesRequest(requirement="Add Google login"), crew=crew)
     body = response.model_dump()
 
     assert body["story"]["title"] == "Google Login"
     assert body["evaluation"]["status"] == "APPROVED"
     assert "jira" in body["actions"]
     assert "slack" in body["actions"]
+    assert body["context"]["retrieval_status"] == "ok"
+    assert body["context"]["matches"][0]["metadata"]["source"] == "auth.md"
+    assert body["context"]["retrieved_sources"][0]["source"] == "auth.md"
+    assert body["context"]["retrieval_threshold"] == 0.6
+    assert body["context"]["confidence"] == 0.9
+    assert crew.allow_fallback_without_context is False
+
+
+def test_generate_endpoint_passes_fallback_flag() -> None:
+    crew = FakeCrew()
+    generate_stories(
+        GenerateStoriesRequest(requirement="Add Google login", allow_fallback_without_context=True),
+        crew=crew,
+    )
+
+    assert crew.allow_fallback_without_context is True
+
+
+def test_action_readiness_uses_central_finalizer_rule() -> None:
+    assert actions_are_ready(STORY, {"status": "APPROVED"}) is True
+    assert actions_are_ready(SPLIT_STORY, {"status": "APPROVED"}) is False
+    assert actions_are_ready(STORY, {"status": "REVISION"}) is False
 
 
 def test_ingest_endpoint_indexes_temp_docs(tmp_path: Path) -> None:

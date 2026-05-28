@@ -1,18 +1,18 @@
 tasks:
   research_task:
     name_task: research_task
-    description: Retrieve relevant context documents, metadata, and confidence for the incoming requirement.
-    expected_output: Context bundle with documents, distances, confidence score, and retrieval warnings.
+    description: Retrieve relevant documentation, rank evidence, and produce a planning brief for the incoming requirement.
+    expected_output: Context bundle with documents, source snippets, planning_brief, confidence score, and retrieval warnings.
     agent: researcher
 
   planning_task:
     name_task: planning_task
-    description: Produce one sprint-ready user story from requirement and retrieved context.
-    expected_output: JSON story with title, user_story, acceptance_criteria, story_points, tasks, and definition_of_done.
+    description: Produce one sprint-ready user story or a clarification/split decision from requirement and selected documentation context.
+    expected_output: JSON story with title, user_story, acceptance_criteria, story_points, BE/FE/QA tasks, definition_of_done, assumptions, context_sources, and planning_status.
     agent: planner
 
   evaluation_task:
     name_task: evaluation_task
-    description: Evaluate story quality and readiness against mandatory Scrum and formatting rules.
-    expected_output: JSON result containing status APPROVED or REVISION with issues and revision instructions.
+    description: Evaluate story quality, domain isolation, context grounding, and readiness against mandatory Scrum and formatting rules.
+    expected_output: JSON result containing status APPROVED or REVISION with concrete issues, revision instructions, and warnings.
     agent: evaluator
