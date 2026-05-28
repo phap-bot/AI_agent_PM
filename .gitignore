@@ -1,9 +1,10 @@
-<<<<<<< HEAD
 # Python
 __pycache__/
 *.py[cod]
 *.pyo
+*.pyc
 .pytest_cache/
+.pytest_tmp/
 .mypy_cache/
 .ruff_cache/
 .coverage
@@ -23,8 +24,10 @@ env/
 poetry.lock
 
 # Local data and vector stores
-data/chromadb/
+chroma_db/
 chroma/
+data/chromadb/
+data/runtime_chromadb*/
 *.sqlite3
 *.db
 
@@ -42,16 +45,12 @@ Thumbs.db
 # Streamlit
 .streamlit/secrets.toml
 
-# Local evaluation outputs
+# Local evaluation and benchmark outputs
 agent_eval_output.json
+researcher_query_output.json
+oversized_validation_output.json
+pipeline_validation_output.json
+Output.md
 *_eval_output.json
-oversize_validaiton_output.json
-pipepline_validation_output.json
-=======
-﻿venv/
-__pycache__/
-*.pyc
-chroma_db/
-.env
-.DS_Store
->>>>>>> b9c4cdd15527ee46aff7cbcd7e6ac98e0d7e95be
+*.jsonl
+
