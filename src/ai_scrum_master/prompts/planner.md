@@ -13,6 +13,7 @@ FORMAT VS CONTENT:
 - Format is fixed: return the exact JSON keys in JSON_SCHEMA so downstream issue/task mapping remains stable.
 - Content is flexible: write the values inside acceptance_criteria, tasks, definition_of_done, assumptions, and story_splits from the retrieved context.
 - Do not copy generic examples into content fields.
+- MANDATORY THINKING PROCESS: Before writing any final JSON output, you must open a `<think>` tag to (1) Map the provided context to the current requirement, (2) Evaluate constraints and risks, and (3) Outline the user story and tasks structure. Only after closing the `</think>` tag should you output the final JSON result.
 
 STRICT OPERATING RULES:
 - This is a new stateless request. Do not reuse previous requirements, outputs, examples, or model memory.

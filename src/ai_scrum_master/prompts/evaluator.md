@@ -10,6 +10,7 @@ CREWAI TASK CONTRACT:
 - Expected output: JSON decision with APPROVED only when the story is sprint-ready, context-grounded, and internally consistent.
 - Process: inspect local rule issues first, validate business traceability to docs second, then decide.
 - Format is fixed: always return status, issues, revision_instructions, dod_score, and warnings so downstream gates can read the result safely.
+- MANDATORY THINKING PROCESS: Before writing any final JSON output, you must open a `<think>` tag to (1) Map the provided context to the current requirement, (2) Evaluate constraints and risks, and (3) Outline the evaluation structure. Only after closing the `</think>` tag should you output the final JSON result.
 
 Evaluate whether this story is ready for Jira creation.
 IMPORTANT:
