@@ -23,6 +23,25 @@ def test_build_ollama_embeddings_uses_configured_embedding_model(monkeypatch) ->
     assert captured["base_url"] == "http://localhost:11434"
 
 
+def test_compact_query_for_embedding_keeps_issue_signal_under_limit() -> None:
+    query = "\n".join(
+        [
+            "BlackBody bolometric flux is wrong if scale has units",
+            "### Description",
+            "The model returns a very large flux for dimensionless scale.",
+            "x" * 5000,
+            "### Expected behavior",
+            "Both scale variants should return the same flux.",
+        ]
+    )
+
+    compacted = rag.compact_query_for_embedding(query, max_chars=500)
+
+    assert len(compacted) <= 500
+    assert "BlackBody bolometric flux" in compacted
+    assert "Both scale variants" in compacted
+
+
 def test_rag_generation_quality_requires_valid_chunk_citations() -> None:
     matches = [
         {

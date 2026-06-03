@@ -19,6 +19,7 @@ env/
 .env
 .env.*
 !.env.example
+!.env.*.example
 
 # Poetry
 poetry.lock
@@ -28,7 +29,12 @@ chroma_db/
 chroma/
 data/chromadb/
 data/runtime_chromadb*/
+data/swe_bench_*chromadb*/
+data/swe_bench_smoke_docs/
+src/ai_scrum_master/data/hf_cache/
+src/ai_scrum_master/data/swe_bench_*chromadb*/
 *.sqlite3
+*.sqlite3-journal
 *.db
 
 # Logs and traces
@@ -53,4 +59,14 @@ pipeline_validation_output.json
 Output.md
 *_eval_output.json
 *.jsonl
+!src/ai_scrum_master/data/swe_bench_sample/swe_bench_first50.jsonl
 
+# Local test scripts
+/test_repro.py
+/test_run.py
+/test_tmp/
+
+# MCP
+mcp.json
+mcp/
+*.mcp

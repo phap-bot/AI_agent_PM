@@ -192,13 +192,29 @@ def normalize_case(row: dict[str, Any], index: int) -> dict[str, Any]:
         "environment_setup_commit": str(row.get("environment_setup_commit") or ""),
         "created_at": str(row.get("created_at") or ""),
         "version": str(row.get("version") or ""),
-        "problem_statement": str(row.get("problem_statement") or "").strip(),
-        "hints_text": str(row.get("hints_text") or "").strip(),
+        "problem_statement": sanitize_issue_text(str(row.get("problem_statement") or "")).strip(),
+        "hints_text": sanitize_issue_text(str(row.get("hints_text") or "")).strip(),
         "fail_to_pass": parse_test_list(row.get("FAIL_TO_PASS")),
         "pass_to_pass": parse_test_list(row.get("PASS_TO_PASS")),
         "patch_chars": len(str(row.get("patch") or "")),
         "test_patch_chars": len(str(row.get("test_patch") or "")),
     }
+
+
+def sanitize_issue_text(text: str) -> str:
+    def replace_patch_block(match: re.Match[str]) -> str:
+        language = match.group("language").strip().lower()
+        body = match.group("body")
+        if language in {"diff", "patch"} or re.search(r"(^|\n)diff --git ", body):
+            return "```text\n[Patch diff omitted from benchmark requirement.]\n```"
+        return match.group(0)
+
+    return re.sub(
+        r"```(?P<language>[^\r\n`]*)\r?\n(?P<body>.*?)```",
+        replace_patch_block,
+        text,
+        flags=re.DOTALL,
+    )
 
 
 def parse_test_list(value: Any) -> list[str]:

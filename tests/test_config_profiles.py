@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from ai_scrum_master.core import config
 from ai_scrum_master.core.config import ConfigError, get_runtime_profiles, get_settings
 
 
@@ -27,11 +28,40 @@ def test_retrieval_settings_load_from_env(monkeypatch) -> None:
 
 def test_relative_chroma_persist_dir_resolves_inside_package_data(monkeypatch) -> None:
     monkeypatch.setenv("CHROMA_PERSIST_DIR", "./data/chromadb")
+    monkeypatch.delenv("CHROMA_COLLECTION", raising=False)
 
     settings = get_settings()
 
     assert Path(settings.chroma_persist_dir).is_absolute()
     assert settings.chroma_persist_dir.endswith(str(Path("src") / "ai_scrum_master" / "data" / "chromadb"))
+    assert settings.context_collection == "ai_scrum_master_context"
+
+
+def test_config_profile_is_reported_from_env(monkeypatch) -> None:
+    monkeypatch.setenv("AI_SCRUM_PROFILE", "benchmark")
+
+    settings = get_settings()
+
+    assert settings.config_profile == "benchmark"
+
+
+def test_profile_env_overrides_base_values_but_not_shell_values(tmp_path: Path, monkeypatch) -> None:
+    profile_file = tmp_path / ".env.benchmark"
+    profile_file.write_text(
+        """
+CHROMA_COLLECTION=ai_scrum_master_context
+CHROMA_PERSIST_DIR=./data/chromadb
+""".strip(),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(config, "_profile_env_path", lambda _profile: profile_file)
+    monkeypatch.setenv("CHROMA_COLLECTION", "manual_collection")
+    monkeypatch.delenv("CHROMA_PERSIST_DIR", raising=False)
+
+    config._load_profile_env("benchmark", protected_keys={"CHROMA_COLLECTION"})
+
+    assert os.environ["CHROMA_COLLECTION"] == "manual_collection"
+    assert os.environ["CHROMA_PERSIST_DIR"] == "./data/chromadb"
 
 
 def test_runtime_profiles_fail_for_unknown_agent_mapping(tmp_path: Path) -> None:

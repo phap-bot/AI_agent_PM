@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, StrictInt
 
 
 class ContextSourceOutput(BaseModel):
@@ -10,7 +10,7 @@ class ContextSourceOutput(BaseModel):
 
     id: str = ""
     source: str = "unknown source"
-    chunk_index: str | int = "?"
+    chunk_index: str | int | None = "?"
     score: float = 0.0
     distance: Any = None
     excerpt: str = ""
@@ -21,7 +21,7 @@ class EvidenceOutput(BaseModel):
 
     evidence_id: str
     source: str = "unknown source"
-    chunk_index: str | int = "?"
+    chunk_index: str | int | None = "?"
     score: float = 0.0
     excerpt: str = ""
 
@@ -60,6 +60,8 @@ class ResearchContextOutput(BaseModel):
     optional_sources: list[str] = Field(default_factory=list)
     missing_required_sources: list[str] = Field(default_factory=list)
     missing_optional_sources: list[str] = Field(default_factory=list)
+    latency_ms: int = 0
+    stage_latencies_ms: dict[str, int] = Field(default_factory=dict)
     warnings: list[str] = Field(default_factory=list)
 
 
@@ -77,7 +79,7 @@ class StorySplitOutput(BaseModel):
     title: str = ""
     user_story: str = ""
     acceptance_criteria: list[str] = Field(default_factory=list)
-    story_points: int | None = None
+    story_points: StrictInt | None = None
     tasks: StoryTasksOutput = Field(default_factory=StoryTasksOutput)
     definition_of_done: list[str] = Field(default_factory=list)
 
@@ -85,11 +87,11 @@ class StorySplitOutput(BaseModel):
 class PlannerStoryOutput(BaseModel):
     model_config = ConfigDict(extra="allow")
 
-    title: str
+    title: str = ""
     story_type: Literal["software_feature", "process_improvement", "oversized_request", "ambiguous_request"] = "software_feature"
     user_story: str = ""
     acceptance_criteria: list[str] = Field(default_factory=list)
-    story_points: int | None = None
+    story_points: StrictInt | None = None
     tasks: StoryTasksOutput = Field(default_factory=StoryTasksOutput)
     definition_of_done: list[str] = Field(default_factory=list)
     planning_status: Literal["READY", "NEEDS_CLARIFICATION", "NEEDS_SPLIT", "SPLIT_RECOMMENDED", "REVISION"] = "REVISION"
@@ -101,13 +103,18 @@ class PlannerStoryOutput(BaseModel):
     context_quality: dict[str, Any] = Field(default_factory=dict)
     route: dict[str, Any] = Field(default_factory=dict)
     fallback_used: bool = False
+    latency_ms: int = 0
+    stage_latencies_ms: dict[str, int] = Field(default_factory=dict)
+    repair_attempts_used: int = 0
+    timed_out: bool = False
+    failure_type: str = ""
     warnings: list[str] = Field(default_factory=list)
 
 
 class EvaluationOutput(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
-    status: Literal["APPROVED", "REVISION"]
+    status: Literal["APPROVED", "REVISION"] = "REVISION"
     issues: list[str] = Field(default_factory=list)
     revision_instructions: list[str] = Field(default_factory=list)
     dod_score: dict[str, Any] = Field(default_factory=dict)
@@ -125,20 +132,22 @@ def build_planning_brief(
     confidence: float,
     planning_instruction: str,
 ) -> dict[str, Any]:
-    usable_evidence = [
-        {
+    usable_evidence = []
+    for index, source in enumerate(sources, start=1):
+        excerpt_text = str(source.get("excerpt", ""))
+        if len(excerpt_text) > 800:
+            excerpt_text = excerpt_text[:800].rstrip() + "...[truncated]"
+        usable_evidence.append({
             "evidence_id": f"E{index}",
             "source": source.get("source", "unknown source"),
             "chunk_index": source.get("chunk_index", "?"),
             "score": source.get("score", 0.0),
-            "excerpt": source.get("excerpt", ""),
-        }
-        for index, source in enumerate(sources, start=1)
-    ]
+            "excerpt": excerpt_text,
+        })
     return dump_model(
         PlanningBriefOutput.model_validate(
             {
-                "requirement": requirement,
+                "requirement": "[Omitted: Planner already has CURRENT_REQUIREMENT]",
                 "retrieval_status": retrieval_status,
                 "confidence": confidence,
                 "source_count": len(usable_evidence),

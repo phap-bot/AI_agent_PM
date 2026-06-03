@@ -88,7 +88,43 @@ def test_planner_completes_missing_ready_fields_from_evidence() -> None:
     assert result["tasks"]["fe"]
     assert result["tasks"]["qa"]
     assert len(result["definition_of_done"]) == 4
+    assert result["latency_ms"] >= 0
+    assert "planner_ms" in result["stage_latencies_ms"]
+    assert "planner_initial_llm_ms" in result["stage_latencies_ms"]
     assert any("completed missing READY fields" in warning for warning in result["warnings"])
+
+
+def test_planner_classifies_benchmark_route_as_ready_for_long_issue_text() -> None:
+    planner = PlannerAgent(use_llm=False)
+    requirement = " ".join(["Fix bounded astropy BlackBody scale validation bug"] * 8)
+
+    result = planner.run(
+        requirement=requirement,
+        context={
+            "documents": ["BlackBody scale validation issue."],
+            "retrieved_sources": [{"source": "swe_bench_issues/example.md", "chunk_index": 0, "score": 0.9, "excerpt": "Scale validation bug."}],
+            "warnings": [],
+            "confidence": 0.9,
+            "retrieval_status": "ok",
+            "route": {"domain": "benchmark_case", "story_type": "software_feature"},
+        },
+        route={"domain": "benchmark_case", "story_type": "software_feature"},
+    )
+
+    assert result["planning_status"] == "REVISION"
+    assert result["story_type"] == "software_feature"
+    assert "Planner requires an LLM-generated" in result["warnings"][-1]
+
+
+def test_planner_still_splits_large_non_benchmark_requests() -> None:
+    planner = PlannerAgent(use_llm=False)
+
+    result = planner.run(
+        requirement="Build a full portal with authentication, billing, analytics, notifications, admin dashboard, permissions, and reporting.",
+        context={"documents": [], "warnings": [], "confidence": 0.0},
+    )
+
+    assert result["planning_status"] == "SPLIT_RECOMMENDED"
 
 
 def test_planner_returns_revision_shape_when_llm_is_unavailable() -> None:
@@ -111,7 +147,11 @@ def test_planner_returns_revision_shape_when_llm_is_unavailable() -> None:
     assert result["tasks"] == {"be": [], "fe": [], "qa": []}
     assert result["definition_of_done"] == []
     assert result["fallback_used"] is False
+    assert result["failure_type"] == "planner_exception"
+    assert result["latency_ms"] >= 0
+    assert "planner_ms" in result["stage_latencies_ms"]
     assert any("no fixed template fallback" in warning for warning in result["warnings"])
+    assert any("planner_exception" in warning for warning in result["warnings"])
 
 
 def test_planner_keeps_llm_planning_status_for_evaluator_review() -> None:
@@ -144,7 +184,7 @@ def test_planner_keeps_llm_planning_status_for_evaluator_review() -> None:
     assert result["planning_status"] == "READY"
 
 
-def test_planner_repairs_up_to_configured_three_attempts() -> None:
+def test_planner_completes_weak_ready_output_from_evidence_without_extra_llm_calls() -> None:
     planner = PlannerAgent(
         llm=FakeLLMSequence(
             [
@@ -175,8 +215,41 @@ def test_planner_repairs_up_to_configured_three_attempts() -> None:
         },
     )
 
-    assert planner.llm.calls == 4
-    assert any("repair pass 3" in warning for warning in result["warnings"])
+    assert planner.llm.calls == 1
+    assert result["repair_attempts_used"] == 0
+    assert "planner_repair_llm_ms" not in result["stage_latencies_ms"]
+    assert any("completed missing READY fields" in warning for warning in result["warnings"])
+
+
+def test_planner_compacts_long_requirement_before_prompting() -> None:
+    planner = PlannerAgent(
+        llm=FakeLLM(
+            """
+            {
+              "title": "Long benchmark issue",
+              "user_story": "As a user, I want the documented issue fixed so that the expected behavior is restored.",
+              "acceptance_criteria": [
+                "Given documented behavior, when the issue is reproduced, then the expected behavior is restored."
+              ],
+              "story_points": 3,
+              "tasks": {"be": ["Implement backend fix"], "fe": [], "qa": []},
+              "definition_of_done": [],
+              "planning_status": "READY",
+              "warnings": []
+            }
+            """
+        )
+    )
+    requirement = "Fix issue. " + ("long details " * 600)
+
+    planner.run(
+        requirement=requirement,
+        context={"documents": ["Documented issue behavior."], "warnings": [], "confidence": 0.8},
+    )
+
+    current_requirement = planner.llm.prompt.split("CURRENT_REQUIREMENT:", 1)[1].split("PLANNING_STATUS_FROM_LOCAL_RULES:", 1)[0]
+    assert "...[truncated]" in current_requirement
+    assert len(current_requirement) < 3000
 
 
 def test_planner_filters_unrelated_context_before_prompting() -> None:

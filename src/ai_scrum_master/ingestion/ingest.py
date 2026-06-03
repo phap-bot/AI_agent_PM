@@ -2,14 +2,23 @@ from __future__ import annotations
 
 import hashlib
 import re
+import time
 from datetime import UTC, datetime
 from importlib import import_module
 from pathlib import Path
 from typing import Any, Iterable, Sequence
 
 from ai_scrum_master.core.config import BASE_DIR, get_settings
+from ai_scrum_master.core.logging import get_logger
+from ai_scrum_master.ingestion.pdf_processing import (
+    chunk_pdf_document,
+    extract_pdf_document,
+    normalize_pdf_document,
+)
 from ai_scrum_master.retrieval.rag import LANGCHAIN_INSTALL_HINT, add_langchain_documents
-from ai_scrum_master.retrieval.vector_store import clear_collection
+from ai_scrum_master.retrieval.vector_store import canonical_collection_name, get_collection
+
+logger = get_logger(__name__)
 
 SUPPORTED_EXTENSIONS = {".md", ".txt", ".pdf"}
 DEFAULT_CHUNK_SIZE = 1200
@@ -201,15 +210,79 @@ def document_hash(path: Path, text: str) -> str:
 
 def load_source_documents(source_dir: Path) -> list[Any]:
     documents: list[Any] = []
-    TextLoader = _load_langchain_attr("langchain_community.document_loaders", "TextLoader")
-    PyPDFLoader = _load_langchain_attr("langchain_community.document_loaders", "PyPDFLoader")
+    Document = _load_langchain_attr("langchain_core.documents", "Document")
+    settings = get_settings()
+    splitter = build_text_splitter(
+        chunk_size=settings.rag_chunk_size,
+        chunk_overlap=settings.rag_chunk_overlap,
+        separators=DEFAULT_CHUNK_SEPARATORS,
+    )
 
     for path in iter_source_files(source_dir):
-        if path.suffix.lower() == ".pdf":
-            loader = PyPDFLoader(str(path))
-        else:
-            loader = TextLoader(str(path), encoding="utf-8")
-        documents.extend(loader.load())
+        if path.suffix.lower() == ".pdf" and settings.pdf_semantic_chunking:
+            extracted = extract_pdf_document(
+                path,
+                extractor=settings.pdf_extractor,
+                fallback_on_error=settings.pdf_fallback_on_error,
+            )
+            normalized = normalize_pdf_document(
+                extracted,
+                remove_headers_footers=settings.pdf_remove_headers_footers,
+            )
+            documents.extend(
+                chunk_pdf_document(
+                    normalized,
+                    document_factory=Document,
+                    text_splitter=splitter,
+                    chunk_size=settings.rag_chunk_size,
+                    chunk_overlap=settings.rag_chunk_overlap,
+                )
+            )
+            continue
+
+        text = read_source_text(path)
+        if text.strip():
+            documents.append(Document(page_content=text, metadata={"source": str(path)}))
+    return documents
+
+
+def load_source_documents_from_paths(paths: list[Path], source_dir: Path) -> list[Any]:
+    """Load documents from specific file paths only (used by incremental ingestion)."""
+    documents: list[Any] = []
+    Document = _load_langchain_attr("langchain_core.documents", "Document")
+    settings = get_settings()
+    splitter = build_text_splitter(
+        chunk_size=settings.rag_chunk_size,
+        chunk_overlap=settings.rag_chunk_overlap,
+        separators=DEFAULT_CHUNK_SEPARATORS,
+    )
+
+    for path in paths:
+        logger.info("[INGEST] Loading file: %s", path.name)
+        if path.suffix.lower() == ".pdf" and settings.pdf_semantic_chunking:
+            extracted = extract_pdf_document(
+                path,
+                extractor=settings.pdf_extractor,
+                fallback_on_error=settings.pdf_fallback_on_error,
+            )
+            normalized = normalize_pdf_document(
+                extracted,
+                remove_headers_footers=settings.pdf_remove_headers_footers,
+            )
+            documents.extend(
+                chunk_pdf_document(
+                    normalized,
+                    document_factory=Document,
+                    text_splitter=splitter,
+                    chunk_size=settings.rag_chunk_size,
+                    chunk_overlap=settings.rag_chunk_overlap,
+                )
+            )
+            continue
+
+        text = read_source_text(path)
+        if text.strip():
+            documents.append(Document(page_content=text, metadata={"source": str(path)}))
     return documents
 
 
@@ -247,8 +320,20 @@ def prepare_langchain_chunks(chunks: list[Any], source_dir: Path, ingested_at: s
             document_sha1=document_sha1,
             ingested_at=ingested_at,
         )
-        if "page" in chunk.metadata:
-            metadata["page"] = chunk.metadata["page"]
+        for key in (
+            "page",
+            "page_start",
+            "page_end",
+            "page_numbers",
+            "extractor",
+            "section_title",
+            "block_types",
+            "extraction_warnings",
+            "text_quality_flags",
+        ):
+            if key in chunk.metadata and chunk.metadata[key] not in (None, ""):
+                metadata[key] = chunk.metadata[key]
+        metadata["chunk_strategy"] = chunk.metadata.get("chunk_strategy", metadata["chunk_strategy"])
         metadata["chunk_id"] = chunk_id
         metadata["id"] = chunk_id
         chunk.page_content = text
@@ -263,36 +348,123 @@ def resolve_chunk_source_path(chunk: Any, source_dir: Path) -> Path:
     raw_source = str((chunk.metadata or {}).get("source") or "")
     path = Path(raw_source)
     if not path.is_absolute():
+        cwd_relative = path.resolve()
+        if cwd_relative.exists():
+            return cwd_relative
         path = source_dir / path
     return path.resolve()
+
+
+def _get_existing_doc_hashes(collection_name: str) -> set[str]:
+    """Query ChromaDB for all unique document_sha1 values already ingested."""
+    try:
+        collection = get_collection(collection_name)
+        existing = collection.get(include=["metadatas"])
+        if not existing or not existing.get("metadatas"):
+            return set()
+        hashes = set()
+        for meta in existing["metadatas"]:
+            if isinstance(meta, dict) and meta.get("document_sha1"):
+                hashes.add(meta["document_sha1"])
+        logger.info("[INGEST] Found %d unique document hashes already in collection '%s'", len(hashes), collection_name)
+        return hashes
+    except Exception as exc:
+        logger.warning("[INGEST] Could not query existing hashes, will re-index all: %s", exc)
+        return set()
+
+
+def _compute_file_hash(path: Path) -> str:
+    """Compute document hash from raw file bytes (fast, no parsing needed)."""
+    if path.suffix.lower() == ".pdf":
+        return hashlib.sha1(path.read_bytes()).hexdigest()
+    return hashlib.sha1(path.read_text(encoding="utf-8").encode("utf-8")).hexdigest()
 
 
 def ingest_raw_docs(raw_docs_dir: Path | None = None, collection_name: str | None = None) -> dict:
     settings = get_settings()
     source_dir = raw_docs_dir or BASE_DIR / "data" / "raw_docs"
-    target_collection = collection_name or settings.context_collection
+    target_collection = canonical_collection_name(collection_name)
+    t_start = time.time()
+
+    logger.info("[INGEST] === Starting ingestion ===")
+    logger.info("[INGEST] source_dir=%s  collection=%s", source_dir, target_collection)
+
+    # --- Step 1: Get existing hashes for incremental ingestion ---
+    existing_hashes = _get_existing_doc_hashes(target_collection)
+
+    # --- Step 2: Filter files BEFORE loading (fast hash check on raw bytes) ---
+    all_source_files = list(iter_source_files(source_dir))
+    logger.info("[INGEST] Found %d source files in directory", len(all_source_files))
+
+    new_files: list[Path] = []
+    skipped_count = 0
+    skipped_files: list[str] = []
+    for path in all_source_files:
+        try:
+            file_hash = _compute_file_hash(path)
+        except Exception as exc:
+            logger.warning("[INGEST] Could not hash %s, treating as new: %s", path.name, exc)
+            new_files.append(path)
+            continue
+
+        if file_hash in existing_hashes:
+            logger.info("[INGEST] SKIP (unchanged) file=%s hash=%s", path.name, file_hash[:12])
+            skipped_count += 1
+            skipped_files.append(path.name)
+        else:
+            logger.info("[INGEST] NEW/CHANGED file=%s hash=%s", path.name, file_hash[:12])
+            new_files.append(path)
+
+    logger.info("[INGEST] Incremental filter: %d new files, %d skipped (already indexed)", len(new_files), skipped_count)
 
     ingested_at = datetime.now(UTC).isoformat()
-    loaded_documents = load_source_documents(source_dir)
-    chunks, ids = prepare_langchain_chunks(
-        split_loaded_documents(loaded_documents),
-        source_dir=source_dir.resolve(),
-        ingested_at=ingested_at,
-    )
+    chunks_indexed = 0
+    files_indexed = 0
+    indexed_files: list[str] = []
 
-    if chunks:
-        clear_collection(target_collection)
-        add_langchain_documents(
-            documents=chunks,
-            ids=ids,
-            collection_name=target_collection,
+    if new_files:
+        # --- Step 3: Load ONLY new files ---
+        t_load = time.time()
+        new_documents = load_source_documents_from_paths(new_files, source_dir)
+        logger.info("[INGEST] Loaded %d documents from %d new files in %.2fs",
+                     len(new_documents), len(new_files), time.time() - t_load)
+
+        # --- Step 4: Chunk new documents ---
+        t_chunk = time.time()
+        chunks, ids = prepare_langchain_chunks(
+            split_loaded_documents(new_documents),
+            source_dir=source_dir.resolve(),
+            ingested_at=ingested_at,
         )
+        logger.info("[INGEST] Chunked into %d pieces in %.2fs", len(chunks), time.time() - t_chunk)
+
+        # --- Step 5: Upsert (NOT clear+add) for incremental ---
+        if chunks:
+            t_embed = time.time()
+            add_langchain_documents(
+                documents=chunks,
+                ids=ids,
+                collection_name=target_collection,
+            )
+            logger.info("[INGEST] Embedded & upserted %d chunks in %.2fs", len(chunks), time.time() - t_embed)
+            files_indexed = len({chunk.metadata["source"] for chunk in chunks})
+            chunks_indexed = len(chunks)
+            indexed_files = [f.name for f in new_files]
+    else:
+        logger.info("[INGEST] No new files to index, skipping load/embed entirely.")
+
+    total_time = time.time() - t_start
+    logger.info("[INGEST] === Done in %.2fs === files_indexed=%d chunks_indexed=%d skipped=%d",
+                total_time, files_indexed, chunks_indexed, skipped_count)
 
     return {
         "collection": target_collection,
         "source_dir": str(source_dir),
-        "files_indexed": len({chunk.metadata["source"] for chunk in chunks}),
-        "chunks_indexed": len(chunks),
+        "files_indexed": files_indexed,
+        "chunks_indexed": chunks_indexed,
+        "skipped_count": skipped_count,
+        "indexed_files": indexed_files,
+        "skipped_files": skipped_files,
         "chunk_strategy": CHUNK_STRATEGY,
         "embedding_model": settings.embedding_model,
         "vector_store": "langchain_chroma",

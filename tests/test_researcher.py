@@ -24,6 +24,8 @@ def test_researcher_returns_empty_context_when_query_fails(monkeypatch) -> None:
     assert result["documents"] == []
     assert result["retrieval_status"] == "failed"
     assert result["confidence"] == 0.0
+    assert result["latency_ms"] >= 0
+    assert "researcher_ms" in result["stage_latencies_ms"]
     assert any("Context retrieval failed" in warning for warning in result["warnings"])
 
 

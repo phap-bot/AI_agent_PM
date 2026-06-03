@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+import threading
+import uuid
 from pathlib import Path
+import tempfile
+import shutil
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, File, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 
 from ai_scrum_master.actions.jira import JiraTool
 from ai_scrum_master.actions.slack import SlackTool
@@ -12,8 +17,10 @@ from ai_scrum_master.api.schemas import (
     ActionExecutionResult,
     ActionPlan,
     ActionPreviewRequest,
+    IngestJobResponse,
     IngestRequest,
     IngestResponse,
+    IngestStatusResponse,
 )
 from ai_scrum_master.core.config import get_settings
 from ai_scrum_master.core.finalizer import ACTION_BLOCK_WARNING, actions_are_ready
@@ -22,8 +29,71 @@ from ai_scrum_master.ingestion.ingest import ingest_raw_docs
 
 settings = get_settings()
 app = FastAPI(title=settings.app_name, version=settings.app_version)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+import logging
+
+class EndpointFilter(logging.Filter):
+    def __init__(self, path: str):
+        super().__init__()
+        self.path = path
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        try:
+            # record.args[2] usually contains the request path in uvicorn access logs
+            return self.path not in record.args[2]
+        except (IndexError, TypeError):
+            return True
+
+# Filter out status polling spam from logs
+logging.getLogger("uvicorn.access").addFilter(EndpointFilter("/generate/status/"))
+logging.getLogger("uvicorn.access").addFilter(EndpointFilter("/ingest/status/"))
+
 logger = get_logger(__name__)
 app.include_router(generate_router)
+
+# ---------------------------------------------------------------------------
+# In-memory job tracker for async ingestion
+# ---------------------------------------------------------------------------
+_ingest_jobs: dict[str, dict] = {}
+_jobs_lock = threading.Lock()
+
+
+def _run_ingest_job(job_id: str, source_dir: Path):
+    """Run ingestion in a background thread and update the job tracker."""
+    logger.info("[JOB %s] Background ingestion started for %s", job_id, source_dir)
+    try:
+        result = ingest_raw_docs(raw_docs_dir=source_dir)
+        with _jobs_lock:
+            _ingest_jobs[job_id] = {
+                "status": "completed",
+                "message": f"Ingested {result['files_indexed']} files / {result['chunks_indexed']} chunks",
+                "result": result,
+            }
+        logger.info("[JOB %s] Ingestion completed: %s", job_id, result)
+    except Exception as exc:
+        logger.exception("[JOB %s] Ingestion FAILED: %s", job_id, exc)
+        with _jobs_lock:
+            _ingest_jobs[job_id] = {
+                "status": "failed",
+                "message": str(exc),
+                "result": None,
+            }
+    finally:
+        # Clean up temp directory if it exists
+        if source_dir and source_dir.exists() and "tmp" in str(source_dir).lower():
+            shutil.rmtree(source_dir, ignore_errors=True)
+            logger.info("[JOB %s] Cleaned up temp dir %s", job_id, source_dir)
+
+
+# ---------------------------------------------------------------------------
 
 
 def get_jira_tool() -> JiraTool:
@@ -50,9 +120,74 @@ def ingest_documents(
 ) -> IngestResponse:
     result = ingest_runner(
         raw_docs_dir=Path(payload.raw_docs_dir) if payload.raw_docs_dir else None,
-        collection_name=payload.collection_name,
     )
     return IngestResponse(**result)
+
+
+@app.post("/ingest/upload", response_model=IngestJobResponse)
+def ingest_uploaded_documents(
+    files: list[UploadFile] = File(...),
+) -> IngestJobResponse:
+    """Accept uploaded files and start ingestion in the background.
+    Returns immediately with a job_id for polling status."""
+    job_id = str(uuid.uuid4())[:8]
+
+    # Save uploaded files to a temp directory
+    temp_dir = Path(tempfile.mkdtemp())
+    saved_files = []
+    for file in files:
+        file_path = temp_dir / file.filename
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        saved_files.append(file.filename)
+
+    logger.info("[JOB %s] Received %d files: %s -> temp_dir=%s", job_id, len(saved_files), saved_files, temp_dir)
+
+    # Register job as processing
+    with _jobs_lock:
+        _ingest_jobs[job_id] = {
+            "status": "processing",
+            "message": f"Processing {len(saved_files)} file(s)...",
+            "result": None,
+        }
+
+    # Start background thread
+    thread = threading.Thread(target=_run_ingest_job, args=(job_id, temp_dir), daemon=True)
+    thread.start()
+
+    return IngestJobResponse(
+        job_id=job_id,
+        status="processing",
+        message=f"Started ingesting {len(saved_files)} file(s) in background",
+    )
+
+
+@app.get("/ingest/status/{job_id}", response_model=IngestStatusResponse)
+def get_ingest_status(job_id: str) -> IngestStatusResponse:
+    """Poll ingestion job status."""
+    with _jobs_lock:
+        job = _ingest_jobs.get(job_id)
+
+    if job is None:
+        return IngestStatusResponse(
+            job_id=job_id,
+            status="not_found",
+            message=f"No job with id '{job_id}' found.",
+        )
+
+    result_data = None
+    if job.get("result"):
+        result_data = IngestResponse(**{
+            k: v for k, v in job["result"].items()
+            if k in ("collection", "source_dir", "files_indexed", "chunks_indexed", "skipped_count", "indexed_files", "skipped_files")
+        })
+
+    return IngestStatusResponse(
+        job_id=job_id,
+        status=job["status"],
+        message=job.get("message", ""),
+        result=result_data,
+    )
 
 
 @app.post("/actions/jira/preview", response_model=ActionPlan)
@@ -146,9 +281,15 @@ def execute_all_actions(
         blocked = _blocked_execution(_action_block_warning())
         return ActionExecutionPlan(jira=blocked, slack=blocked)
 
+    # Execute Jira first so we can include the Jira link in the Slack message
+    jira_result = jira_tool.execute_action(story)
+    
+    # Pass the Jira 'created' result to Slack execution
+    slack_result = slack_tool.execute_action(story, evaluation, jira_created=jira_result.get("created"))
+
     return ActionExecutionPlan(
-        jira=jira_tool.execute_action(story),
-        slack=slack_tool.execute_action(story, evaluation),
+        jira=jira_result,
+        slack=slack_result,
     )
 
 

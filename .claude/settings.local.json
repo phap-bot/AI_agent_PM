@@ -4,10 +4,30 @@
   },
   "permissions": {
     "allow": [
+      "PowerShell(python -m pytest*)",
+      "PowerShell(python -m ai_scrum_master.evaluation.planner_benchmark*)",
+      "Bash(python -m pytest:*)",
+      "Bash(python -m pytest tests/test_llm_json.py)",
+      "Bash(python -m pytest tests/test_llm_json.py tests/test_planner.py tests/test_evaluator.py)",
+      "Bash",
+      "Bash(pytest:*)",
       "Bash(PYTHONIOENCODING=utf-8 python *)",
       "Bash(python *)",
       "PowerShell(git *)",
-      "Bash(git *)"
+      "Bash(git *)",
+      "PowerShell($env:AI_SCRUM_PROFILE='benchmark'; $env:OLLAMA_TIMEOUT='1200'; $env:PYTHONPATH='src'; python -m ai_scrum_master.ingestion.ingest)",
+      "PowerShell($env:AI_SCRUM_PROFILE='benchmark'; $env:CHROMA_PERSIST_DIR='data/swe_bench_chromadb_full_retry'; $env:OLLAMA_TIMEOUT='1200'; $env:PYTHONPATH='src'; python -m ai_scrum_master.ingestion.ingest)",
+      "PowerShell($env:AI_SCRUM_PROFILE='benchmark'; $env:CHROMA_PERSIST_DIR='data/swe_bench_chromadb_full_retry'; $env:OLLAMA_TIMEOUT='3600'; $env:PYTHONPATH='src'; .\\\\.venv\\\\Scripts\\\\python.exe -m ai_scrum_master.ingestion.ingest)",
+      "Bash(python -m pytest tests/test_planner_benchmark_classification.py)",
+      "Bash(python -m pytest tests/test_evaluator.py tests/test_quality.py tests/test_swe_bench_sample.py)",
+      "Bash(python -m ai_scrum_master.evaluation.planner_benchmark --limit 3 --output src/ai_scrum_master/data/swe_bench_sample/results_classified_smoke.jsonl)",
+      "PowerShell(python -m pytest tests/test_planner.py)",
+      "PowerShell(python -m pytest tests/test_researcher.py)",
+      "PowerShell(python -m pytest tests/test_planner_benchmark_classification.py)",
+      "PowerShell(python -m pytest tests/test_retrieval_architecture.py)",
+      "PowerShell(.\\\\.venv\\\\Scripts\\\\python.exe -m pytest tests/test_planner_benchmark_classification.py -q)",
+      "PowerShell(.\\\\.venv\\\\Scripts\\\\python.exe -m pytest tests/test_quality.py -q)",
+      "PowerShell(.\\\\.venv\\\\Scripts\\\\python.exe -m pytest tests/test_llm_json.py tests/test_api.py tests/test_action_tools.py tests/test_config_profiles.py -q)"
     ]
   }
 }

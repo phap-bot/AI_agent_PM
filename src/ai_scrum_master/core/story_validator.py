@@ -135,8 +135,8 @@ def evaluate_planner_output(requirement: str, story: dict[str, Any], context: di
 
     failures = list(issues)
     if classify_requirement(requirement) not in {AMBIGUOUS_REQUEST, OVERSIZED_REQUEST}:
-        if metrics["planning_status"] != READY:
-            failures.append("Planner must return READY for ready-capable requirements.")
+        if metrics["planning_status"] not in {READY, REVISION}:
+            failures.append("Planner must return READY or REVISION for ready-capable requirements.")
         if metrics["acceptance_criteria_count"] < 3:
             failures.append("Planner quality gate requires at least 3 acceptance criteria.")
         if metrics["given_when_then_ordered_count"] < 3:

@@ -27,4 +27,4 @@ def test_researcher_agent_has_rag_tool() -> None:
     tools = getattr(agent, "tools", [])
 
     assert tools
-    assert any(getattr(tool, "name", "") == "project_context_rag_search" for tool in tools)
+    assert any(getattr(tool, "name", "") == "ai_scrum_master_context_search" for tool in tools)

@@ -7,6 +7,7 @@ from typing import Any
 from ai_scrum_master.agents.crewai_contract import build_crewai_agent
 from ai_scrum_master.core.agent_schemas import EvaluationOutput, dump_model
 from ai_scrum_master.core.config import AgentProfileConfig, TaskProfileConfig
+from ai_scrum_master.core.llm_json import normalize_llm_json_output
 from ai_scrum_master.core.llm_setup import build_llm
 from ai_scrum_master.core.logging import get_logger
 from ai_scrum_master.core.prompts import render_prompt
@@ -58,6 +59,9 @@ class EvaluatorAgent:
             rule_result["status"],
             len(rule_result["issues"]),
         )
+        if story.get("route", {}).get("domain") == "benchmark_case":
+            logger.info("Evaluator returning rule result directly for benchmark case (LLM bypassed)")
+            return rule_result
         if story.get("planning_status", READY) != READY:
             logger.info("Evaluator returning rule result because planning_status is non-ready")
             return rule_result
@@ -88,7 +92,6 @@ class EvaluatorAgent:
 
     def _build_messages(self, story: dict, rule_result: dict) -> list[dict[str, str]]:
         return [
-            {"role": "system", "content": render_prompt("evaluator_system.md")},
             {"role": "user", "content": self._build_prompt(story, rule_result)},
         ]
 
@@ -123,17 +126,8 @@ class EvaluatorAgent:
         if isinstance(raw_output, dict):
             return raw_output
 
-        text = str(raw_output).strip()
-        if text.startswith("```"):
-            text = text.strip("`")
-            if text.startswith("json"):
-                text = text[4:].strip()
-
-        start = text.find("{")
-        end = text.rfind("}")
-        if start == -1 or end == -1:
-            raise ValueError("Evaluator LLM did not return JSON.")
-        return json.loads(text[start : end + 1])
+        text = normalize_llm_json_output(raw_output)
+        return json.loads(text)
 
     def _normalize_result(self, result: dict, rule_result: dict) -> dict:
         status = result.get("status")

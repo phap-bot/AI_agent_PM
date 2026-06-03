@@ -135,6 +135,36 @@ def test_validator_rejects_auth_story_with_sprint_content() -> None:
     assert any("placeholder" in issue for issue in issues)
 
 
+def test_validator_rejects_domain_contamination_for_general_benchmark_story() -> None:
+    issues = validate_story_against_requirement(
+        "'WCS.all_world2pix' failed to converge when plotting WCS with non linear distortions",
+        {
+            "story_type": "software_feature",
+            "planning_status": "READY",
+            "user_story": "As a developer, I want WCS plotting to work so that astronomical images render correctly.",
+            "acceptance_criteria": [
+                "Given WCS distortions exist, when plotting an image, then the grid renders without NoConvergence.",
+                "Given quiet convergence handling is needed, when world coordinates are converted, then plotting continues safely.",
+                "Given regression tests run, when the WCS issue is reproduced, then the expected plot behavior is verified.",
+            ],
+            "story_points": 3,
+            "tasks": {
+                "be": ["Implement Google OAuth callback handling, server-side provider-code exchange, user mapping, and JWT session issuance."],
+                "fe": ["Develop WCS plotting display behavior for non-linear distortions."],
+                "qa": ["Validate WCS plotting regression for NoConvergence scenarios."],
+            },
+            "definition_of_done": [
+                "Acceptance criteria pass.",
+                "Implementation is complete.",
+                "QA validation is complete.",
+                "NoConvergence regression is covered.",
+            ],
+        },
+    )
+
+    assert "Output contains unrelated auth content for a general requirement." in issues
+
+
 def test_validator_requires_ordered_given_when_then() -> None:
     issues = validate_story_against_requirement(
         "As a returning user, I want to sign in with Google, so that I can access my account quickly without entering a password",
@@ -186,7 +216,7 @@ def test_research_quality_gate_fails_when_expected_source_is_missing() -> None:
     )
 
     assert result["passed"] is False
-    assert "auth_context" in result["expected_sources"]
+    assert "authcontext" in result["expected_sources"]
     assert any("hit_rate_at_k" in failure for failure in result["failures"])
 
 

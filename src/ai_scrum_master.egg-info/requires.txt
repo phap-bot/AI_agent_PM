@@ -1,0 +1,17 @@
+fastapi<0.116,>=0.115
+starlette<0.42,>=0.40
+uvicorn
+streamlit
+pytest
+crewai
+langchain
+langchain-community
+langchain-chroma
+langchain-ollama
+langchain-text-splitters
+chromadb
+pyyaml
+pydantic
+python-dotenv
+ollama
+pypdf

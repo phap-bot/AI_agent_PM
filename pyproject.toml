@@ -8,7 +8,8 @@ version = "0.1.0"
 description = "AI Scrum Master Agent for turning stakeholder requests into sprint-ready Jira work items."
 requires-python = ">=3.11"
 dependencies = [
-    "fastapi",
+    "fastapi>=0.115,<0.116",
+    "starlette>=0.40,<0.42",
     "uvicorn",
     "streamlit",
     "pytest",

@@ -58,7 +58,7 @@ OUTPUT RULES:
 - Return only valid JSON.
 - Use Given / When / Then acceptance criteria only when the story is READY.
 - Keep tasks actionable and specific to the generated story. Do not write task placeholders.
-- Use Fibonacci story points only: 1, 2, 3, 5, 8, 13. Use null when the item is not ready for estimation.
+- Estimate `story_points` dynamically based on the complexity of the capability and number of tasks required by the context. Do not default to 3. Use Fibonacci story points only: 1, 2, 3, 5, 8, 13. Use null when the item is not ready for estimation.
 - context_sources must contain only sources actually used.
 - warnings must explain weak context, missing evidence, or generation limitations.
 - If planning_status is READY, acceptance_criteria must contain at least 3 context-specific Given/When/Then items.
@@ -91,37 +91,6 @@ Use this shape when PLANNING_STATUS_FROM_LOCAL_RULES is NEEDS_CLARIFICATION or t
   "warnings": ["Requirement is too vague for sprint-ready planning."]
 }}
 
-ONE-SHOT FORMAT SAMPLE:
-Use this as a shape sample only. Replace every value with content from CURRENT_REQUIREMENT and SELECTED_RETRIEVED_CONTEXT.
-{{
-  "title": "Context-specific capability title",
-  "story_type": "software_feature",
-  "user_story": "As a context-specific user, I want a context-specific capability, so that a context-specific outcome is achieved.",
-  "acceptance_criteria": [
-    "Given a context-specific precondition, when the user performs the documented action, then the documented outcome occurs.",
-    "Given a documented failure or edge case, when it happens, then the system responds according to the retrieved context.",
-    "Given the capability is complete, when QA validates it, then the documented business outcome is observable."
-  ],
-  "story_points": 3,
-  "tasks": {{
-    "be": ["Implement the context-specific backend/API behavior from the evidence."],
-    "fe": ["Implement the context-specific UI/client behavior from the evidence."],
-    "qa": ["Validate the context-specific success and failure paths from the evidence."]
-  }},
-  "definition_of_done": [
-    "Acceptance criteria are validated against the documented success and failure paths.",
-    "Implementation work is complete for the context-specific backend/API and UI/client behavior.",
-    "QA/testing evidence covers the documented behavior and relevant regression checks.",
-    "The completed story demonstrates the context-specific business outcome."
-  ],
-  "planning_status": "READY",
-  "clarification_questions": [],
-  "assumptions": [],
-  "story_splits": [],
-  "sprint_allocation": [],
-  "context_sources": [],
-  "warnings": []
-}}
 
 JSON SCHEMA:
 {{

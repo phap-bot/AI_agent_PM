@@ -147,6 +147,9 @@ def domain_contamination_issues(requirement: str, story: dict) -> list[str]:
     story_text = json.dumps(_domain_validation_payload(story), ensure_ascii=False).lower()
     domain = requirement_domain(requirement)
     issues: list[str] = []
+    if domain == "general":
+        issues.extend(_general_domain_contamination_issues(story_text))
+        return list(dict.fromkeys(issues))
     contamination = {
         "auth": ("scrum", "checkout", "notification"),
         "scrum": ("auth", "checkout", "notification"),
@@ -168,6 +171,14 @@ def domain_contamination_issues(requirement: str, story: dict) -> list[str]:
                 continue
             issues.append(issue_messages.get((domain, other_domain), f"Output contains unrelated {other_domain} content for current requirement."))
     return list(dict.fromkeys(issues))
+
+
+def _general_domain_contamination_issues(story_text: str) -> list[str]:
+    issues = []
+    for domain in ("auth", "checkout", "notification", "scrum"):
+        if _has_strong_domain_contamination(story_text, domain):
+            issues.append(f"Output contains unrelated {domain} content for a general requirement.")
+    return issues
 
 
 def _has_strong_domain_contamination(story_text: str, domain: str) -> bool:

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import time
+
 from ai_scrum_master.agents.crewai_contract import build_crewai_agent
 from ai_scrum_master.core.agent_schemas import ResearchContextOutput, build_planning_brief, dump_model
 from ai_scrum_master.core.config import AgentProfileConfig, TaskProfileConfig, get_settings
@@ -28,6 +30,7 @@ class ResearcherAgent:
         return build_crewai_agent(role=role, goal=goal, backstory=backstory, tools=[ProjectContextRagTool()], verbose=True)
 
     def run(self, requirement: str, n_results: int = 5, route: dict | None = None) -> dict:
+        started_at = time.perf_counter()
         route = route or {}
         retrieval_query = self._build_retrieval_query(requirement, route)
         logger.info(
@@ -39,13 +42,16 @@ class ResearcherAgent:
             len(retrieval_query),
         )
         try:
+            # Fetch a larger pool to increase recall of required sources
+            pool_size = max(20, n_results * 4)
             matches = search_context(
                 query=retrieval_query,
-                n_results=n_results,
+                n_results=pool_size,
                 collection_name=self.settings.context_collection,
             )
         except Exception as exc:
-            logger.exception("Research query failed; continuing with empty context")
+            latency_ms = self._elapsed_ms(started_at)
+            logger.exception("Research query failed; continuing with empty context latency_ms=%s", latency_ms)
             return self._validate_output({
                 "documents": [],
                 "ids": [],
@@ -61,19 +67,21 @@ class ResearcherAgent:
                 "retrieval_threshold": self.settings.retrieval_min_score,
                 "raw_match_count": 0,
                 "confidence": 0.0,
-                "quality_gate": evaluate_research_output(requirement=requirement, matches=[], k=self.settings.retrieval_context_top_k, route=route),
+                "quality_gate": evaluate_research_output(requirement=requirement, matches=[], k=n_results, route=route),
                 "route": route,
                 "required_sources": route.get("required_sources", []),
                 "optional_sources": route.get("optional_sources", []),
                 "missing_required_sources": route.get("required_sources", []),
                 "missing_optional_sources": route.get("optional_sources", []),
+                "latency_ms": latency_ms,
+                "stage_latencies_ms": {"researcher_ms": latency_ms},
                 "warnings": [
                     f"Context retrieval failed; planner should continue with explicit assumptions. Reason: {exc}"
                 ],
             })
 
         threshold_matches = self._relevant_threshold_matches(requirement, matches, route)
-        relevant_matches = self._top_matches(self._prefer_project_context(threshold_matches))
+        relevant_matches = self._top_matches(self._prefer_project_context(threshold_matches), n_results)
         documents = [match["document"] for match in relevant_matches]
         ids = [match["id"] for match in relevant_matches]
         metadatas = [match["metadata"] for match in relevant_matches]
@@ -101,7 +109,7 @@ class ResearcherAgent:
         quality_gate = evaluate_research_output(
             requirement=requirement,
             matches=relevant_matches,
-            k=self.settings.retrieval_context_top_k,
+            k=n_results,
             route=route,
         )
         if not quality_gate["passed"]:
@@ -122,14 +130,16 @@ class ResearcherAgent:
                 max(float(match.get("score") or 0.0) for match in matches),
             )
 
+        latency_ms = self._elapsed_ms(started_at)
         logger.info(
-            "Research query completed top_documents=%s raw_matches=%s confidence=%s warnings=%s retrieval_status=%s threshold=%s",
+            "Research query completed top_documents=%s raw_matches=%s confidence=%s warnings=%s retrieval_status=%s threshold=%s latency_ms=%s",
             len(documents),
             len(matches),
             confidence,
             len(warnings),
             retrieval_status,
             self.settings.retrieval_min_score,
+            latency_ms,
         )
         return self._validate_output({
             "documents": documents,
@@ -160,8 +170,13 @@ class ResearcherAgent:
                 for source in route.get("optional_sources", [])
                 if source not in quality_gate.get("metrics", {}).get("found_sources", [])
             ],
+            "latency_ms": latency_ms,
+            "stage_latencies_ms": {"researcher_ms": latency_ms},
             "warnings": warnings,
         })
+
+    def _elapsed_ms(self, started_at: float) -> int:
+        return max(0, round((time.perf_counter() - started_at) * 1000))
 
     def _estimate_confidence(self, matches: list[dict]) -> float:
         if not matches:
@@ -189,6 +204,13 @@ class ResearcherAgent:
                 continue
             score = float(candidate.get("score") or 0.0)
             vector_score = float(candidate.get("vector_score") or 0.0)
+            
+            # Boost score if this match comes from an expected required source
+            if expected_sources and self._match_matches_expected(candidate, source_name, expected_sources):
+                boosted = min(1.0, score + 0.15)
+                candidate["score"] = round(boosted, 3)
+                candidate["score_reason"] = "expected_source_boost"
+
             if expected_sources and vector_score > score:
                 candidate["rank_score"] = candidate.get("rank_score", score)
                 candidate["score"] = round(vector_score, 3)
@@ -246,7 +268,7 @@ class ResearcherAgent:
             expanded = " ".join(part for part in (expanded, template_name, required_concepts) if part)
         return expanded or requirement
 
-    def _top_matches(self, matches: list[dict]) -> list[dict]:
+    def _top_matches(self, matches: list[dict], limit: int) -> list[dict]:
         deduped = []
         seen = set()
         ranked_matches = sorted(matches, key=lambda item: float(item.get("score") or 0.0), reverse=True)
@@ -261,7 +283,7 @@ class ResearcherAgent:
                 continue
             seen.add(key)
             deduped.append(match)
-            if len(deduped) >= self.settings.retrieval_context_top_k:
+            if len(deduped) >= limit:
                 break
         return deduped
 

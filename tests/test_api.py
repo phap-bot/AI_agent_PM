@@ -72,9 +72,9 @@ class FakeCrew:
         }
 
 
-def fake_ingest_runner(raw_docs_dir=None, collection_name=None) -> dict:
+def fake_ingest_runner(raw_docs_dir=None) -> dict:
     return {
-        "collection": collection_name or "project_context",
+        "collection": "ai_scrum_master_context",
         "source_dir": str(raw_docs_dir or "data/raw_docs"),
         "files_indexed": 1,
         "chunks_indexed": 1,
@@ -177,12 +177,12 @@ def test_ingest_endpoint_indexes_temp_docs(tmp_path: Path) -> None:
     (raw_docs / "auth.md").write_text("Auth stack uses JWT and Google OAuth.", encoding="utf-8")
 
     response = ingest_documents(
-        IngestRequest(raw_docs_dir=str(raw_docs), collection_name="api_test_context"),
+        IngestRequest(raw_docs_dir=str(raw_docs)),
         ingest_runner=fake_ingest_runner,
     )
     body = response.model_dump()
 
-    assert body["collection"] == "api_test_context"
+    assert body["collection"] == "ai_scrum_master_context"
     assert body["files_indexed"] == 1
     assert body["chunks_indexed"] == 1
 

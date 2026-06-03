@@ -178,22 +178,9 @@ PLANNER_EVIDENCE_TEMPLATES = {
         ],
     },
     "general": {
-        "acceptance_criteria": [
-            "Given the documented preconditions are met, when the requested capability is used, then the documented success outcome is observable.",
-            "Given a documented failure path occurs, when the system handles it, then the user receives the documented response.",
-            "Given the story is complete, when QA validates the documented behavior, then the requested outcome is confirmed.",
-        ],
-        "tasks": {
-            "be": ["Implement the documented backend behavior required for the requested capability."],
-            "fe": ["Implement the documented frontend behavior required for the requested capability."],
-            "qa": ["Validate the documented happy path, failure path, and regression scenarios for the requested capability."],
-        },
-        "definition_of_done": [
-            "All acceptance criteria pass against the retrieved documentation evidence.",
-            "Backend and frontend implementation work for the requested capability is complete.",
-            "QA/testing evidence covers documented success and failure paths.",
-            "The completed story demonstrates the requested outcome from the retrieved context.",
-        ],
+        "acceptance_criteria": [],
+        "tasks": {"be": [], "fe": [], "qa": []},
+        "definition_of_done": [],
     },
 }
 

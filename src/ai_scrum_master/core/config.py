@@ -6,11 +6,37 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from dotenv import load_dotenv
+from dotenv import dotenv_values, load_dotenv
 
 
 BASE_DIR = Path(__file__).resolve().parents[1]
-load_dotenv(BASE_DIR / ".env")
+PROFILE_ENV_VAR = "AI_SCRUM_PROFILE"
+
+
+def _profile_name() -> str:
+    return os.getenv(PROFILE_ENV_VAR, "").strip()
+
+
+def _profile_env_path(profile: str) -> Path:
+    safe_profile = profile.replace("/", "").replace("\\", "").strip(". ")
+    return BASE_DIR / f".env.{safe_profile}"
+
+
+def _load_profile_env(profile: str, protected_keys: set[str]) -> None:
+    if not profile:
+        return
+    profile_path = _profile_env_path(profile)
+    if not profile_path.exists():
+        return
+
+    for key, value in dotenv_values(profile_path).items():
+        if value is not None and key not in protected_keys:
+            os.environ[key] = value
+
+
+_PROTECTED_ENV_KEYS = set(os.environ)
+load_dotenv(BASE_DIR / ".env", override=False)
+_load_profile_env(_profile_name(), _PROTECTED_ENV_KEYS)
 
 
 class ConfigError(ValueError):
@@ -36,20 +62,26 @@ def _path_env(name: str, default: Path) -> str:
 
 @dataclass(frozen=True)
 class Settings:
+    config_profile: str = field(default_factory=lambda: _profile_name() or "default")
     app_name: str = field(default_factory=lambda: os.getenv("APP_NAME", "AI Scrum Master Agent"))
     app_version: str = field(default_factory=lambda: os.getenv("APP_VERSION", "0.1.0"))
     ollama_base_url: str = field(default_factory=lambda: os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"))
     reasoning_model: str = field(default_factory=lambda: os.getenv("OLLAMA_REASONING_MODEL", "qwen2.5:3b-instruct"))
     embedding_model: str = field(default_factory=lambda: os.getenv("OLLAMA_EMBED_MODEL", "nomic-embed-text"))
     ollama_timeout: int = field(default_factory=lambda: int(os.getenv("OLLAMA_TIMEOUT", "240")))
-    ollama_num_ctx: int = field(default_factory=lambda: int(os.getenv("OLLAMA_NUM_CTX", "4096")))
+    ollama_num_ctx: int = field(default_factory=lambda: int(os.getenv("OLLAMA_NUM_CTX", "2048")))
+    ollama_num_gpu: int = field(default_factory=lambda: int(os.getenv("OLLAMA_NUM_GPU", "-1")))
     ollama_temperature: float = field(default_factory=lambda: float(os.getenv("OLLAMA_TEMPERATURE", "0.2")))
     chroma_persist_dir: str = field(default_factory=lambda: _path_env("CHROMA_PERSIST_DIR", BASE_DIR / "data" / "chromadb"))
-    context_collection: str = field(default_factory=lambda: os.getenv("CHROMA_COLLECTION", "project_context"))
+    context_collection: str = field(default_factory=lambda: os.getenv("CHROMA_COLLECTION", "ai_scrum_master_context"))
     rag_backend: str = field(default_factory=lambda: os.getenv("RAG_BACKEND", "langchain"))
     rag_fallback_to_direct_chroma: bool = field(default_factory=lambda: _bool_env("RAG_FALLBACK_TO_DIRECT_CHROMA", True))
     rag_chunk_size: int = field(default_factory=lambda: int(os.getenv("RAG_CHUNK_SIZE", "1200")))
     rag_chunk_overlap: int = field(default_factory=lambda: int(os.getenv("RAG_CHUNK_OVERLAP", "200")))
+    pdf_extractor: str = field(default_factory=lambda: os.getenv("PDF_EXTRACTOR", "auto"))
+    pdf_remove_headers_footers: bool = field(default_factory=lambda: _bool_env("PDF_REMOVE_HEADERS_FOOTERS", True))
+    pdf_semantic_chunking: bool = field(default_factory=lambda: _bool_env("PDF_SEMANTIC_CHUNKING", True))
+    pdf_fallback_on_error: bool = field(default_factory=lambda: _bool_env("PDF_FALLBACK_ON_ERROR", True))
     rag_hybrid_search: bool = field(default_factory=lambda: _bool_env("RAG_HYBRID_SEARCH", True))
     rag_vector_fetch_k: int = field(default_factory=lambda: int(os.getenv("RAG_VECTOR_FETCH_K", "20")))
     planner_prompt_version: str = field(default_factory=lambda: os.getenv("PLANNER_PROMPT_VERSION", "current"))
@@ -61,7 +93,10 @@ class Settings:
     jira_project_key: str = field(default_factory=lambda: os.getenv("JIRA_PROJECT_KEY", ""))
     jira_email: str = field(default_factory=lambda: os.getenv("JIRA_EMAIL", ""))
     jira_api_token: str = field(default_factory=lambda: os.getenv("JIRA_API_TOKEN", ""))
+    jira_issue_type: str = field(default_factory=lambda: os.getenv("JIRA_ISSUE_TYPE", "Task"))
+    jira_subtask_issue_type: str = field(default_factory=lambda: os.getenv("JIRA_SUBTASK_ISSUE_TYPE", "Sub-task"))
     slack_webhook_url: str = field(default_factory=lambda: os.getenv("SLACK_WEBHOOK_URL", ""))
+    slack_mention_user_id: str = field(default_factory=lambda: os.getenv("SLACK_MENTION_USER_ID", ""))
     agent_config_path: str = field(
         default_factory=lambda: os.getenv(
             "AGENT_CONFIG_PATH",

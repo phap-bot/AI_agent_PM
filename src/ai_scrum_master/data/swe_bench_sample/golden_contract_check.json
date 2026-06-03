@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "selection_policy": {
+    "classification": "A",
+    "min_score": 85,
+    "requires_validator_passed": true
+  },
+  "samples": []
+}

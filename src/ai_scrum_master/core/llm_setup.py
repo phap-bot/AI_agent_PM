@@ -11,6 +11,7 @@ def build_llm(**overrides: Any) -> Any:
     settings = get_settings()
     options = {
         "num_ctx": settings.ollama_num_ctx,
+        "num_gpu": settings.ollama_num_gpu,
         **overrides.pop("options", {}),
     }
 

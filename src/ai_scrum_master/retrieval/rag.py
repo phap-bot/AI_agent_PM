@@ -9,6 +9,7 @@ from typing import Any
 from ai_scrum_master.core.config import get_settings
 from ai_scrum_master.core.logging import get_logger
 from ai_scrum_master.core.prompts import render_prompt
+from ai_scrum_master.retrieval.vector_store import canonical_collection_name
 
 logger = get_logger(__name__)
 
@@ -38,6 +39,8 @@ LANGCHAIN_INSTALL_HINT = (
     "pip install langchain langchain-community langchain-chroma "
     "langchain-ollama langchain-text-splitters"
 )
+
+DEFAULT_EMBEDDING_QUERY_CHARS = 3000
 
 
 
@@ -72,6 +75,7 @@ def build_chat_ollama(**overrides: Any) -> Any:
         "base_url": settings.ollama_base_url,
         "temperature": 0.0,
         "num_ctx": settings.ollama_num_ctx,
+        "num_gpu": settings.ollama_num_gpu,
     }
     options.update(overrides)
     return ChatOllama(**options)
@@ -83,7 +87,7 @@ def build_chroma_vector_store(collection_name: str | None = None) -> Any:
     persist_directory = Path(settings.chroma_persist_dir).resolve()
     persist_directory.mkdir(parents=True, exist_ok=True)
     return Chroma(
-        collection_name=collection_name or settings.context_collection,
+        collection_name=canonical_collection_name(collection_name),
         embedding_function=build_ollama_embeddings(),
         persist_directory=str(persist_directory),
     )
@@ -95,9 +99,10 @@ def search_context_with_langchain(
     collection_name: str | None = None,
 ) -> list[dict[str, Any]]:
     settings = get_settings()
+    retrieval_query = compact_query_for_embedding(query)
     vector_store = build_chroma_vector_store(collection_name)
     fetch_k = max(n_results, settings.rag_vector_fetch_k if settings.rag_hybrid_search else n_results)
-    results = vector_store.similarity_search_with_score(query, k=fetch_k)
+    results = vector_store.similarity_search_with_score(retrieval_query, k=fetch_k)
 
     matches: list[dict[str, Any]] = []
     for document, distance in results:
@@ -116,9 +121,37 @@ def search_context_with_langchain(
             }
         )
     if settings.rag_hybrid_search:
-        matches = merge_lexical_candidates(query, matches, vector_store)
+        matches = merge_lexical_candidates(retrieval_query, matches, vector_store)
         matches = rerank_hybrid_matches(matches)
     return matches[:n_results]
+
+
+def compact_query_for_embedding(query: str, max_chars: int = DEFAULT_EMBEDDING_QUERY_CHARS) -> str:
+    normalized = normalize_for_search_input(query)
+    if len(normalized) <= max_chars:
+        return normalized
+
+    lines = [line.strip() for line in normalized.splitlines() if line.strip()]
+    title = lines[0] if lines else normalized[:200]
+    section_heads = ("### description", "### expected behavior", "### actual behavior", "### steps to reproduce")
+    selected = [title]
+    lowered_lines = [line.lower() for line in lines]
+    for head in section_heads:
+        for index, line in enumerate(lowered_lines):
+            if line.startswith(head):
+                selected.extend(lines[index : index + 2])
+                break
+
+    compacted = "\n".join(dict.fromkeys(selected)).strip()
+    if len(compacted) < min(800, max_chars) and normalized:
+        compacted = f"{compacted}\n\n{normalized[:max_chars]}".strip()
+    return compacted[:max_chars]
+
+
+def normalize_for_search_input(text: str) -> str:
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text.strip()
 
 
 def merge_lexical_candidates(query: str, matches: list[dict[str, Any]], vector_store: Any) -> list[dict[str, Any]]:
@@ -232,8 +265,46 @@ def add_langchain_documents(
     ids: list[str],
     collection_name: str | None = None,
 ) -> None:
-    vector_store = build_chroma_vector_store(collection_name)
-    vector_store.add_documents(documents=documents, ids=ids)
+    """Add documents with batch embedding for maximum speed."""
+    if not documents:
+        return
+
+    import time
+    t_start = time.time()
+
+    # Step 1: Pre-compute ALL embeddings in a single batch call
+    embeddings_model = build_ollama_embeddings()
+    texts = [str(doc.page_content) for doc in documents]
+    logger.info("[EMBED] Batch embedding %d chunks...", len(texts))
+    all_embeddings = embeddings_model.embed_documents(texts)
+    logger.info("[EMBED] Batch embedding done in %.2fs", time.time() - t_start)
+
+    # Step 2: Upsert directly to ChromaDB (bypasses LangChain's slow per-doc add)
+    from ai_scrum_master.retrieval.vector_store import get_collection
+    collection = get_collection(collection_name)
+
+    metadatas = []
+    for doc in documents:
+        meta = dict(doc.metadata) if doc.metadata else {}
+        # ChromaDB requires all metadata values to be str/int/float/bool
+        clean_meta = {}
+        for k, v in meta.items():
+            if isinstance(v, (str, int, float, bool)):
+                clean_meta[k] = v
+            elif v is not None:
+                clean_meta[k] = str(v)
+        metadatas.append(clean_meta)
+
+    t_upsert = time.time()
+    # ChromaDB supports batch upsert natively
+    collection.upsert(
+        ids=list(ids),
+        documents=texts,
+        embeddings=all_embeddings,
+        metadatas=metadatas,
+    )
+    logger.info("[EMBED] Upserted %d chunks to ChromaDB in %.2fs", len(ids), time.time() - t_upsert)
+    logger.info("[EMBED] Total add_langchain_documents: %.2fs", time.time() - t_start)
 
 
 def normalize_metadata(value: Any) -> dict[str, Any]:
@@ -281,15 +352,13 @@ def generate_answer_from_matches(question: str, matches: list[dict[str, Any]]) -
     StrOutputParser = _load_attr("langchain_core.output_parsers", "StrOutputParser")
     prompt = ChatPromptTemplate.from_messages(
         [
-            ("system", "{system_prompt}"),
             ("user", "{user_prompt}"),
         ]
     )
     chain = prompt | build_chat_ollama() | StrOutputParser()
     raw_answer = chain.invoke({
-        "system_prompt": render_prompt("rag_answer_system.md"),
         "user_prompt": render_prompt(
-            "rag_answer_user.md",
+            "rag_answer.md",
             question=question,
             citation_ids="\n".join(f"- {citation_id_for_match(match)}" for match in matches),
             context=build_rag_context(matches),

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import time
 from typing import Any
 
 from ai_scrum_master.agents.crewai_contract import build_crewai_agent
@@ -12,6 +13,7 @@ from ai_scrum_master.core.domain_profiles import (
     SPLIT_CAPABILITIES,
 )
 from ai_scrum_master.core.llm_setup import build_llm
+from ai_scrum_master.core.llm_json import normalize_llm_json_output
 from ai_scrum_master.core.logging import get_logger
 from ai_scrum_master.core.prompts import render_prompt
 from ai_scrum_master.core.quality import (
@@ -33,6 +35,11 @@ SPLIT_RECOMMENDED = "SPLIT_RECOMMENDED"
 NEEDS_SPLIT = "NEEDS_SPLIT"
 
 logger = get_logger(__name__)
+
+MAX_CONTEXT_BLOCK_CHARS = 6000
+MAX_CONTEXT_ITEM_CHARS = 1200
+MAX_CONTEXT_ITEMS = 3
+MAX_REQUIREMENT_PROMPT_CHARS = 2500
 
 
 class PlannerAgent:
@@ -59,11 +66,14 @@ class PlannerAgent:
         return build_crewai_agent(role=role, goal=goal, backstory=backstory, tools=[], verbose=True)
 
     def run(self, requirement: str, context: dict, requirement_type: str | None = None, route: dict | None = None) -> dict:
+        started_at = time.perf_counter()
+        llm_latencies_ms: list[int] = []
+        repair_attempts_used = 0
         route = route or context.get("route", {})
         filtered_context = self._filter_context_for_requirement(requirement, context)
         warnings = self._build_warnings(filtered_context)
-        planning_status = self._classify_requirement(requirement)
-        requirement_type = requirement_type or classify_requirement(requirement)
+        planning_status = self._classify_requirement(requirement, route)
+        requirement_type = requirement_type or route.get("story_type") or classify_requirement(requirement)
         context_sources = filtered_context.get("retrieved_sources", [])
         logger.info(
             "Planner started planning_status=%s context_documents=%s context_confidence=%s",
@@ -74,7 +84,8 @@ class PlannerAgent:
 
         if not self.use_llm:
             logger.info("Planner cannot generate story because LLM is disabled")
-            return self._llm_unavailable_story(requirement, warnings, planning_status, context_sources, requirement_type, route)
+            unavailable = self._llm_unavailable_story(requirement, warnings, planning_status, context_sources, requirement_type, route)
+            return self._attach_latency_metadata(unavailable, started_at, llm_latencies_ms, repair_attempts_used)
 
         try:
             llm = self.llm or build_llm()
@@ -86,56 +97,32 @@ class PlannerAgent:
                 len(context_sources),
                 filtered_context.get("retrieval_status"),
             )
+            llm_started_at = time.perf_counter()
             raw_output = llm.call(messages)
-            logger.info("LLM trace planner response stage=initial raw_chars=%s", len(str(raw_output)))
+            initial_llm_ms = self._elapsed_ms(llm_started_at)
+            llm_latencies_ms.append(initial_llm_ms)
+            logger.info("LLM trace planner response stage=initial raw_chars=%s latency_ms=%s", len(str(raw_output)), initial_llm_ms)
+            logger.info("--- LLM THINKING OUTPUT (INITIAL) ---\n%s\n---------------------------------------", str(raw_output))
             story = self._parse_story(raw_output)
             logger.info("LLM trace planner parsed stage=initial keys=%s", sorted(story.keys()))
             story["warnings"] = warnings + story.get("warnings", [])
             normalized = self._normalize_story(story, requirement, warnings, planning_status, context_sources, requirement_type, route)
-            for repair_attempt in range(1, self.settings.planner_max_repair_attempts + 1):
-                if not self._should_repair_story(normalized, planning_status, filtered_context):
-                    break
-                repair_messages = self._build_repair_messages(requirement, filtered_context, normalized)
-                logger.info(
-                    "LLM trace planner request stage=repair attempt=%s messages=%s prompt_chars=%s",
-                    repair_attempt,
-                    len(repair_messages),
-                    sum(len(message["content"]) for message in repair_messages),
-                )
-                repaired_output = llm.call(repair_messages)
-                logger.info("LLM trace planner response stage=repair attempt=%s raw_chars=%s", repair_attempt, len(str(repaired_output)))
-                repaired_story = self._parse_story(repaired_output)
-                repaired_story["warnings"] = warnings + repaired_story.get("warnings", []) + [
-                    f"Planner performed LLM repair pass {repair_attempt} to satisfy READY schema from retrieved context."
-                ]
-                normalized = self._normalize_story(repaired_story, requirement, warnings, planning_status, context_sources, requirement_type, route)
-            return normalized
+            return self._attach_latency_metadata(normalized, started_at, llm_latencies_ms, repair_attempts_used)
         except Exception as exc:
             logger.exception("Planner failed to use LLM output")
             unavailable = self._llm_unavailable_story(requirement, warnings, planning_status, context_sources, requirement_type, route)
-            unavailable["warnings"].append(f"Planner LLM unavailable or returned invalid output. Reason: {exc}")
-            return unavailable
+            failure_type = "planner_timeout" if "timeout" in str(exc).lower() or "timed out" in str(exc).lower() else "planner_exception"
+            unavailable["failure_type"] = failure_type
+            unavailable["timed_out"] = failure_type == "planner_timeout"
+            unavailable["warnings"].append(f"{failure_type}: Planner LLM unavailable or returned invalid output. Reason: {exc}")
+            return self._attach_latency_metadata(unavailable, started_at, llm_latencies_ms, repair_attempts_used)
 
     def _build_messages(self, requirement: str, context: dict, planning_status: str) -> list[dict[str, str]]:
         return [
-            {"role": "system", "content": render_prompt("planner_system.md")},
             {"role": "user", "content": self._build_prompt(requirement, context, planning_status)},
         ]
 
-    def _build_repair_messages(self, requirement: str, context: dict, story: dict) -> list[dict[str, str]]:
-        return [
-            {"role": "system", "content": render_prompt("planner_system.md")},
-            {
-                "role": "user",
-                "content": render_prompt(
-                    self._prompt_name("planner_repair"),
-                    requirement=requirement,
-                    context_block=self._build_context_block(context),
-                    current_story_json=json.dumps(story, ensure_ascii=False, indent=2),
-                    repair_blockers=json.dumps(self._story_repair_gaps(story), ensure_ascii=False, indent=2),
-                ),
-            },
-        ]
+
 
     def _build_prompt(self, requirement: str, context: dict, planning_status: str) -> str:
         context_block = self._build_context_block(context)
@@ -159,11 +146,40 @@ class PlannerAgent:
             backstory=backstory,
             task_description=task_description,
             expected_output=expected_output,
-            requirement=requirement,
+            requirement=self._compact_requirement_for_prompt(requirement),
             planning_status=planning_status,
             context_block=context_block,
             planning_brief_json=json.dumps(context.get("planning_brief", {}), ensure_ascii=False, indent=2),
         )
+
+    def _attach_latency_metadata(
+        self,
+        story: dict,
+        started_at: float,
+        llm_latencies_ms: list[int],
+        repair_attempts_used: int,
+    ) -> dict:
+        latency_ms = self._elapsed_ms(started_at)
+        stage_latencies = dict(story.get("stage_latencies_ms", {}))
+        stage_latencies["planner_ms"] = latency_ms
+        if llm_latencies_ms:
+            stage_latencies["planner_llm_ms"] = sum(llm_latencies_ms)
+            stage_latencies["planner_initial_llm_ms"] = llm_latencies_ms[0]
+        if len(llm_latencies_ms) > 1:
+            stage_latencies["planner_repair_llm_ms"] = sum(llm_latencies_ms[1:])
+        story["latency_ms"] = latency_ms
+        story["stage_latencies_ms"] = stage_latencies
+        story["repair_attempts_used"] = repair_attempts_used
+        logger.info(
+            "Planner completed planning_status=%s latency_ms=%s repair_attempts_used=%s",
+            story.get("planning_status"),
+            latency_ms,
+            repair_attempts_used,
+        )
+        return self._validate_story_output(story)
+
+    def _elapsed_ms(self, started_at: float) -> int:
+        return max(0, round((time.perf_counter() - started_at) * 1000))
 
     def _prompt_name(self, prompt_base: str) -> str:
         version = (self.settings.planner_prompt_version or "").strip().lower()
@@ -234,44 +250,59 @@ class PlannerAgent:
                 filtered["warnings"] = warnings
         return filtered
 
+    def _compact_requirement_for_prompt(self, requirement: str) -> str:
+        return self._truncate_context_text(requirement, MAX_REQUIREMENT_PROMPT_CHARS)
+
     def _build_context_block(self, context: dict) -> str:
         snippets = [snippet for snippet in context.get("context_snippets", []) if isinstance(snippet, str) and snippet.strip()]
         if snippets:
-            return "\n\n".join(snippets)
+            return self._compact_context_items(snippets)
 
         matches = context.get("matches", [])
         if isinstance(matches, list) and matches:
             blocks = []
-            for index, match in enumerate(matches, start=1):
+            for index, match in enumerate(matches[:MAX_CONTEXT_ITEMS], start=1):
                 if not isinstance(match, dict):
                     continue
                 metadata = match.get("metadata") if isinstance(match.get("metadata"), dict) else {}
                 source = metadata.get("source") or metadata.get("file_name") or match.get("id") or "unknown source"
                 chunk_index = metadata.get("chunk_index", "?")
+                document = self._truncate_context_text(str(match.get("document", "")).strip())
                 blocks.append(
-                    f"[{index}] source={source} chunk={chunk_index} score={match.get('score', 0.0)}: {str(match.get('document', '')).strip()}"
+                    f"[{index}] source={source} chunk={chunk_index} score={match.get('score', 0.0)}: {document}"
                 )
             if blocks:
-                return "\n\n".join(blocks)
+                return self._compact_context_items(blocks)
 
         documents = [document for document in context.get("documents", []) if isinstance(document, str) and document.strip()]
-        return "\n\n".join(documents) or "No project context was retrieved."
+        return self._compact_context_items(documents) if documents else "No project context was retrieved."
+
+    def _compact_context_items(self, items: list[str]) -> str:
+        compacted = []
+        total_chars = 0
+        for item in items[:MAX_CONTEXT_ITEMS]:
+            truncated = self._truncate_context_text(item)
+            if total_chars + len(truncated) > MAX_CONTEXT_BLOCK_CHARS:
+                remaining = MAX_CONTEXT_BLOCK_CHARS - total_chars
+                if remaining <= 0:
+                    break
+                truncated = self._truncate_context_text(truncated, remaining)
+            compacted.append(truncated)
+            total_chars += len(truncated)
+        return "\n\n".join(compacted) or "No project context was retrieved."
+
+    def _truncate_context_text(self, value: str, limit: int = MAX_CONTEXT_ITEM_CHARS) -> str:
+        normalized = " ".join(value.split())
+        if len(normalized) <= limit:
+            return normalized
+        return f"{normalized[: max(0, limit - 15)].rstrip()} ...[truncated]"
 
     def _parse_story(self, raw_output: Any) -> dict:
         if isinstance(raw_output, dict):
             return self._unwrap_story_payload(raw_output)
 
-        text = str(raw_output).strip()
-        if text.startswith("```"):
-            text = text.strip("`")
-            if text.startswith("json"):
-                text = text[4:].strip()
-
-        start = text.find("{")
-        end = text.rfind("}")
-        if start == -1 or end == -1:
-            raise ValueError("Planner LLM did not return JSON.")
-        return self._unwrap_story_payload(json.loads(text[start : end + 1]))
+        text = normalize_llm_json_output(raw_output)
+        return self._unwrap_story_payload(json.loads(text))
 
     def _unwrap_story_payload(self, payload: dict) -> dict:
         story = payload.get("story")
@@ -294,7 +325,7 @@ class PlannerAgent:
         route: dict | None = None,
     ) -> dict:
         requirement_type = requirement_type or classify_requirement(requirement)
-        warnings_out = list(story.get("warnings", []))
+        warnings_out = [w for w in story.get("warnings", []) if isinstance(w, str) and not w.startswith("Planner ")]
         normalized = {
             "requirement": requirement,
             "title": self._clean_text_field(requirement, story.get("title") or requirement.strip(), requirement.strip(), "title", warnings_out),
@@ -322,6 +353,9 @@ class PlannerAgent:
         if planning_status != READY and normalized["planning_status"] != planning_status:
             normalized["planning_status"] = planning_status
             normalized["warnings"].append("Planner planning_status was reset to the local non-ready decision.")
+        elif planning_status == READY and normalized["planning_status"] != READY:
+            normalized["planning_status"] = READY
+            normalized["warnings"].append("Planner planning_status was reset to READY to match local classifier.")
         if normalized["planning_status"] == READY and normalized["story_points"] not in FIBONACCI_POINTS:
             normalized["story_points"] = None
             normalized["warnings"].append("Planner returned missing or non-Fibonacci story points; evaluator must request revision.")
@@ -462,7 +496,9 @@ class PlannerAgent:
         story["definition_of_done"] = dod
 
         if story.get("story_points") not in FIBONACCI_POINTS:
-            story["story_points"] = 3
+            points = self._estimate_story_points_with_llm(requirement, evidence_text)
+            if points:
+                story["story_points"] = points
             added = True
 
         if added:
@@ -485,6 +521,26 @@ class PlannerAgent:
         domain = self._evidence_domain(requirement, evidence_text, route or {})
         tasks = self._evidence_template(domain).get("tasks", {})
         return {group: list(values) for group, values in tasks.items()} if isinstance(tasks, dict) else {"be": [], "fe": [], "qa": []}
+
+    def _estimate_story_points_with_llm(self, requirement: str, evidence_text: str) -> int | None:
+        try:
+            from ai_scrum_master.core.llm_setup import build_llm
+            import json
+            llm = getattr(self, "llm", None) or build_llm()
+            messages = [
+                {"role": "system", "content": "You are an expert Agile Planner. Estimate story points (1, 2, 3, 5, 8, 13) based on the requirement and context. Output ONLY a valid JSON object with a single key 'story_points' containing the integer."},
+                {"role": "user", "content": f"Requirement: {requirement}\nContext: {evidence_text}"}
+            ]
+            raw_output = llm.call(messages)
+            from ai_scrum_master.core.llm_json import normalize_llm_json_output
+            json_text = normalize_llm_json_output(raw_output)
+            data = json.loads(json_text)
+            points = data.get("story_points")
+            if points in FIBONACCI_POINTS:
+                return points
+        except Exception as e:
+            logger.warning(f"Failed to estimate story points dynamically: {e}")
+        return None
 
     def _evidence_definition_of_done(self, requirement: str, evidence_text: str, route: dict | None = None) -> list[str]:
         domain = self._evidence_domain(requirement, evidence_text, route or {})
@@ -653,105 +709,7 @@ class PlannerAgent:
         domain = requirement_domain(requirement)
         return list(PLANNER_CLARIFICATION_QUESTIONS.get(domain, PLANNER_CLARIFICATION_QUESTIONS["general"]))
 
-    def _should_repair_story(self, story: dict, planning_status: str, context: dict) -> bool:
-        if context.get("retrieval_status") != "ok" or float(context.get("confidence") or 0.0) < 0.5:
-            return False
-        if planning_status == NEEDS_CLARIFICATION or story.get("planning_status") == NEEDS_CLARIFICATION:
-            return bool(self._clarification_gaps(story))
-        if planning_status != READY:
-            return False
-        warnings = story.get("warnings", [])
-        if any(
-            isinstance(warning, str)
-            and (
-                "completed missing READY fields" in warning
-                or "removed weak acceptance criteria" in warning
-                or "LLM did not provide" in warning
-            )
-            for warning in warnings
-        ):
-            return True
-        return (
-            story.get("planning_status") != READY
-            or len(story.get("acceptance_criteria", [])) < 3
-            or bool(self._acceptance_criteria_gaps(story.get("acceptance_criteria", [])))
-            or bool(self._ready_task_gaps(story.get("tasks", {})))
-            or len(story.get("definition_of_done", [])) < 4
-            or bool(self._ready_definition_of_done_gaps(story.get("definition_of_done", [])))
-        )
 
-    def _story_repair_gaps(self, story: dict) -> list[str]:
-        if story.get("planning_status") == NEEDS_CLARIFICATION:
-            return self._clarification_gaps(story)
-        gaps = []
-        if story.get("planning_status") != READY:
-            gaps.append("planning_status must be READY when evidence supports the requirement")
-        if len(story.get("acceptance_criteria", [])) < 3:
-            gaps.append("at least 3 acceptance criteria are required")
-        gaps.extend(self._acceptance_criteria_gaps(story.get("acceptance_criteria", [])))
-        gaps.extend(self._ready_task_gaps(story.get("tasks", {})))
-        if len(story.get("definition_of_done", [])) < 4:
-            gaps.append("at least 4 Definition of Done checks are required")
-        gaps.extend(self._ready_definition_of_done_gaps(story.get("definition_of_done", [])))
-        return gaps
-
-    def _clarification_gaps(self, story: dict) -> list[str]:
-        gaps = []
-        if story.get("planning_status") != NEEDS_CLARIFICATION:
-            gaps.append("planning_status must be NEEDS_CLARIFICATION")
-        if len(story.get("clarification_questions", [])) < 3:
-            gaps.append("at least 3 clarification questions are required")
-        if (
-            bool(story.get("user_story"))
-            or bool(story.get("acceptance_criteria"))
-            or story.get("story_points") is not None
-            or any(story.get("tasks", {}).get(group) for group in ("be", "fe", "qa"))
-            or bool(story.get("definition_of_done"))
-        ):
-            gaps.append("ready-story fields must be empty for NEEDS_CLARIFICATION")
-        return gaps
-
-    def _acceptance_criteria_gaps(self, acceptance_criteria: Any) -> list[str]:
-        if not isinstance(acceptance_criteria, list):
-            return ["acceptance_criteria must be a list"]
-        gaps = []
-        for index, criterion in enumerate(acceptance_criteria, start=1):
-            if not is_given_when_then_ordered(criterion):
-                gaps.append(f"acceptance criterion #{index} must use Given / When / Then")
-            if is_generic_acceptance_criterion(criterion):
-                gaps.append(f"acceptance criterion #{index} must be business-specific and derived from retrieved evidence")
-        for pair in similar_item_pairs(acceptance_criteria):
-            gaps.append(f"acceptance criteria #{pair} are too similar; each criterion must cover a distinct condition or outcome")
-        return gaps
-
-    def _ready_task_gaps(self, tasks: Any) -> list[str]:
-        if not isinstance(tasks, dict):
-            return ["tasks must be an object with be, fe, qa arrays"]
-        gaps = []
-        for group, label in (("be", "BE"), ("fe", "FE"), ("qa", "QA")):
-            values = tasks.get(group)
-            if not isinstance(values, list) or not any(is_task_actionable_for_group(item, group) for item in values):
-                gaps.append(f"tasks.{group} must contain at least one actionable {label} item")
-                continue
-            for index, item in enumerate(values, start=1):
-                if is_placeholder_task(item):
-                    gaps.append(f"tasks.{group}[{index}] must be concrete and business-specific, not a generic placeholder")
-                if not is_task_actionable_for_group(item, group):
-                    gaps.append(f"tasks.{group}[{index}] must match the {label} responsibility")
-        return gaps
-
-    def _ready_definition_of_done_gaps(self, definition_of_done: Any) -> list[str]:
-        if not isinstance(definition_of_done, list):
-            return ["definition_of_done must be a list"]
-        text = " ".join(item for item in definition_of_done if isinstance(item, str)).lower()
-        gaps = []
-        if not ("acceptance" in text and "criteria" in text):
-            gaps.append("acceptance criteria validation")
-        if not any(term in text for term in ("implementation", "implemented", "backend", "frontend", "api", "ui", "be", "fe")):
-            gaps.append("BE/FE implementation completion")
-        if not any(term in text for term in ("qa", "test", "testing", "validation", "validated")):
-            gaps.append("QA/testing evidence")
-        return gaps
 
     def _build_warnings(self, context: dict) -> list[str]:
         warnings = list(context.get("warnings", []))
@@ -761,19 +719,17 @@ class PlannerAgent:
             warnings.append("Retrieved context confidence is low.")
         return warnings
 
-    def _classify_requirement(self, requirement: str) -> str:
+    def _classify_requirement(self, requirement: str, route: dict | None = None) -> str:
+        route = route or {}
+        if route.get("domain") == "benchmark_case":
+            return READY
+
         requirement_type = classify_requirement(requirement)
         if requirement_type == "ambiguous_request":
             return NEEDS_CLARIFICATION
         if requirement_type == "oversized_request":
             return SPLIT_RECOMMENDED
 
-        lowered = requirement.lower().strip()
-        words = lowered.split()
-        oversized_terms = {"full", "complete", "entire", "portal", "platform", "dashboard", "billing", "analytics", "notifications", "admin"}
-
-        if sum(1 for term in oversized_terms if term in lowered) >= 3 or len(words) > 28:
-            return SPLIT_RECOMMENDED
         return READY
 
     def _llm_unavailable_story(

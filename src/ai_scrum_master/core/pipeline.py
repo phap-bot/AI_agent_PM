@@ -32,6 +32,7 @@ def generate_story_pipeline(
     allow_fallback_without_context: bool = False,
     crew: "ScrumMasterCrew | None" = None,
     crewai_builder: Callable[..., Any] | None = None,
+    progress_callback: Callable[[str, dict], None] | None = None,
 ) -> dict:
     builder = crewai_builder or (build_scrum_master_crew if crew is None else None)
     crewai_crew = builder(requirement, n_results=n_results) if builder else None
@@ -52,6 +53,7 @@ def generate_story_pipeline(
         requirement=requirement,
         n_results=n_results,
         allow_fallback_without_context=allow_fallback_without_context,
+        progress_callback=progress_callback,
     )
     if crewai_warning:
         result = _mark_crewai_failure_for_revision(result, crewai_warning)
@@ -216,7 +218,7 @@ class ScrumMasterCrew:
         )
         self.jira_tool = JiraTool()
         self.slack_tool = SlackTool()
-    def run(self, requirement: str, n_results: int = 5, allow_fallback_without_context: bool = False) -> dict:
+    def run(self, requirement: str, n_results: int = 5, allow_fallback_without_context: bool = False, progress_callback: Callable[[str, dict], None] | None = None) -> dict:
         route = route_requirement(requirement)
         requirement_type = route.get("story_type") or classify_requirement(requirement)
         logger.info(
@@ -240,6 +242,9 @@ class ScrumMasterCrew:
         )
 
         context = self._select_context_for_requirement(requirement, context, route)
+        if progress_callback:
+            progress_callback("planner", {"context": context})
+
         if should_block_planning(context, allow_fallback_without_context):
             return self._context_required_response(context, route)
         if context.get("retrieval_status") in {"empty", "no_relevant_context", "failed"} and allow_fallback_without_context:
@@ -299,6 +304,9 @@ class ScrumMasterCrew:
                 "evaluation": evaluation,
                 "actions": actions,
             }
+
+        if progress_callback:
+            progress_callback("evaluator", {"story": story})
 
         logger.info("Evaluator stage started")
         evaluation = self.evaluator.run(story=story)

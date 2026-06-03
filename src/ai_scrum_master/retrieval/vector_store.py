@@ -31,11 +31,21 @@ def get_chroma_client() -> Any:
     return chromadb.PersistentClient(path=str(persist_directory))
 
 
-def get_collection(name: str | None = None) -> Any:
+def canonical_collection_name(collection_name: str | None = None) -> str:
     settings = get_settings()
+    if collection_name and collection_name != settings.context_collection:
+        logger.warning(
+            "Ignoring non-canonical Chroma collection override requested=%s canonical=%s",
+            collection_name,
+            settings.context_collection,
+        )
+    return settings.context_collection
+
+
+def get_collection(name: str | None = None) -> Any:
     client = get_chroma_client()
     return client.get_or_create_collection(
-        name=name or settings.context_collection,
+        name=canonical_collection_name(name),
         embedding_function=get_embedding_function(),
     )
 
@@ -83,9 +93,11 @@ def query_documents(
     n_results: int = 5,
     collection_name: str | None = None,
 ) -> dict:
+    from ai_scrum_master.retrieval.rag import compact_query_for_embedding
+
     collection = get_collection(collection_name)
     return collection.query(
-        query_texts=[query],
+        query_texts=[compact_query_for_embedding(query)],
         n_results=n_results,
         include=["documents", "metadatas", "distances"],
     )
@@ -97,20 +109,22 @@ def search_context(
     collection_name: str | None = None,
 ) -> list[dict]:
     settings = get_settings()
+    fallback_from = ""
     if settings.rag_backend.strip().lower() == "langchain":
         try:
-            from ai_scrum_master.retrieval.rag import search_context_with_langchain
+            from ai_scrum_master.retrieval.rag import compact_query_for_embedding, search_context_with_langchain
 
             return search_context_with_langchain(
-                query=query,
+                query=compact_query_for_embedding(query),
                 n_results=n_results,
                 collection_name=collection_name,
             )
         except Exception as exc:
             if not settings.rag_fallback_to_direct_chroma:
                 raise
+            fallback_from = "langchain_chroma"
             logger.warning(
-                "LangChain RAG retrieval failed; falling back to direct Chroma query. reason=%s",
+                "rag_backend=langchain_chroma fallback_backend=direct_chroma reason=%s",
                 exc,
             )
 
@@ -123,15 +137,20 @@ def search_context(
     matches: list[dict] = []
     for index, document in enumerate(documents):
         distance = distances[index] if index < len(distances) else None
-        matches.append(
-            {
-                "id": ids[index] if index < len(ids) else "",
-                "document": document,
-                "metadata": metadatas[index] if index < len(metadatas) and isinstance(metadatas[index], dict) else {},
-                "distance": distance,
-                "score": distance_to_score(distance),
-            }
-        )
+        metadata = metadatas[index] if index < len(metadatas) and isinstance(metadatas[index], dict) else {}
+        match = {
+            "id": ids[index] if index < len(ids) else "",
+            "document": document,
+            "metadata": metadata,
+            "distance": distance,
+            "score": distance_to_score(distance),
+            "retriever": "direct_chroma",
+        }
+        if fallback_from:
+            match["fallback_from"] = fallback_from
+            metadata.setdefault("retriever", "direct_chroma")
+            metadata.setdefault("fallback_from", fallback_from)
+        matches.append(match)
     return matches
 
 

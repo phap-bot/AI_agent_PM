@@ -1,0 +1,22 @@
+Metadata-Version: 2.4
+Name: ai-scrum-master
+Version: 0.1.0
+Summary: AI Scrum Master Agent for turning stakeholder requests into sprint-ready Jira work items.
+Requires-Python: >=3.11
+Requires-Dist: fastapi<0.116,>=0.115
+Requires-Dist: starlette<0.42,>=0.40
+Requires-Dist: uvicorn
+Requires-Dist: streamlit
+Requires-Dist: pytest
+Requires-Dist: crewai
+Requires-Dist: langchain
+Requires-Dist: langchain-community
+Requires-Dist: langchain-chroma
+Requires-Dist: langchain-ollama
+Requires-Dist: langchain-text-splitters
+Requires-Dist: chromadb
+Requires-Dist: pyyaml
+Requires-Dist: pydantic
+Requires-Dist: python-dotenv
+Requires-Dist: ollama
+Requires-Dist: pypdf

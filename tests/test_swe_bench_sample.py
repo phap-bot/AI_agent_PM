@@ -4,6 +4,7 @@ from ai_scrum_master.datasets.swe_bench_sample import (
     fetch_rows,
     markdown_for_case,
     normalize_case,
+    sanitize_issue_text,
     safe_filename,
     write_sample_outputs,
 )
@@ -35,6 +36,26 @@ def test_normalize_swe_bench_case_preserves_issue_fields_without_gold_patch_text
 
 def test_safe_filename_removes_path_separators() -> None:
     assert safe_filename("owner/repo issue #1") == "owner__repo_issue_1"
+
+
+def test_sanitize_issue_text_removes_patch_blocks_but_keeps_repro_code() -> None:
+    text = """Bug report
+
+```python
+print("repro")
+```
+
+```diff
+diff --git a/file.py b/file.py
++solution()
+```
+"""
+
+    sanitized = sanitize_issue_text(text)
+
+    assert 'print("repro")' in sanitized
+    assert "diff --git" not in sanitized
+    assert "Patch diff omitted" in sanitized
 
 
 def test_write_sample_outputs_creates_planner_and_retrieval_cases(tmp_path: Path) -> None:

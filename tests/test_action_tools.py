@@ -61,7 +61,7 @@ def test_jira_story_payload_builder() -> None:
 
     assert payload["fields"]["project"]["key"] == "SCRUM"
     assert payload["fields"]["summary"] == "Google Login"
-    assert payload["fields"]["issuetype"]["name"] == "Story"
+    assert payload["fields"]["issuetype"]["name"] == "Task"
 
 
 def test_jira_prepare_action_warns_when_unconfigured() -> None:
@@ -144,7 +144,14 @@ def test_jira_execute_creates_story_and_subtasks() -> None:
 
     assert result["executed"] is True
     assert result["created"]["story_key"] == "SCRUM-1"
+    assert result["created"]["story"] == {
+        "id": None,
+        "key": "SCRUM-1",
+        "self": None,
+        "url": "https://example.atlassian.net/browse/SCRUM-1",
+    }
     assert len(result["created"]["subtasks"]) == 3
+    assert result["created"]["subtasks"][0]["url"] == "https://example.atlassian.net/browse/SCRUM-2"
     assert len(http.calls) == 4
 
 

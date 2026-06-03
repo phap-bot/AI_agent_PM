@@ -16,6 +16,8 @@ class JiraConfig:
     project_key: str
     email: str
     api_token: str
+    issue_type: str = "Task"
+    subtask_issue_type: str = "Sub-task"
 
     @property
     def is_configured(self) -> bool:
@@ -30,6 +32,8 @@ class JiraTool:
             project_key=settings.jira_project_key,
             email=settings.jira_email,
             api_token=settings.jira_api_token,
+            issue_type=settings.jira_issue_type,
+            subtask_issue_type=settings.jira_subtask_issue_type,
         )
         self.http_client = http_client or UrllibHttpClient()
 
@@ -39,7 +43,7 @@ class JiraTool:
                 "project": {"key": self.config.project_key},
                 "summary": story["title"],
                 "description": self._build_adf_description(story),
-                "issuetype": {"name": "Story"},
+                "issuetype": {"name": self.config.issue_type},
                 "labels": ["ai-scrum-master"],
             }
         }
@@ -55,7 +59,7 @@ class JiraTool:
                             "parent": {"key": parent_key},
                             "summary": f"[{group.upper()}-{index:03d}] {task}",
                             "description": self._build_text_adf(f"Task group: {group.upper()}"),
-                            "issuetype": {"name": "Sub-task"},
+                            "issuetype": {"name": self.config.subtask_issue_type},
                             "labels": ["ai-scrum-master", group.lower()],
                         }
                     }
@@ -147,7 +151,11 @@ class JiraTool:
             "ready": True,
             "executed": not failed_subtasks,
             "payload": payload,
-            "created": {"story_key": story_key, "subtasks": created_subtasks},
+            "created": {
+                "story": self._created_issue_summary(story_result),
+                "story_key": story_key,
+                "subtasks": created_subtasks,
+            },
             "failed": failed_subtasks,
             "warnings": warnings + [warning for result in failed_subtasks for warning in result.get("warnings", [])],
             "status_code": story_result.get("status_code"),
@@ -155,18 +163,37 @@ class JiraTool:
 
     def _create_issue(self, payload: dict[str, Any]) -> dict[str, Any]:
         response = self._post_with_retry(self._issue_url(), payload)
-        key = response.json_body.get("key") if response.json_body else None
+        body = response.json_body or {}
+        key = body.get("key")
         warnings = self._warnings_for_response(response)
-        return {"key": key, "status_code": response.status_code, "warnings": warnings, "response": response.json_body}
+        return {
+            "id": body.get("id"),
+            "key": key,
+            "self": body.get("self"),
+            "url": self._browse_issue_url(str(key)) if key else "",
+            "status_code": response.status_code,
+            "warnings": warnings,
+            "response": response.json_body,
+        }
 
     def _create_subtasks(self, parent_key: str, story: dict) -> list[dict[str, Any]]:
         results: list[dict[str, Any]] = []
         for payload in self.build_subtask_payloads(parent_key, story):
             response = self._post_with_retry(self._issue_url(), payload)
+            
+            # Fallback for Atlassian Cloud which sometimes uses "Subtask" instead of "Sub-task"
+            if response.status_code == 400 and payload["fields"]["issuetype"]["name"] == "Sub-task":
+                payload["fields"]["issuetype"]["name"] = "Subtask"
+                response = self._post_with_retry(self._issue_url(), payload)
+
             key = response.json_body.get("key") if response.json_body else None
+            body = response.json_body or {}
             results.append(
                 {
+                    "id": body.get("id"),
                     "key": key,
+                    "self": body.get("self"),
+                    "url": self._browse_issue_url(str(key)) if key else "",
                     "summary": payload["fields"]["summary"],
                     "status_code": response.status_code,
                     "warnings": self._warnings_for_response(response),
@@ -184,13 +211,24 @@ class JiraTool:
                 basic_auth=(self.config.email, self.config.api_token),
                 headers={"Accept": "application/json", "User-Agent": "ai-scrum-master/0.1"},
             )
-            if response.status_code not in {401, 429} and response.status_code < 500:
+            if response.status_code not in {0, 401, 429} and response.status_code < 500:
                 return response
             logger.info("Jira request retryable status_code=%s attempt=%s", response.status_code, attempt)
         return response
 
     def _issue_url(self) -> str:
         return f"{self.config.base_url.rstrip('/')}/rest/api/3/issue"
+
+    def _browse_issue_url(self, key: str) -> str:
+        return f"{self.config.base_url.rstrip('/')}/browse/{key}"
+
+    def _created_issue_summary(self, result: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "id": result.get("id"),
+            "key": result.get("key"),
+            "self": result.get("self"),
+            "url": result.get("url") or (self._browse_issue_url(str(result["key"])) if result.get("key") else ""),
+        }
 
     def _myself_url(self) -> str:
         return f"{self.config.base_url.rstrip('/')}/rest/api/3/myself"
@@ -218,18 +256,80 @@ class JiraTool:
         return [f"Jira request failed with status {response.status_code}."]
 
     def _build_adf_description(self, story: dict) -> dict[str, Any]:
-        lines = [
-            story["user_story"],
-            "",
-            f"Story Points: {story['story_points']}",
-            "",
-            "Acceptance Criteria:",
-            *[f"- {item}" for item in story.get("acceptance_criteria", [])],
-            "",
-            "Definition of Done:",
-            *[f"- {item}" for item in story.get("definition_of_done", [])],
-        ]
-        return self._build_text_adf("\n".join(lines))
+        content = []
+
+        # User Story
+        content.append({
+            "type": "heading",
+            "attrs": {"level": 3},
+            "content": [{"type": "text", "text": "User Story"}]
+        })
+        content.append({
+            "type": "paragraph",
+            "content": [{"type": "text", "text": story.get("user_story", "")}]
+        })
+        
+        # Story Points
+        if story.get("story_points"):
+            content.append({
+                "type": "panel",
+                "attrs": {"panelType": "info"},
+                "content": [{
+                    "type": "paragraph",
+                    "content": [{"type": "text", "text": f"Story Points: {story.get('story_points')}"}]
+                }]
+            })
+
+        # Acceptance Criteria
+        ac_list = story.get("acceptance_criteria", [])
+        if ac_list:
+            content.append({
+                "type": "heading",
+                "attrs": {"level": 3},
+                "content": [{"type": "text", "text": "Acceptance Criteria"}]
+            })
+            ac_items = []
+            for ac in ac_list:
+                ac_text = str(ac)
+                ac_items.append({
+                    "type": "listItem",
+                    "content": [{
+                        "type": "paragraph",
+                        "content": [{"type": "text", "text": ac_text}]
+                    }]
+                })
+            content.append({
+                "type": "bulletList",
+                "content": ac_items
+            })
+
+        # Definition of Done
+        dod_list = story.get("definition_of_done", [])
+        if dod_list:
+            content.append({
+                "type": "heading",
+                "attrs": {"level": 3},
+                "content": [{"type": "text", "text": "Definition of Done"}]
+            })
+            dod_items = []
+            for dod in dod_list:
+                dod_items.append({
+                    "type": "listItem",
+                    "content": [{
+                        "type": "paragraph",
+                        "content": [{"type": "text", "text": str(dod)}]
+                    }]
+                })
+            content.append({
+                "type": "bulletList",
+                "content": dod_items
+            })
+
+        return {
+            "version": 1,
+            "type": "doc",
+            "content": content
+        }
 
     def _build_text_adf(self, text: str) -> dict[str, Any]:
         return {

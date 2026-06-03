@@ -2,10 +2,20 @@ from __future__ import annotations
 
 import base64
 import json
+import socket
 from dataclasses import dataclass
 from typing import Any, Protocol
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
+
+
+# Force IPv4 resolution to prevent TimeoutError/ConnectionResetError in environments where IPv6 is broken
+_original_getaddrinfo = socket.getaddrinfo
+def _ipv4_getaddrinfo(*args, **kwargs):
+    responses = _original_getaddrinfo(*args, **kwargs)
+    return [response for response in responses if response[0] == socket.AF_INET]
+
+socket.getaddrinfo = _ipv4_getaddrinfo
 
 
 @dataclass(frozen=True)
