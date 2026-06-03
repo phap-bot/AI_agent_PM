@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import time
 from typing import Any
 
@@ -302,6 +303,10 @@ class PlannerAgent:
             return self._unwrap_story_payload(raw_output)
 
         text = normalize_llm_json_output(raw_output)
+        
+        # Remove <think>...</think> blocks if present
+        text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+        
         return self._unwrap_story_payload(json.loads(text))
 
     def _unwrap_story_payload(self, payload: dict) -> dict:

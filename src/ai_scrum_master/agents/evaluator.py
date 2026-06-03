@@ -127,6 +127,10 @@ class EvaluatorAgent:
             return raw_output
 
         text = normalize_llm_json_output(raw_output)
+        
+        # Remove <think>...</think> blocks if present
+        text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+        
         return json.loads(text)
 
     def _normalize_result(self, result: dict, rule_result: dict) -> dict:
