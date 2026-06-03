@@ -13,7 +13,7 @@ Hệ thống được xây dựng trên các công nghệ hiện đại và mạ
 
 - **Agent Framework:** CrewAI
 - **Backend API:** FastAPI
-- **Giao diện Demo:** Streamlit
+- **Frontend:** React (Vite)
 - **LLM Runtime:** Ollama (chạy local tại `http://localhost:11434`)
 - **Reasoning Model:** `deepseek-r1:7b`
 - **Embedding Model:** `nomic-embed-text`
@@ -133,13 +133,24 @@ curl -X POST http://127.0.0.1:8000/generate \
 
 ---
 
-## 🎨 6. Chạy Giao Diện Demo (Streamlit)
+## 🎨 6. Chạy Giao Diện Frontend (React)
 
-Khởi động giao diện UI:
-```bash
-streamlit run ui/app.py
-```
-Streamlit sẽ mở một trình duyệt mới tại localhost. Giao diện này cung cấp trải nghiệm sử dụng hoàn chỉnh để test hệ thống: từ việc điền thông tin mô tả tính năng tới xem bản preview của Jira/Slack.
+Hệ thống sử dụng React (Vite) cho giao diện người dùng. Để chạy Frontend:
+
+1. Di chuyển vào thư mục `frontend`:
+   ```bash
+   cd frontend
+   ```
+2. Cài đặt các thư viện (chỉ cần chạy lần đầu):
+   ```bash
+   npm install
+   ```
+3. Khởi động môi trường phát triển (Dev Server):
+   ```bash
+   npm run dev
+   ```
+
+Giao diện sẽ được mở trên trình duyệt (thông thường là `http://localhost:5173`). Tại đây, bạn có thể nhập các yêu cầu tính năng và quan sát quá trình Agent phân tích và tạo Jira Stories.
 
 ---
 
