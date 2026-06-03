@@ -28,16 +28,10 @@ Hệ thống được xây dựng trên các công nghệ hiện đại và mạ
 
 Đảm bảo bạn đang mở terminal ở thư mục gốc của dự án `D:/Antigravity/AI_Agent_PM_PRJ`.
 
-**Sử dụng Bash/Zsh:**
-```bash
-python -m venv .venv
-source .venv/Scripts/activate
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-```
 
 **Sử dụng PowerShell (Windows):**
 ```powershell
+python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
