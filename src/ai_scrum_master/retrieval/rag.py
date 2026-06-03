@@ -81,15 +81,20 @@ def build_chat_ollama(**overrides: Any) -> Any:
     return ChatOllama(**options)
 
 
-def build_chroma_vector_store(collection_name: str | None = None) -> Any:
-    Chroma = _load_attr("langchain_chroma", "Chroma")
+def build_qdrant_vector_store(collection_name: str | None = None) -> Any:
+    QdrantVectorStore = _load_attr("langchain_qdrant", "QdrantVectorStore")
     settings = get_settings()
-    persist_directory = Path(settings.chroma_persist_dir).resolve()
-    persist_directory.mkdir(parents=True, exist_ok=True)
-    return Chroma(
+    
+    from qdrant_client import QdrantClient
+    if settings.qdrant_api_key:
+        client = QdrantClient(url=settings.qdrant_url, api_key=settings.qdrant_api_key)
+    else:
+        client = QdrantClient(url=settings.qdrant_url)
+        
+    return QdrantVectorStore(
+        client=client,
         collection_name=canonical_collection_name(collection_name),
-        embedding_function=build_ollama_embeddings(),
-        persist_directory=str(persist_directory),
+        embedding=build_ollama_embeddings()
     )
 
 
@@ -100,7 +105,7 @@ def search_context_with_langchain(
 ) -> list[dict[str, Any]]:
     settings = get_settings()
     retrieval_query = compact_query_for_embedding(query)
-    vector_store = build_chroma_vector_store(collection_name)
+    vector_store = build_qdrant_vector_store(collection_name)
     fetch_k = max(n_results, settings.rag_vector_fetch_k if settings.rag_hybrid_search else n_results)
     results = vector_store.similarity_search_with_score(retrieval_query, k=fetch_k)
 
@@ -117,7 +122,7 @@ def search_context_with_langchain(
                 "score": distance_to_score(float(distance) if distance is not None else None),
                 "vector_score": distance_to_score(float(distance) if distance is not None else None),
                 "lexical_score": lexical_score(query, document.page_content, metadata),
-                "retriever": "langchain_chroma",
+                "retriever": "langchain_qdrant",
             }
         )
     if settings.rag_hybrid_search:
@@ -265,28 +270,19 @@ def add_langchain_documents(
     ids: list[str],
     collection_name: str | None = None,
 ) -> None:
-    """Add documents with batch embedding for maximum speed."""
+    """Add documents with batch embedding for maximum speed using Qdrant."""
     if not documents:
         return
 
     import time
     t_start = time.time()
 
-    # Step 1: Pre-compute ALL embeddings in a single batch call
-    embeddings_model = build_ollama_embeddings()
+    from ai_scrum_master.retrieval.vector_store import upsert_documents
+    
     texts = [str(doc.page_content) for doc in documents]
-    logger.info("[EMBED] Batch embedding %d chunks...", len(texts))
-    all_embeddings = embeddings_model.embed_documents(texts)
-    logger.info("[EMBED] Batch embedding done in %.2fs", time.time() - t_start)
-
-    # Step 2: Upsert directly to ChromaDB (bypasses LangChain's slow per-doc add)
-    from ai_scrum_master.retrieval.vector_store import get_collection
-    collection = get_collection(collection_name)
-
     metadatas = []
     for doc in documents:
         meta = dict(doc.metadata) if doc.metadata else {}
-        # ChromaDB requires all metadata values to be str/int/float/bool
         clean_meta = {}
         for k, v in meta.items():
             if isinstance(v, (str, int, float, bool)):
@@ -296,14 +292,8 @@ def add_langchain_documents(
         metadatas.append(clean_meta)
 
     t_upsert = time.time()
-    # ChromaDB supports batch upsert natively
-    collection.upsert(
-        ids=list(ids),
-        documents=texts,
-        embeddings=all_embeddings,
-        metadatas=metadatas,
-    )
-    logger.info("[EMBED] Upserted %d chunks to ChromaDB in %.2fs", len(ids), time.time() - t_upsert)
+    upsert_documents(texts, ids, metadatas, collection_name)
+    logger.info("[EMBED] Upserted %d chunks to Qdrant in %.2fs", len(ids), time.time() - t_upsert)
     logger.info("[EMBED] Total add_langchain_documents: %.2fs", time.time() - t_start)
 
 
@@ -386,6 +376,9 @@ def generate_grounded_answer(
 
 
 def parse_json_object(text: str) -> dict[str, Any]:
+    # Remove <think>...</think> blocks if present
+    text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+
     try:
         value = json.loads(text)
         if isinstance(value, dict):
