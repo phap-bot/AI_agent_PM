@@ -1,0 +1,336 @@
+{
+  "k": 3,
+  "queries": 20,
+  "aggregate": {
+    "queries": 20,
+    "top_k": 3,
+    "hit_rate_at_k": 0.9,
+    "recall_at_k": 0.9,
+    "precision_at_k": 0.4167,
+    "mrr": 0.9,
+    "ndcg_at_k": 0.9
+  },
+  "per_source": {
+    "auth_context": {
+      "expected_queries": 7,
+      "hit_queries": 7,
+      "recall_at_k": 1.0
+    },
+    "checkout_context": {
+      "expected_queries": 6,
+      "hit_queries": 6,
+      "recall_at_k": 1.0
+    },
+    "notification_context": {
+      "expected_queries": 3,
+      "hit_queries": 3,
+      "recall_at_k": 1.0
+    },
+    "sprint_policy": {
+      "expected_queries": 5,
+      "hit_queries": 3,
+      "recall_at_k": 0.6
+    }
+  },
+  "query_results": [
+    {
+      "id": "Q01",
+      "domain": "auth",
+      "query": "Add Google login using OAuth for existing users",
+      "expected_sources": [
+        "auth_context.md"
+      ],
+      "hit_rate": 1.0,
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "found_sources": [
+        "auth_context"
+      ]
+    },
+    {
+      "id": "Q02",
+      "domain": "auth",
+      "query": "JWT token refresh endpoint backend implementation",
+      "expected_sources": [
+        "auth_context.md"
+      ],
+      "hit_rate": 1.0,
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "found_sources": [
+        "auth_context"
+      ]
+    },
+    {
+      "id": "Q03",
+      "domain": "auth",
+      "query": "User logout from authenticated routes",
+      "expected_sources": [
+        "auth_context.md"
+      ],
+      "hit_rate": 1.0,
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "found_sources": [
+        "auth_context"
+      ]
+    },
+    {
+      "id": "Q04",
+      "domain": "auth",
+      "query": "OAuth callback code exchange server-side",
+      "expected_sources": [
+        "auth_context.md"
+      ],
+      "hit_rate": 1.0,
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "found_sources": [
+        "auth_context"
+      ]
+    },
+    {
+      "id": "Q05",
+      "domain": "auth",
+      "query": "Show error when Google authentication is cancelled",
+      "expected_sources": [
+        "auth_context.md"
+      ],
+      "hit_rate": 1.0,
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "found_sources": [
+        "auth_context"
+      ]
+    },
+    {
+      "id": "Q06",
+      "domain": "auth",
+      "query": "Prevent access tokens from appearing in URL query parameters",
+      "expected_sources": [
+        "auth_context.md"
+      ],
+      "hit_rate": 1.0,
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "found_sources": [
+        "auth_context"
+      ]
+    },
+    {
+      "id": "Q07",
+      "domain": "checkout",
+      "query": "Payment retry without creating duplicate orders",
+      "expected_sources": [
+        "checkout_context.md"
+      ],
+      "hit_rate": 1.0,
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "found_sources": [
+        "checkout_context"
+      ]
+    },
+    {
+      "id": "Q08",
+      "domain": "checkout",
+      "query": "Show retry message when payment provider times out",
+      "expected_sources": [
+        "checkout_context.md"
+      ],
+      "hit_rate": 1.0,
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "found_sources": [
+        "checkout_context"
+      ]
+    },
+    {
+      "id": "Q09",
+      "domain": "checkout",
+      "query": "Block order creation when inventory mismatch",
+      "expected_sources": [
+        "checkout_context.md"
+      ],
+      "hit_rate": 1.0,
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "found_sources": [
+        "checkout_context"
+      ]
+    },
+    {
+      "id": "Q10",
+      "domain": "checkout",
+      "query": "Apply discount coupon validation at checkout",
+      "expected_sources": [
+        "checkout_context.md"
+      ],
+      "hit_rate": 1.0,
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "found_sources": [
+        "checkout_context"
+      ]
+    },
+    {
+      "id": "Q11",
+      "domain": "checkout",
+      "query": "Backend calculates shipping fee and tax for order",
+      "expected_sources": [
+        "checkout_context.md"
+      ],
+      "hit_rate": 1.0,
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "found_sources": [
+        "checkout_context"
+      ]
+    },
+    {
+      "id": "Q12",
+      "domain": "notification",
+      "query": "Send Slack alert when Jira creation fails",
+      "expected_sources": [
+        "notification_context.md"
+      ],
+      "hit_rate": 1.0,
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "found_sources": [
+        "notification_context"
+      ]
+    },
+    {
+      "id": "Q13",
+      "domain": "notification",
+      "query": "Email notification for customer-facing workflow events",
+      "expected_sources": [
+        "notification_context.md"
+      ],
+      "hit_rate": 1.0,
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "found_sources": [
+        "notification_context"
+      ]
+    },
+    {
+      "id": "Q14",
+      "domain": "notification",
+      "query": "Block Slack notification when evaluator status is REVISION",
+      "expected_sources": [
+        "notification_context.md"
+      ],
+      "hit_rate": 1.0,
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "found_sources": [
+        "notification_context"
+      ]
+    },
+    {
+      "id": "Q15",
+      "domain": "scrum",
+      "query": "Write user story with acceptance criteria Given When Then",
+      "expected_sources": [
+        "sprint_policy.md"
+      ],
+      "hit_rate": 0.0,
+      "recall": 0.0,
+      "mrr": 0.0,
+      "ndcg": 0.0,
+      "found_sources": []
+    },
+    {
+      "id": "Q16",
+      "domain": "scrum",
+      "query": "Sprint Planning story points Fibonacci estimation",
+      "expected_sources": [
+        "sprint_policy.md"
+      ],
+      "hit_rate": 1.0,
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "found_sources": [
+        "sprint_policy"
+      ]
+    },
+    {
+      "id": "Q17",
+      "domain": "scrum",
+      "query": "Split oversized requirement into multiple user stories across sprints",
+      "expected_sources": [
+        "sprint_policy.md"
+      ],
+      "hit_rate": 0.0,
+      "recall": 0.0,
+      "mrr": 0.0,
+      "ndcg": 0.0,
+      "found_sources": []
+    },
+    {
+      "id": "Q18",
+      "domain": "scrum",
+      "query": "Clarification questions for ambiguous requirements",
+      "expected_sources": [
+        "sprint_policy.md"
+      ],
+      "hit_rate": 1.0,
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "found_sources": [
+        "sprint_policy"
+      ]
+    },
+    {
+      "id": "Q19",
+      "domain": "cross",
+      "query": "User must be authenticated before accessing checkout payment",
+      "expected_sources": [
+        "auth_context.md",
+        "checkout_context.md"
+      ],
+      "hit_rate": 1.0,
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "found_sources": [
+        "auth_context",
+        "checkout_context"
+      ]
+    },
+    {
+      "id": "Q20",
+      "domain": "cross",
+      "query": "Improve sprint planning process with automated story generation",
+      "expected_sources": [
+        "sprint_policy.md"
+      ],
+      "hit_rate": 1.0,
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "found_sources": [
+        "sprint_policy"
+      ]
+    }
+  ],
+  "passed": false
+}

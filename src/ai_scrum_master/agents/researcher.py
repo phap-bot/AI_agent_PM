@@ -250,29 +250,25 @@ class ResearcherAgent:
         for match in matches:
             candidate = dict(match)
             source_name = self._normalized_source_name(candidate)
-            
+            if expected_sources and not self._match_matches_expected(candidate, source_name, expected_sources):
+                continue
             score = float(candidate.get("score") or 0.0)
             vector_score = float(candidate.get("vector_score") or 0.0)
             
-            # Method 3: Jaccard Overlap Re-ranking
-            doc_words = set(w for w in str(candidate.get("document", "")).lower().split() if len(w) > 2)
-            overlap = len(req_words & doc_words)
-            jaccard = (overlap / req_len) if req_len > 0 else 0.0
-            
-            # Rerank by combining vector score and jaccard overlap
-            final_score = (score * 0.8) + (jaccard * 0.2)
-            candidate["score"] = round(final_score, 3)
-            candidate["score_reason"] = "jaccard_rerank"
-            
             # Boost score if this match comes from an expected required source
             if expected_sources and self._match_matches_expected(candidate, source_name, expected_sources):
-                boosted = min(1.0, candidate["score"] + 0.15)
+                boosted = min(1.0, score + 0.15)
                 candidate["score"] = round(boosted, 3)
                 candidate["score_reason"] = "expected_source_boost"
 
+            if expected_sources and vector_score > score:
+                candidate["rank_score"] = candidate.get("rank_score", score)
+                candidate["score"] = round(vector_score, 3)
+                candidate["score_reason"] = "expected_source_vector_score"
             if float(candidate.get("score") or 0.0) >= self.settings.retrieval_min_score:
                 relevant_matches.append(candidate)
         return relevant_matches
+
 
     def _normalized_source_name(self, match: dict) -> str:
         metadata = match.get("metadata") if isinstance(match.get("metadata"), dict) else {}

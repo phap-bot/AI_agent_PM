@@ -1,0 +1,32 @@
+[
+  {
+    "requirement": "Add Google login using OAuth so that users can sign in with their Google account",
+    "retrieval_status": "ok",
+    "planning_status": "READY",
+    "evaluation_status": "APPROVED",
+    "issues_count": 0,
+    "dod_score": "0/5",
+    "planner_ms": 99607,
+    "evaluator_ms": 0
+  },
+  {
+    "requirement": "Implement retry-safe checkout payment so that duplicate orders are prevented",
+    "retrieval_status": "ok",
+    "planning_status": "READY",
+    "evaluation_status": "APPROVED",
+    "issues_count": 0,
+    "dod_score": "0/5",
+    "planner_ms": 114902,
+    "evaluator_ms": 0
+  },
+  {
+    "requirement": "Write sprint planning user story with Given When Then acceptance criteria",
+    "retrieval_status": "ok",
+    "planning_status": "READY",
+    "evaluation_status": "APPROVED",
+    "issues_count": 0,
+    "dod_score": "0/5",
+    "planner_ms": 90559,
+    "evaluator_ms": 0
+  }
+]

@@ -1,0 +1,38 @@
+[
+  {
+    "requirement": "Add Google login using OAuth so that users can sign in with their Google account",
+    "retrieval_status": "ok",
+    "planning_status": "READY",
+    "story_type": "software_feature",
+    "title": "Implement Google Login Using OAuth",
+    "user_story": "As a returning user, I want to sign in with Google, so that I can access my account quickly without entering a password.",
+    "ac_count": 3,
+    "story_points": 5,
+    "warnings_count": 4,
+    "latency_ms": 104662
+  },
+  {
+    "requirement": "Implement retry-safe checkout payment so that duplicate orders are prevented",
+    "retrieval_status": "ok",
+    "planning_status": "READY",
+    "story_type": "software_feature",
+    "title": "Implement Retry-Safe Checkout Payment to Prevent Duplicate Orders",
+    "user_story": "As an authenticated shopper, I want to retry checkout payment after a provider timeout, so that I can complete checkout without creating duplicate orders.",
+    "ac_count": 3,
+    "story_points": 5,
+    "warnings_count": 4,
+    "latency_ms": 111736
+  },
+  {
+    "requirement": "Write sprint planning user story with Given When Then acceptance criteria",
+    "retrieval_status": "ok",
+    "planning_status": "READY",
+    "story_type": "process_improvement",
+    "title": "Clarify Sprint Planning Requirements",
+    "user_story": "As a Scrum Master, I want to improve Sprint Planning, so that the Scrum Team can define a clear Sprint Goal before selecting Product Backlog items.",
+    "ac_count": 3,
+    "story_points": 5,
+    "warnings_count": 17,
+    "latency_ms": 125958
+  }
+]

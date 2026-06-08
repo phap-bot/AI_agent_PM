@@ -1,0 +1,28 @@
+week,Target,Main PIC - Phuc,Main PIC - Phap,Pass Criteria,Status
+W1,Setup môi trường,"Ingest pipeline draft
+ChromaDB local chạy","Ollama + deepseek-r1:7b
+CrewAI hello world",,done
+W2,RAG pipeline hoạt động,"Ingest Scrum Guide + 2 docs
+20 câu query test","agents/planner
+Đọc CrewAI docs",,done
+W3,Planner Agent đơn lẻ,"search
+Researcher agent draft","Planner prompt viết xong
+Test 5 mẫu thủ công",,doing
+W4,Full Crew 3 Agents,"Unit test researcher
+RAG quality check","E2E pipeline
+Evaluator APPROVED/REVISION",,doing
+W5,Tool Integration,Ground Truth 30 mẫu draft,"jira+ slack
+Retry logic on error",,
+W6,E2E hoàn chỉnh,"evaluate.py với 4 metrics
+Baseline score đo được","E2E test: email→Jira→Slack
+Human approval UI",,
+W7,Đánh giá baseline,30 GT samples hoàn chỉnh,Streamlit UI ,,
+W8,Cải thiện metrics,"Thử chunking strategy mới
+Tune RAG retrieval","Tune prompt Planner
+Tune prompt Evaluator",,
+W9,Production-ready,"README.md đầy đủ
+Documentation RAG","Dockerfile + docker-compose
+Error handling toàn bộ",,
+W10,Demo & Báo cáo,"Báo cáo kỹ thuật 2–3 trang
+Slide phần Data + Metrics","Demo script 3 ví dụ
+Báo cáo Agents + Integration",,

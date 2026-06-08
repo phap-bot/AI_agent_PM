@@ -24,7 +24,7 @@ def normalize_source_name(source: str) -> str:
     for suffix in (".md", ".txt", ".pdf"):
         if normalized.endswith(suffix):
             normalized = normalized[: -len(suffix)]
-    normalized = normalized.replace("_", "").replace("-", "")
+    normalized = normalized.replace("-", "_")
     return normalized
 
 
