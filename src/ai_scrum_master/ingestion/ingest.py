@@ -403,8 +403,8 @@ def ingest_raw_docs(raw_docs_dir: Path | None = None, collection_name: str | Non
     settings = get_settings()
     source_dir = raw_docs_dir or BASE_DIR / "data" / "raw_docs"
     
-    # If project_id is provided, append it to source_dir so that projects have separate dirs
-    if project_id:
+    # If project_id is provided and we are using the default directory, append project_id
+    if not raw_docs_dir and project_id:
         source_dir = source_dir / project_id
         
     target_collection = canonical_collection_name(collection_name)
