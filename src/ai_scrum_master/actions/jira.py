@@ -18,6 +18,7 @@ class JiraConfig:
     api_token: str
     issue_type: str = "Task"
     subtask_issue_type: str = "Sub-task"
+    board_id: str = ""
 
     @property
     def is_configured(self) -> bool:
@@ -34,11 +35,35 @@ class JiraTool:
             api_token=settings.jira_api_token,
             issue_type=settings.jira_issue_type,
             subtask_issue_type=settings.jira_subtask_issue_type,
+            board_id=settings.jira_board_id,
         )
         self.http_client = http_client or UrllibHttpClient()
 
+    @classmethod
+    def from_project(cls, project_id: str | None, http_client: HttpClient | None = None) -> JiraTool:
+        if not project_id:
+            return cls(http_client=http_client)
+            
+        from ai_scrum_master.core.database import DatabaseManager
+        project = DatabaseManager.get_project(project_id)
+        if not project or not project.get("jira_config"):
+            return cls(http_client=http_client)
+            
+        db_config = project["jira_config"]
+        settings = get_settings()
+        config = JiraConfig(
+            base_url=db_config.get("base_url") or settings.jira_base_url,
+            project_key=db_config.get("project_key") or settings.jira_project_key,
+            email=db_config.get("email") or settings.jira_email,
+            api_token=db_config.get("api_token") or settings.jira_api_token,
+            issue_type=db_config.get("issue_type") or settings.jira_issue_type,
+            subtask_issue_type=db_config.get("subtask_issue_type") or settings.jira_subtask_issue_type,
+            board_id=db_config.get("board_id") or settings.jira_board_id,
+        )
+        return cls(config=config, http_client=http_client)
+
     def build_story_payload(self, story: dict) -> dict[str, Any]:
-        return {
+        payload = {
             "fields": {
                 "project": {"key": self.config.project_key},
                 "summary": story["title"],
@@ -47,6 +72,11 @@ class JiraTool:
                 "labels": ["ai-scrum-master"],
             }
         }
+        
+        if "priority" in story and story["priority"]:
+            payload["fields"]["priority"] = {"name": story["priority"]}
+            
+        return payload
 
     def build_subtask_payloads(self, parent_key: str, story: dict) -> list[dict[str, Any]]:
         payloads: list[dict[str, Any]] = []
@@ -141,12 +171,61 @@ class JiraTool:
         subtask_results = self._create_subtasks(story_key, story)
         created_subtasks = [result for result in subtask_results if result.get("key")]
         failed_subtasks = [result for result in subtask_results if not result.get("key")]
+        
+        # Create story splits if any
+        story_splits_results = []
+        created_splits = []
+        if story.get("story_splits"):
+            logger.info("Jira creating %s story splits", len(story.get("story_splits", [])))
+            for split in story.get("story_splits", []):
+                if not split.get("priority") and story.get("priority"):
+                    split["priority"] = story["priority"]
+                split_payload = self.build_story_payload(split)
+                split_payload["fields"]["labels"].append("split-story")
+                
+                split_result = self._create_issue(split_payload)
+                split_key = split_result.get("key")
+                
+                split_subtasks_created = []
+                if split_key:
+                    split_subtask_results = self._create_subtasks(split_key, split)
+                    split_subtasks_created = [r for r in split_subtask_results if r.get("key")]
+                    failed_subtasks.extend([r for r in split_subtask_results if not r.get("key")])
+                    created_splits.append(split_key)
+                    
+                story_splits_results.append({
+                    "story": self._created_issue_summary(split_result),
+                    "story_key": split_key,
+                    "subtasks": split_subtasks_created
+                })
+
         logger.info(
-            "Jira execution completed story_key=%s subtasks_created=%s subtasks_failed=%s",
+            "Jira execution completed story_key=%s subtasks_created=%s subtasks_failed=%s splits_created=%s",
             story_key,
             len(created_subtasks),
             len(failed_subtasks),
+            len(created_splits)
         )
+        
+        if self.config.board_id and (story_key or created_splits):
+            logger.info("Attempting to move stories to active sprint on board %s", self.config.board_id)
+            try:
+                sprint_data = self._get_active_sprint(self.config.board_id)
+                sprint_id = sprint_data.get("id") if sprint_data else None
+                if sprint_id:
+                    keys_to_move = []
+                    if story_key:
+                        keys_to_move.append(story_key)
+                    keys_to_move.extend(created_splits)
+                    for key in keys_to_move:
+                        self._move_issue_to_sprint(sprint_id, key)
+                    logger.info("Stories successfully moved to sprint %s", sprint_id)
+                else:
+                    logger.info("No active sprint found on board %s. Stories remain in backlog.", self.config.board_id)
+            except Exception as e:
+                msg = f"Failed to move stories to sprint: {e}"
+                logger.warning(msg)
+                warnings.append(msg)
         return {
             "ready": True,
             "executed": not failed_subtasks,
@@ -155,6 +234,7 @@ class JiraTool:
                 "story": self._created_issue_summary(story_result),
                 "story_key": story_key,
                 "subtasks": created_subtasks,
+                "story_splits": story_splits_results,
             },
             "failed": failed_subtasks,
             "warnings": warnings + [warning for result in failed_subtasks for warning in result.get("warnings", [])],
@@ -202,9 +282,55 @@ class JiraTool:
             )
         return results
 
+    def get_priorities(self) -> list[dict[str, Any]]:
+        """Fetch available priorities from Jira."""
+        if not self.config.is_configured:
+            return []
+            
+        url = f"{self.config.base_url.rstrip('/')}/rest/api/2/priority"
+        response = self.http_client.get_json(
+            url=url,
+            basic_auth=(self.config.email, self.config.api_token),
+            headers={"Accept": "application/json"}
+        )
+        if response.status_code == 200 and isinstance(response.json_body, list):
+            return [
+                {
+                    "id": p.get("id"),
+                    "name": p.get("name"),
+                    "iconUrl": p.get("iconUrl"),
+                }
+                for p in response.json_body
+            ]
+        return []
+
+    def _get_active_sprint(self, board_id: str) -> int | None:
+        url = f"{self.config.base_url.rstrip('/')}/rest/agile/1.0/board/{board_id}/sprint?state=active"
+        response = self.http_client.get_json(
+            url=url,
+            basic_auth=(self.config.email, self.config.api_token),
+            headers={"Accept": "application/json"}
+        )
+        if response.status_code == 200 and response.json_body:
+            values = response.json_body.get("values", [])
+            if values:
+                return values[0].get("id")
+        return None
+
+    def _move_issue_to_sprint(self, sprint_id: int, issue_key: str) -> None:
+        url = f"{self.config.base_url.rstrip('/')}/rest/agile/1.0/sprint/{sprint_id}/issue"
+        payload = {"issues": [issue_key]}
+        response = self._post_with_retry(url, payload)
+        if response.status_code not in (200, 204):
+            raise Exception(f"Jira API returned {response.status_code}: {response.text}")
+
     def _post_with_retry(self, url: str, payload: dict[str, Any]) -> HttpResponse:
+        import time
         response = HttpResponse(status_code=0, text="No request attempted")
-        for attempt in range(1, 4):
+        max_attempts = 4
+        base_delay = 1.0
+        
+        for attempt in range(1, max_attempts + 1):
             response = self.http_client.post_json(
                 url=url,
                 payload=payload,
@@ -213,7 +339,14 @@ class JiraTool:
             )
             if response.status_code not in {0, 401, 429} and response.status_code < 500:
                 return response
-            logger.info("Jira request retryable status_code=%s attempt=%s", response.status_code, attempt)
+                
+            if attempt < max_attempts:
+                delay = base_delay * (2 ** (attempt - 1))
+                logger.info("Jira request retryable status_code=%s attempt=%s, sleeping %.1fs", response.status_code, attempt, delay)
+                time.sleep(delay)
+            else:
+                logger.warning("Jira request failed after max attempts status_code=%s", response.status_code)
+                
         return response
 
     def _issue_url(self) -> str:

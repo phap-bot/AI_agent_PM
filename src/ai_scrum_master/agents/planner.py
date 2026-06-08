@@ -58,13 +58,18 @@ class PlannerAgent:
         self.settings = get_settings()
 
     def create_agent(self) -> Any:
+        from ai_scrum_master.core.llm_setup import build_llm
+        if not self.llm:
+            # Planner cần một chút sáng tạo để viết User Story hay và tự nhiên (temperature = 0.7)
+            self.llm = build_llm(temperature=0.7)
+            
         role = self.profile.role if self.profile else "Scrum Story Planner"
         goal = self.profile.goal if self.profile else "Convert stakeholder requests into sprint-ready user stories."
         backstory = self.profile.backstory if self.profile else (
             "You derive business logic from retrieved documentation first, then create traceable user stories, "
             "acceptance criteria, BE/FE/QA tasks, assumptions, and Definition of Done."
         )
-        return build_crewai_agent(role=role, goal=goal, backstory=backstory, tools=[], verbose=True)
+        return build_crewai_agent(role=role, goal=goal, backstory=backstory, tools=[], verbose=True, llm=self.llm)
 
     def run(self, requirement: str, context: dict, requirement_type: str | None = None, route: dict | None = None) -> dict:
         started_at = time.perf_counter()
@@ -150,7 +155,6 @@ class PlannerAgent:
             requirement=self._compact_requirement_for_prompt(requirement),
             planning_status=planning_status,
             context_block=context_block,
-            planning_brief_json=json.dumps(context.get("planning_brief", {}), ensure_ascii=False, indent=2),
         )
 
     def _attach_latency_metadata(
@@ -406,7 +410,25 @@ class PlannerAgent:
             if values not in (None, ""):
                 warnings.append(f"Planner returned invalid {field_name}; expected a list.")
             return []
-        kept, removed = filter_domain_contaminated_items(requirement, values)
+            
+        normalized_values = []
+        for item in values:
+            if isinstance(item, dict):
+                given = str(item.get("given") or item.get("Given") or "").strip()
+                when = str(item.get("when") or item.get("When") or "").strip()
+                then = str(item.get("then") or item.get("Then") or "").strip()
+                if given or when or then:
+                    parts = []
+                    if given: parts.append(f"Given {given}")
+                    if when: parts.append(f"When {when}")
+                    if then: parts.append(f"Then {then}")
+                    normalized_values.append(", ".join(parts))
+                else:
+                    normalized_values.append(" ".join(str(v) for v in item.values() if v))
+            else:
+                normalized_values.append(item)
+                
+        kept, removed = filter_domain_contaminated_items(requirement, normalized_values)
         sample_removed = [item for item in kept if isinstance(item, str) and self._is_sample_placeholder(item)]
         kept = [item for item in kept if not (isinstance(item, str) and self._is_sample_placeholder(item))]
         if removed:

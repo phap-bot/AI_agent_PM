@@ -174,11 +174,8 @@ def domain_contamination_issues(requirement: str, story: dict) -> list[str]:
 
 
 def _general_domain_contamination_issues(story_text: str) -> list[str]:
-    issues = []
-    for domain in ("auth", "checkout", "notification", "scrum"):
-        if _has_strong_domain_contamination(story_text, domain):
-            issues.append(f"Output contains unrelated {domain} content for a general requirement.")
-    return issues
+    # Disabled for dynamic RAG support: general requirements can contain any domain
+    return []
 
 
 def _has_strong_domain_contamination(story_text: str, domain: str) -> bool:

@@ -1,0 +1,61 @@
+{
+  "title": "Customer Booking System Core Feature",
+  "story_type": "software_feature",
+  "user_story": "As a customer or administrator, I want to create, track, and manage home maintenance service bookings through the system, so that customers can schedule appointments online and administrators can oversee technician assignments and booking lifecycle.",
+  "acceptance_criteria": [
+    {
+      "given": "A user is accessing the booking system",
+      "when": "they attempt to access protected endpoints without authentication",
+      "then": "the system returns HTTP 401 Unauthorized with appropriate error message"
+    }
+  ],
+  "story_points": 13,
+  "tasks": {
+    "be": [
+      "Implement booking CRUD operations using documented REST endpoints",
+      "Add validation layer for phone format (VN standard) and date format (dd/mm/yyyy)",
+      "Create technician assignment service with conflict detection logic"
+    ],
+    "fe": [
+      "Build booking creation form with real-time slot availability checking",
+      "Develop booking detail view page showing appointment timeline",
+      "Implement reschedule modal with calendar picker and slot selection"
+    ],
+    "qa": [
+      "Test all API endpoints for correct response codes and data validation",
+      "Verify phone format validation rejects invalid VN number patterns",
+      "Confirm notification delivery for booking confirmation and status changes"
+    ]
+  },
+  "definition_of_done": [
+    "All acceptance criteria validated with test cases covering happy path and edge cases",
+    "API endpoints return correct HTTP status codes (201, 200, 400, 500) per documented contract",
+    "QA evidence includes successful booking creation, technician assignment, reschedule flow, and cancellation scenarios",
+    "Story-specific completion verified by end-to-end test run demonstrating full customer booking lifecycle"
+  ],
+  "planning_status": "READY",
+  "clarification_questions": [],
+  "assumptions": [
+    "Notification system exists as a separate service layer - notification endpoints not explicitly documented in retrieved context",
+    "Admin can view all bookings and technician assignments via existing admin dashboard or new management pages",     
+    "Service categories are pre-configured master data that customers select from dropdown",
+    "Time slot availability is calculated based on technician capacity and predefined working hours per service type"  
+  ],
+  "story_splits": [],
+  "sprint_allocation": [
+    {
+      "task_type": "BE",
+      "description": "Booking API implementation with validation layer",
+      "points": 3,
+      "owner_role": "Backend Developer"
+    },
+    {
+      "task_type": "FE",
+      "description": "Customer booking UI components (create/view/reschedule)",
+      "points": 2,
+      "owner_role": "Frontend Developer"
+    }
+  ],
+  "context_sources": [],
+  "warnings": []
+}

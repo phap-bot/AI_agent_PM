@@ -4,8 +4,14 @@ import ProcessingStatusPanel from './components/ProcessingStatusPanel';
 import StoryDraftEditor from './components/StoryDraftEditor';
 import { executeJiraAction, generateStoriesAsync, getGenerateStatus, previewJiraAction } from './lib/api';
 import { normalizeStoryDraft } from './lib/normalizers';
+import HistoryPanel from './components/HistoryPanel';
+import SprintBoardPanel from './components/SprintBoardPanel';
+import JiraConfigPanel from './components/JiraConfigPanel';
+import SlackConfigPanel from './components/SlackConfigPanel';
+import { getProjects, createProject } from './lib/api';
 
 function App() {
+  const [currentView, setCurrentView] = useState('project'); // 'project', 'sprint', 'history'
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   
@@ -15,10 +21,41 @@ function App() {
   const [actions, setActions] = useState(null);
   const [actionExecution, setActionExecution] = useState(null);
   const [isPushingJira, setIsPushingJira] = useState(false);
+  
+  const [sprintName, setSprintName] = useState('Đang tải...');
 
   const [generateJobId, setGenerateJobId] = useState(null);
+  const [generationMessage, setGenerationMessage] = useState('');
   const [lastRequirement, setLastRequirement] = useState(null);
+  const [forcedContextDocs, setForcedContextDocs] = useState([]);
   const generatePollingRef = useRef(null);
+
+  const [projects, setProjects] = useState([]);
+  const [activeProjectId, setActiveProjectId] = useState('');
+  const [showCreateProject, setShowCreateProject] = useState(false);
+  const [newProjectName, setNewProjectName] = useState('');
+
+  useEffect(() => {
+    getProjects().then(data => {
+      setProjects(data);
+      if (data.length > 0) {
+        setActiveProjectId(data[0].id);
+      }
+    }).catch(err => console.error("Failed to load projects", err));
+  }, []);
+
+  const handleCreateProject = async () => {
+    if (!newProjectName.trim()) return;
+    try {
+      const proj = await createProject({ name: newProjectName });
+      setProjects([proj, ...projects]);
+      setActiveProjectId(proj.id);
+      setShowCreateProject(false);
+      setNewProjectName('');
+    } catch (err) {
+      alert("Error creating project: " + err.message);
+    }
+  };
 
   useEffect(() => {
     if (!generateJobId || !isLoading) return;
@@ -27,6 +64,10 @@ function App() {
       try {
         const status = await getGenerateStatus(generateJobId);
         
+        if (status.message) {
+          setGenerationMessage(status.message);
+        }
+        
         if (status.partial_result?.context) setContext(status.partial_result.context);
         if (status.partial_result?.story) setStoryDraft(normalizeStoryDraft(status.partial_result.story, ""));
         
@@ -34,6 +75,7 @@ function App() {
           clearInterval(generatePollingRef.current);
           setGenerateJobId(null);
           setIsLoading(false);
+          setGenerationMessage('');
           const finalResult = status.result;
           if (finalResult) {
              setContext(finalResult.context);
@@ -45,6 +87,7 @@ function App() {
           clearInterval(generatePollingRef.current);
           setGenerateJobId(null);
           setIsLoading(false);
+          setGenerationMessage('');
           setError(status.message);
         }
       } catch (err) {
@@ -57,14 +100,35 @@ function App() {
     }
   }, [generateJobId, isLoading]);
 
+  useEffect(() => {
+    async function loadSprintName() {
+      try {
+        const data = await fetchSprintBoard();
+        if (data && data.sprint && data.sprint.name) {
+          setSprintName(data.sprint.name);
+        } else {
+          setSprintName('Backlog');
+        }
+      } catch (err) {
+        setSprintName('Backlog');
+      }
+    }
+    loadSprintName();
+  }, []);
+
   const handleGenerate = async (requestPayload) => {
     if (lastRequirement === requestPayload.requirement) {
       alert("Yêu cầu này đã được phân tích. Vui lòng thay đổi nội dung yêu cầu nếu bạn muốn chạy lại!");
       return;
     }
     
+    // Store forced_context_docs for potential re-runs via clarification
+    const docs = requestPayload.forced_context_docs || [];
+    setForcedContextDocs(docs);
+
     setLastRequirement(requestPayload.requirement);
     setIsLoading(true);
+    setGenerationMessage('Đang khởi tạo Agent...');
     setError(null);
     setContext(null);
     setStoryDraft(null);
@@ -72,12 +136,34 @@ function App() {
     setActions(null);
     setActionExecution(null);
     try {
-      const response = await generateStoriesAsync(requestPayload);
+      const response = await generateStoriesAsync({
+        ...requestPayload,
+        forced_context_docs: docs,
+        project_id: activeProjectId || undefined,
+      });
       setGenerateJobId(response.job_id);
     } catch (err) {
       setError(err.message);
       setIsLoading(false);
+      setGenerationMessage('');
     }
+  };
+
+  // Called when user sends a clarification response via the AI chat
+  const handleClarificationSubmit = async (clarificationText) => {
+    if (!clarificationText.trim() || !lastRequirement) return;
+
+    const enrichedRequirement = `${lastRequirement}\n\n[Clarification from user]: ${clarificationText}`;
+    
+    // Reset lastRequirement so the duplicate check doesn't block
+    setLastRequirement(null);
+
+    handleGenerate({
+      requirement: enrichedRequirement,
+      n_results: 5,
+      allow_fallback_without_context: true,
+      forced_context_docs: forcedContextDocs,
+    });
   };
 
   const handlePreviewJira = async () => {
@@ -86,6 +172,7 @@ function App() {
       const newActions = await previewJiraAction({
         story: storyDraft,
         evaluation: evaluation,
+        project_id: activeProjectId || undefined,
       });
       setActions(prev => ({ ...prev, jira: newActions.jira }));
     } catch (err) {
@@ -101,6 +188,7 @@ function App() {
       const result = await executeJiraAction({
         story: storyDraft,
         evaluation: evaluation,
+        project_id: activeProjectId || undefined,
       });
       setActionExecution(result);
     } catch (err) {
@@ -117,12 +205,35 @@ function App() {
         <div className="flex items-center gap-gutter">
           <span className="text-headline-md font-headline-md font-bold text-primary">AI Scrum Master</span>
           <nav className="hidden md:flex items-center gap-stack-lg ml-stack-lg">
-            <a className="text-primary border-b-2 border-primary pb-1 font-label-md text-label-md" href="#">Dashboard</a>
-            <a className="text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md" href="#">Analytics</a>
-            <a className="text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md" href="#">Team</a>
+            <a className="text-primary border-b-2 border-primary pb-1 font-label-md text-label-md">Dashboard</a>
+            <a className="text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md">Analytics</a>
+            <a className="text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md">Team</a>
           </nav>
         </div>
         <div className="flex items-center gap-stack-md">
+          <div className="relative flex items-center gap-2">
+            <span className="text-sm font-medium text-on-surface-variant">Dự án:</span>
+            <select 
+              className="bg-surface-container border border-outline-variant rounded-lg px-3 py-1.5 text-sm font-medium focus:outline-none focus:border-primary"
+              value={activeProjectId}
+              onChange={(e) => {
+                if (e.target.value === 'NEW') {
+                  setShowCreateProject(true);
+                  // reset value so they can click it again if they close the modal
+                  e.target.value = activeProjectId; 
+                } else {
+                  setActiveProjectId(e.target.value);
+                }
+              }}
+            >
+              <option value="" disabled>-- Chọn dự án --</option>
+              {projects.map(p => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+              <option value="NEW" className="font-bold text-primary">+ Tạo dự án mới</option>
+            </select>
+          </div>
+
           <button className="bg-primary text-on-primary px-container-padding py-unit rounded-lg font-label-md text-label-md hover:opacity-80 transition-all active:scale-95">Create Sprint</button>
           <span className="material-symbols-outlined text-on-surface-variant cursor-pointer">notifications</span>
           <span className="material-symbols-outlined text-on-surface-variant cursor-pointer">help</span>
@@ -132,6 +243,37 @@ function App() {
         </div>
       </header>
 
+      {/* Create Project Modal */}
+      {showCreateProject && (
+        <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center">
+          <div className="bg-surface rounded-xl p-6 w-[400px] shadow-xl border border-outline-variant">
+            <h3 className="text-xl font-bold mb-4">Tạo dự án mới</h3>
+            <input 
+              autoFocus
+              className="w-full px-3 py-2 border border-outline-variant rounded-lg mb-4 focus:outline-none focus:border-primary"
+              placeholder="Nhập tên dự án..."
+              value={newProjectName}
+              onChange={e => setNewProjectName(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleCreateProject()}
+            />
+            <div className="flex justify-end gap-2">
+              <button 
+                className="px-4 py-2 rounded-lg font-medium text-on-surface-variant hover:bg-surface-container-high"
+                onClick={() => setShowCreateProject(false)}
+              >
+                Hủy
+              </button>
+              <button 
+                className="px-4 py-2 bg-primary text-on-primary rounded-lg font-medium"
+                onClick={handleCreateProject}
+              >
+                Tạo mới
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Side Navigation Bar */}
       <aside className="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 bg-surface-container-low border-r border-outline-variant flex flex-col p-stack-md z-40">
         <div className="flex items-center gap-stack-sm mb-stack-lg p-stack-sm">
@@ -140,96 +282,141 @@ function App() {
           </div>
           <div>
             <p className="font-headline-sm text-headline-sm font-extrabold text-primary">SmartLib</p>
-            <p className="font-label-md text-label-md text-on-surface-variant">Sprint 14</p>
+            <p className="font-label-md text-label-md text-on-surface-variant">{sprintName}</p>
           </div>
         </div>
         <nav className="flex-1 overflow-y-auto sidebar-scroll space-y-unit">
           <p className="text-[10px] uppercase tracking-wider font-bold text-outline px-stack-sm mb-unit">Main</p>
-          <a className="flex items-center gap-stack-sm p-stack-sm bg-secondary-container text-on-secondary-container rounded-lg font-label-md text-label-md" href="#">
+          <a 
+            className={`flex items-center gap-stack-sm p-stack-sm rounded-lg font-label-md text-label-md cursor-pointer transition-colors ${currentView === 'project' ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container-high'}`}
+            onClick={() => setCurrentView('project')}
+          >
             <span className="material-symbols-outlined">folder_open</span> Dự án
           </a>
-          <a className="flex items-center gap-stack-sm p-stack-sm text-on-surface-variant hover:bg-surface-container-high rounded-lg font-label-md text-label-md" href="#">
+          <a 
+            className={`flex items-center gap-stack-sm p-stack-sm rounded-lg font-label-md text-label-md cursor-pointer transition-colors ${currentView === 'sprint' ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container-high'}`}
+            onClick={() => setCurrentView('sprint')}
+          >
             <span className="material-symbols-outlined">skateboarding</span> Sprint
           </a>
           <p className="text-[10px] uppercase tracking-wider font-bold text-outline px-stack-sm mt-stack-md mb-unit">Settings</p>
-          <div className="flex items-center justify-between p-stack-sm text-on-surface-variant hover:bg-surface-container-high rounded-lg font-label-md text-label-md cursor-pointer">
+          <div 
+            className={`flex items-center justify-between p-stack-sm rounded-lg font-label-md text-label-md cursor-pointer transition-colors ${currentView === 'config_jira' ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container-high'}`}
+            onClick={() => setCurrentView('config_jira')}
+          >
             <div className="flex items-center gap-stack-sm">
               <span className="material-symbols-outlined">settings_suggest</span> Cấu hình Jira
             </div>
-            <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
           </div>
-          <div className="flex items-center justify-between p-stack-sm text-on-surface-variant hover:bg-surface-container-high rounded-lg font-label-md text-label-md cursor-pointer">
+          <div 
+            className={`flex items-center justify-between p-stack-sm rounded-lg font-label-md text-label-md cursor-pointer transition-colors ${currentView === 'config_slack' ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container-high'}`}
+            onClick={() => setCurrentView('config_slack')}
+          >
             <div className="flex items-center gap-stack-sm">
               <span className="material-symbols-outlined">hub</span> Cấu hình Slack
             </div>
-            <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
           </div>
-          <p className="text-[10px] uppercase tracking-wider font-bold text-outline px-stack-sm mt-stack-md mb-unit">History</p>
+          <div className="flex justify-between items-center px-stack-sm mt-stack-md mb-unit">
+            <p className="text-[10px] uppercase tracking-wider font-bold text-outline">History</p>
+            <button 
+              onClick={() => setCurrentView('history')}
+              className={`text-[10px] uppercase font-bold hover:underline ${currentView === 'history' ? 'text-primary' : 'text-outline hover:text-primary'}`}
+            >
+              Xem tất cả
+            </button>
+          </div>
           <div className="px-stack-sm space-y-stack-sm">
-            <div className="p-stack-sm bg-surface rounded border border-outline-variant">
-              <p className="text-label-md font-label-md truncate">Tính năng Login (Đã push)</p>
-              <p className="text-[10px] text-outline">2 hours ago</p>
-            </div>
-            <div className="p-stack-sm bg-surface rounded border border-outline-variant">
-              <p className="text-label-md font-label-md truncate">Báo cáo Excel (Đã push)</p>
-              <p className="text-[10px] text-outline">Yesterday</p>
+            <div 
+              onClick={() => setCurrentView('history')}
+              className="p-stack-sm bg-surface rounded border border-outline-variant cursor-pointer hover:border-primary transition-colors"
+            >
+              <p className="text-label-md font-label-md truncate">Nhấn để xem kho lưu trữ</p>
+              <p className="text-[10px] text-outline">Tất cả lịch sử yêu cầu</p>
             </div>
           </div>
         </nav>
         <div className="mt-auto border-t border-outline-variant pt-stack-md">
-          <a className="flex items-center gap-stack-sm p-stack-sm text-on-surface-variant hover:bg-surface-container-high rounded-lg font-label-md text-label-md" href="#">
+          <a className="flex items-center gap-stack-sm p-stack-sm text-on-surface-variant hover:bg-surface-container-high rounded-lg font-label-md text-label-md">
             <span className="material-symbols-outlined">help</span> Help
           </a>
-          <a className="flex items-center gap-stack-sm p-stack-sm text-error hover:bg-error-container rounded-lg font-label-md text-label-md" href="#">
+          <a className="flex items-center gap-stack-sm p-stack-sm text-error hover:bg-error-container rounded-lg font-label-md text-label-md">
             <span className="material-symbols-outlined">logout</span> Logout
           </a>
         </div>
       </aside>
 
-      {/* Main Content Panel */}
-      <main className="ml-64 mt-16 p-margin-page min-h-[calc(100vh-64px)] max-w-5xl mx-auto">
-        <div className="space-y-stack-lg">
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
-              <strong>Error:</strong> {error}
+      <main className="ml-64 mt-16 p-margin-page min-h-[calc(100vh-64px)]">
+        <div style={{ display: currentView === 'project' ? 'block' : 'none' }}>
+            <div className="space-y-stack-lg">
+              <RequirementInputPanel 
+                onSubmit={handleGenerate} 
+                isLoading={isLoading} 
+                generationMessage={generationMessage}
+                projectId={activeProjectId} 
+              />
+              {isLoading && <ProcessingStatusPanel isLoading={isLoading} context={context} storyDraft={storyDraft} evaluation={evaluation} />}
+              {error && (
+                <div className="bg-error-container text-on-error-container p-4 rounded-xl shadow-sm border border-error/20 flex gap-3">
+                  <span className="material-symbols-outlined text-error">error</span>
+                  <div>
+                    <h3 className="font-bold">Lỗi sinh luồng</h3>
+                    <p className="text-sm">{error}</p>
+                  </div>
+                </div>
+              )}
+              {storyDraft && evaluation && (
+                <StoryDraftEditor
+                  draft={storyDraft}
+                  evaluation={evaluation}
+                  actions={actions}
+                  actionExecution={actionExecution}
+                  isPushingJira={isPushingJira}
+                  isRegenerating={isLoading}
+                  onChange={setStoryDraft}
+                  onPreviewJira={handlePreviewJira}
+                  onPushToJira={handlePushToJira}
+                  onProvideClarification={handleClarificationSubmit}
+                  onSelectSplit={(splitText) => {
+                    handleGenerate({
+                      requirement: `Tập trung phân tích và viết Story cho tính năng này: ${splitText}`,
+                      n_results: 5,
+                      allow_fallback_without_context: true,
+                      forced_context_docs: forcedContextDocs,
+                    });
+                  }}
+                  projectId={activeProjectId}
+                />
+              )}
             </div>
-          )}
-
-          <RequirementInputPanel onSubmit={handleGenerate} isLoading={isLoading} />
-          
-          <ProcessingStatusPanel 
-            isLoading={isLoading} 
-            context={context} 
-            storyDraft={storyDraft} 
-            evaluation={evaluation} 
-          />
-          
-          {(storyDraft || evaluation) && (
-            <StoryDraftEditor 
-              draft={storyDraft} 
-              evaluation={evaluation}
-              actions={actions}
-              actionExecution={actionExecution}
-              isPushingJira={isPushingJira}
-              onChange={setStoryDraft}
-              onPreviewJira={handlePreviewJira}
-              onPushToJira={handlePushToJira}
-            />
-          )}
         </div>
-        
-        {/* Decorative Insight Component */}
-        <div className="mt-stack-lg p-container-padding bg-gradient-to-r from-primary-container/5 to-secondary-container/5 rounded-2xl border border-dashed border-primary-container/30 flex items-center gap-stack-lg relative overflow-hidden">
-          <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-primary/5 rounded-full blur-3xl"></div>
-          <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-lg border border-white shrink-0">
-            <span className="material-symbols-outlined text-primary text-[28px]" style={{fontVariationSettings: "'FILL' 1"}}>auto_awesome</span>
-          </div>
-          <div>
-            <p className="font-headline-sm text-headline-sm text-primary mb-1">AI Insight Component</p>
-            <p className="text-body-md text-on-surface-variant leading-relaxed">
-              Dựa trên lịch sử Sprint 13, tôi đề xuất ưu tiên task Export này vì stakeholder 'Phòng Nhân sự' đang cần báo cáo vào cuối tuần.
-            </p>
-          </div>
+
+        <div style={{ display: currentView === 'history' ? 'block' : 'none' }}>
+          <HistoryPanel 
+            isActive={currentView === 'history'} 
+            projectId={activeProjectId}
+            onSelectHistory={(item) => {
+              setLastRequirement(item.requirement);
+              if (item.result) {
+                setContext(item.result.context);
+                setStoryDraft(normalizeStoryDraft(item.result.story, ""));
+                setEvaluation(item.result.evaluation);
+                setActions(item.result.actions);
+              }
+              setCurrentView('project');
+            }}
+          />
+        </div>
+
+        <div style={{ display: currentView === 'sprint' ? 'block' : 'none' }}>
+          <SprintBoardPanel isActive={currentView === 'sprint'} projectId={activeProjectId} />
+        </div>
+
+        <div style={{ display: currentView === 'config_jira' ? 'block' : 'none' }}>
+          <JiraConfigPanel projectId={activeProjectId} />
+        </div>
+
+        <div style={{ display: currentView === 'config_slack' ? 'block' : 'none' }}>
+          <SlackConfigPanel projectId={activeProjectId} />
         </div>
       </main>
     </>

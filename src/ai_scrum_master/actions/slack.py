@@ -14,6 +14,8 @@ logger = get_logger(__name__)
 class SlackConfig:
     webhook_url: str
     mention_user_id: str = ""
+    dev_channel_id: str = ""
+    qa_channel_id: str = ""
 
     @property
     def is_configured(self) -> bool:
@@ -25,9 +27,32 @@ class SlackTool:
         settings = get_settings()
         self.config = config or SlackConfig(
             webhook_url=settings.slack_webhook_url,
-            mention_user_id=settings.slack_mention_user_id
+            mention_user_id=settings.slack_mention_user_id,
+            dev_channel_id=settings.slack_dev_channel_id,
+            qa_channel_id=settings.slack_qa_channel_id
         )
         self.http_client = http_client or UrllibHttpClient()
+
+    @classmethod
+    def from_project(cls, project_id: str | None, http_client: HttpClient | None = None) -> SlackTool:
+        if not project_id:
+            return cls(http_client=http_client)
+            
+        from ai_scrum_master.core.database import DatabaseManager
+        project = DatabaseManager.get_project(project_id)
+        if not project or not project.get("slack_config"):
+            return cls(http_client=http_client)
+            
+        db_config = project["slack_config"]
+        # Fallback fields from .env if empty in DB
+        settings = get_settings()
+        config = SlackConfig(
+            webhook_url=db_config.get("webhook_url") or settings.slack_webhook_url,
+            mention_user_id=db_config.get("mention_user_id") or settings.slack_mention_user_id,
+            dev_channel_id=db_config.get("dev_channel_id") or settings.slack_dev_channel_id,
+            qa_channel_id=db_config.get("qa_channel_id") or settings.slack_qa_channel_id,
+        )
+        return cls(config=config, http_client=http_client)
 
     def build_story_message(self, story: dict, evaluation: dict, jira_created: dict[str, Any] | None = None) -> dict[str, Any]:
         jira_text = "Draft (Not created yet)"
@@ -39,37 +64,86 @@ class SlackTool:
         tasks = story.get("tasks", {})
         if isinstance(tasks, dict):
             for group, task_list in tasks.items():
-                for task in task_list:
-                    subtasks_text += f"• {group.upper()} - {task}\n"
+                group_name = group.upper()
+                channel_link = ""
+                if group in ("be", "fe") and self.config.dev_channel_id:
+                    channel_link = f" (👈 <#{self.config.dev_channel_id}>)"
+                elif group == "qa" and self.config.qa_channel_id:
+                    channel_link = f" (👈 <#{self.config.qa_channel_id}>)"
+
+                if task_list:
+                    subtasks_text += f"• *{group_name}*{channel_link}\n"
+                    for task in task_list:
+                        subtasks_text += f"  - {task}\n"
         
         if not subtasks_text.strip():
             subtasks_text = "No subtasks"
 
-        mention_text = f"<@{self.config.mention_user_id}> " if self.config.mention_user_id else ""
+        mention_text = ""
+        if self.config.mention_user_id:
+            mentions = []
+            for uid in self.config.mention_user_id.split(","):
+                uid = uid.strip()
+                if uid.startswith("!"):
+                    mentions.append(f"<{uid}>")
+                elif uid.startswith("S"):
+                    mentions.append(f"<!subteam^{uid}>")
+                else:
+                    mentions.append(f"<@{uid}>")
+            mention_text = " ".join(mentions) + " "
+
+        blocks = [
+            {
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "text": "🚀 New Jira Story Created",
+                    "emoji": True
+                }
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"{mention_text}*Story:* {story.get('title')}\n*Jira:* {jira_text}"
+                }
+            },
+            {
+                "type": "section",
+                "fields": [
+                    {
+                        "type": "mrkdwn",
+                        "text": "*Priority:*\nHigh 🔴"
+                    },
+                    {
+                        "type": "mrkdwn",
+                        "text": f"*Story Points:*\n{story.get('story_points')} 🎯"
+                    },
+                    {
+                        "type": "mrkdwn",
+                        "text": "*Status:*\nTo Do 📋"
+                    },
+                    {
+                        "type": "mrkdwn",
+                        "text": "*Type:*\nStory 📘"
+                    }
+                ]
+            },
+            {
+                "type": "divider"
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"*Subtasks:*\n{subtasks_text.strip()}"
+                }
+            }
+        ]
 
         return {
             "text": f"AI Scrum Master created a Jira story: {story.get('title')}",
-            "blocks": [
-                {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": f"{mention_text}*AI Scrum Master created a Jira story*\n\n"
-                                f"*Story:* {story.get('title')}\n"
-                                f"*Jira:* {jira_text}\n"
-                                f"*Priority:* High\n"
-                                f"*Story Points:* {story.get('story_points')}\n"
-                                f"*Status:* To Do"
-                    }
-                },
-                {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": f"*Subtasks:*\n{subtasks_text.strip()}"
-                    }
-                }
-            ]
+            "blocks": blocks
         }
 
     def prepare_action(self, story: dict, evaluation: dict, jira_created: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -116,12 +190,23 @@ class SlackTool:
         }
 
     def _post_with_retry(self, payload: dict[str, Any]) -> HttpResponse:
+        import time
         response = HttpResponse(status_code=0, text="No request attempted")
-        for attempt in range(1, 4):
+        max_attempts = 4
+        base_delay = 1.0
+        
+        for attempt in range(1, max_attempts + 1):
             response = self.http_client.post_json(url=self.config.webhook_url, payload=payload)
             if response.status_code not in {0, 429} and response.status_code < 500:
                 return response
-            logger.info("Slack request retryable status_code=%s attempt=%s", response.status_code, attempt)
+                
+            if attempt < max_attempts:
+                delay = base_delay * (2 ** (attempt - 1))
+                logger.info("Slack request retryable status_code=%s attempt=%s, sleeping %.1fs", response.status_code, attempt, delay)
+                time.sleep(delay)
+            else:
+                logger.warning("Slack request failed after max attempts status_code=%s", response.status_code)
+                
         return response
 
     def _warnings_for_response(self, response: HttpResponse) -> list[str]:

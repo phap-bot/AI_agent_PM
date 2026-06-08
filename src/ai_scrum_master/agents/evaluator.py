@@ -43,13 +43,18 @@ class EvaluatorAgent:
         self.task_profile = task_profile
 
     def create_agent(self) -> Any:
+        from ai_scrum_master.core.llm_setup import build_llm
+        if not self.llm:
+            # Evaluator cần sự ổn định và khắt khe nhất để chấm điểm (temperature = 0.0)
+            self.llm = build_llm(temperature=0.0)
+            
         role = self.profile.role if self.profile else "Story Quality Evaluator"
         goal = self.profile.goal if self.profile else "Validate story readiness and return APPROVED or REVISION with concrete issues."
         backstory = self.profile.backstory if self.profile else (
             "You enforce local rule checks, Scrum quality gates, domain isolation, and traceability "
             "before Jira or Slack action previews are prepared."
         )
-        return build_crewai_agent(role=role, goal=goal, backstory=backstory, tools=[], verbose=True)
+        return build_crewai_agent(role=role, goal=goal, backstory=backstory, tools=[], verbose=True, llm=self.llm)
 
     def run(self, story: dict) -> dict:
         logger.info("Evaluator started planning_status=%s", story.get("planning_status", READY))

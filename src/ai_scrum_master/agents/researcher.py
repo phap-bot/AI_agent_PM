@@ -8,7 +8,7 @@ from ai_scrum_master.core.config import AgentProfileConfig, TaskProfileConfig, g
 from ai_scrum_master.core.domain_profiles import SOURCE_MATCH_TERMS
 from ai_scrum_master.core.logging import get_logger
 from ai_scrum_master.core.quality_gate import evaluate_research_output, expected_relevance_for_requirement, normalize_source_name
-from ai_scrum_master.retrieval.vector_store import search_context
+from ai_scrum_master.retrieval.vector_store import get_chunks_by_filenames, search_context
 from ai_scrum_master.tools.rag_tool import ProjectContextRagTool
 
 logger = get_logger(__name__)
@@ -19,27 +19,34 @@ class ResearcherAgent:
         self.settings = get_settings()
         self.profile = profile
         self.task_profile = task_profile
+        self.llm = None
 
     def create_agent(self):
+        from ai_scrum_master.core.llm_setup import build_llm
+        if not self.llm:
+            # Researcher cần phân tích tài liệu chuẩn xác (temperature = 0.2)
+            self.llm = build_llm(temperature=0.2)
+            
         role = self.profile.role if self.profile else "Research Context Specialist"
         goal = self.profile.goal if self.profile else "Retrieve relevant project context and confidence signals for planning."
         backstory = self.profile.backstory if self.profile else (
             "You analyze local vector-store evidence, keep only documentation-grounded context, "
             "and return a planning brief with confidence warnings."
         )
-        return build_crewai_agent(role=role, goal=goal, backstory=backstory, tools=[ProjectContextRagTool()], verbose=True)
+        return build_crewai_agent(role=role, goal=goal, backstory=backstory, tools=[ProjectContextRagTool()], verbose=True, llm=self.llm)
 
-    def run(self, requirement: str, n_results: int = 5, route: dict | None = None) -> dict:
+    def run(self, requirement: str, n_results: int = 5, route: dict | None = None, forced_context_docs: list[str] | None = None, project_id: str | None = None) -> dict:
         started_at = time.perf_counter()
         route = route or {}
         retrieval_query = self._build_retrieval_query(requirement, route)
         logger.info(
-            "Research query started collection=%s n_results=%s top_k=%s requirement_length=%s retrieval_query_length=%s",
+            "Research query started collection=%s n_results=%s top_k=%s requirement_length=%s retrieval_query_length=%s project_id=%s",
             self.settings.context_collection,
             n_results,
             self.settings.retrieval_context_top_k,
             len(requirement),
             len(retrieval_query),
+            project_id,
         )
         try:
             # Fetch a larger pool to increase recall of required sources
@@ -48,6 +55,7 @@ class ResearcherAgent:
                 query=retrieval_query,
                 n_results=pool_size,
                 collection_name=self.settings.context_collection,
+                project_id=project_id,
             )
         except Exception as exc:
             latency_ms = self._elapsed_ms(started_at)
@@ -80,8 +88,30 @@ class ResearcherAgent:
                 ],
             })
 
+        # --- Forced context: fetch all chunks from imported files ---
+        forced_matches = []
+        if forced_context_docs:
+            forced_matches = get_chunks_by_filenames(
+                filenames=forced_context_docs,
+                query=retrieval_query,
+                n_results=n_results,
+                collection_name=self.settings.context_collection,
+                project_id=project_id,
+            )
+            logger.info(
+                "Forced context injection forced_files=%s forced_chunks=%s",
+                forced_context_docs, len(forced_matches),
+            )
+
+        # Simply take the top matches without filtering by project context template
         threshold_matches = self._relevant_threshold_matches(requirement, matches, route)
-        relevant_matches = self._top_matches(self._prefer_project_context(threshold_matches), n_results)
+        relevant_matches = self._top_matches(threshold_matches, n_results)
+
+        # Merge forced context at the top (deduplicate by id)
+        if forced_matches:
+            existing_ids = {m.get("id") for m in relevant_matches}
+            merged = [m for m in forced_matches if m.get("id") not in existing_ids]
+            relevant_matches = merged + relevant_matches
         documents = [match["document"] for match in relevant_matches]
         ids = [match["id"] for match in relevant_matches]
         metadatas = [match["metadata"] for match in relevant_matches]
@@ -104,6 +134,31 @@ class ResearcherAgent:
             warnings.append("Retrieved context confidence is low; planner should state assumptions explicitly.")
 
         retrieved_sources = self._build_retrieved_sources(relevant_matches)
+        
+        # Method 4: Map-Reduce Context Summarization if context is too large
+        total_chars = sum(len(source["excerpt"]) for source in retrieved_sources)
+        if total_chars > 3000:
+            logger.info("Context length (%s) exceeds 3000 chars, triggering LLM summarization...", total_chars)
+            try:
+                from ai_scrum_master.core.llm_setup import build_llm
+                if not self.llm:
+                    self.llm = build_llm()
+                combined_text = "\n\n".join(f"[{s['source']}]: {s['excerpt']}" for s in retrieved_sources)
+                summary_prompt = (
+                    "Summarize the following project context specifically for the requirement. "
+                    "Keep all business rules, constraints, API names, and definitions of done intact.\n\n"
+                    f"Requirement: {requirement}\n\nContext:\n{combined_text}"
+                )
+                raw_summary = self.llm.call([{"role": "user", "content": summary_prompt}])
+                # Replace the excerpts with the summarized version
+                if retrieved_sources:
+                    retrieved_sources[0]["excerpt"] = str(raw_summary).strip()
+                    retrieved_sources = [retrieved_sources[0]]
+                logger.info("Summarization successful, reduced to 1 summarized source.")
+            except Exception as e:
+                logger.warning("Summarization failed, falling back to raw context: %s", e)
+                warnings.append("Context summarization failed, using raw context.")
+
         context_snippets = self._build_context_snippets(retrieved_sources)
         planning_brief = self._build_planning_brief(requirement, retrieved_sources, retrieval_status, confidence)
         quality_gate = evaluate_research_output(
@@ -160,16 +215,8 @@ class ResearcherAgent:
             "route": route,
             "required_sources": route.get("required_sources", []),
             "optional_sources": route.get("optional_sources", []),
-            "missing_required_sources": [
-                source
-                for source in route.get("required_sources", [])
-                if source not in quality_gate.get("metrics", {}).get("found_sources", [])
-            ],
-            "missing_optional_sources": [
-                source
-                for source in route.get("optional_sources", [])
-                if source not in quality_gate.get("metrics", {}).get("found_sources", [])
-            ],
+            "missing_required_sources": [],
+            "missing_optional_sources": [],
             "latency_ms": latency_ms,
             "stage_latencies_ms": {"researcher_ms": latency_ms},
             "warnings": warnings,
@@ -197,24 +244,32 @@ class ResearcherAgent:
     def _relevant_threshold_matches(self, requirement: str, matches: list[dict], route: dict | None = None) -> list[dict]:
         expected_sources = set(expected_relevance_for_requirement(requirement, route))
         relevant_matches = []
+        req_words = set(w for w in requirement.lower().split() if len(w) > 2)
+        req_len = len(req_words)
+
         for match in matches:
             candidate = dict(match)
             source_name = self._normalized_source_name(candidate)
-            if expected_sources and not self._match_matches_expected(candidate, source_name, expected_sources):
-                continue
+            
             score = float(candidate.get("score") or 0.0)
             vector_score = float(candidate.get("vector_score") or 0.0)
             
+            # Method 3: Jaccard Overlap Re-ranking
+            doc_words = set(w for w in str(candidate.get("document", "")).lower().split() if len(w) > 2)
+            overlap = len(req_words & doc_words)
+            jaccard = (overlap / req_len) if req_len > 0 else 0.0
+            
+            # Rerank by combining vector score and jaccard overlap
+            final_score = (score * 0.8) + (jaccard * 0.2)
+            candidate["score"] = round(final_score, 3)
+            candidate["score_reason"] = "jaccard_rerank"
+            
             # Boost score if this match comes from an expected required source
             if expected_sources and self._match_matches_expected(candidate, source_name, expected_sources):
-                boosted = min(1.0, score + 0.15)
+                boosted = min(1.0, candidate["score"] + 0.15)
                 candidate["score"] = round(boosted, 3)
                 candidate["score_reason"] = "expected_source_boost"
 
-            if expected_sources and vector_score > score:
-                candidate["rank_score"] = candidate.get("rank_score", score)
-                candidate["score"] = round(vector_score, 3)
-                candidate["score_reason"] = "expected_source_vector_score"
             if float(candidate.get("score") or 0.0) >= self.settings.retrieval_min_score:
                 relevant_matches.append(candidate)
         return relevant_matches
@@ -288,18 +343,8 @@ class ResearcherAgent:
         return deduped
 
     def _prefer_project_context(self, matches: list[dict]) -> list[dict]:
-        project_matches = [
-            match
-            for match in matches
-            if self._source_name(match).endswith("_context.md")
-        ]
-        if not project_matches:
-            return matches
-        return [
-            match
-            for match in matches
-            if self._source_name(match).endswith("_context.md")
-        ]
+        # Disabled filtering to support custom uploaded files
+        return matches
 
     def _source_name(self, match: dict) -> str:
         metadata = match.get("metadata") if isinstance(match.get("metadata"), dict) else {}

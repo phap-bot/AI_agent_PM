@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { uploadDocumentsAsync, getIngestStatus } from '../lib/api';
 
-export default function RequirementInputPanel({ onSubmit, isLoading }) {
+export default function RequirementInputPanel({ onSubmit, isLoading, projectId }) {
   const [requirement, setRequirement] = useState('');
   const [nResults, setNResults] = useState(5);
   const [allowFallback, setAllowFallback] = useState(false);
@@ -11,6 +11,9 @@ export default function RequirementInputPanel({ onSubmit, isLoading }) {
   const [ingestData, setIngestData] = useState(null);  // IngestStatusResponse
   const [ingestError, setIngestError] = useState(null);
   const [jobId, setJobId] = useState(null);
+
+  // Accumulated imported files across multiple uploads
+  const [importedFiles, setImportedFiles] = useState([]);
 
   const fileInputRef = useRef(null);
   const pollingRef = useRef(null);
@@ -31,6 +34,20 @@ export default function RequirementInputPanel({ onSubmit, isLoading }) {
           setIsIngesting(false);
           setIngestData(status);
           setJobId(null);
+
+          // Accumulate newly imported files into the master list
+          const newFiles = [
+            ...(status.result?.indexed_files || []),
+            ...(status.result?.skipped_files || []),
+          ];
+          setImportedFiles(prev => {
+            const existing = new Set(prev.map(f => f.name));
+            const additions = newFiles
+              .filter(name => !existing.has(name))
+              .map(name => ({ name, status: status.result?.indexed_files?.includes(name) ? 'new' : 'existing' }));
+            return [...prev, ...additions];
+          });
+
           console.log('[POLL] ✅ Ingestion completed!', status.result);
         } else if (status.status === 'failed') {
           clearInterval(pollingRef.current);
@@ -50,14 +67,22 @@ export default function RequirementInputPanel({ onSubmit, isLoading }) {
     };
   }, [jobId, isIngesting]);
 
+  const handleRemoveFile = (fileName) => {
+    setImportedFiles(prev => prev.filter(f => f.name !== fileName));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (requirement.trim().length < 3) return;
     
+    // Use accumulated imported files list
+    const forcedDocs = importedFiles.map(f => f.name);
+
     onSubmit({
       requirement,
       n_results: parseInt(nResults, 10),
       allow_fallback_without_context: allowFallback,
+      forced_context_docs: forcedDocs,
     });
   };
 
@@ -71,7 +96,7 @@ export default function RequirementInputPanel({ onSubmit, isLoading }) {
 
     try {
       console.log(`[UPLOAD] Uploading ${files.length} file(s)...`);
-      const jobResponse = await uploadDocumentsAsync(files);
+      const jobResponse = await uploadDocumentsAsync(files, projectId);
       console.log(`[UPLOAD] Job created: ${jobResponse.job_id} - ${jobResponse.message}`);
       setJobId(jobResponse.job_id); // This triggers the polling useEffect
     } catch (err) {
@@ -130,51 +155,36 @@ export default function RequirementInputPanel({ onSubmit, isLoading }) {
           </div>
         )}
 
-        {/* Ingest Progress / Result */}
-        {(isIngesting || ingestData) && (
+        {/* Ingest Progress */}
+        {isIngesting && (
+          <div className="flex items-center gap-stack-sm p-3 bg-primary/5 border border-primary/20 rounded-xl">
+            <span className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></span>
+            <p className="text-[12px] text-primary font-bold">Backend đang embedding...</p>
+          </div>
+        )}
+
+        {/* Accumulated Imported Files List */}
+        {importedFiles.length > 0 && (
           <div className="space-y-stack-sm">
-            <p className="text-[10px] font-bold text-outline uppercase tracking-wider px-1">Imported Documents</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-stack-sm">
-              <div className="flex items-center justify-between p-3 bg-surface-container-low border border-outline-variant/30 rounded-xl">
-                <div className="flex items-center gap-stack-sm">
-                  <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                    <span className="material-symbols-outlined text-[20px]">
-                      {isIngesting ? 'pending' : 'library_books'}
-                    </span>
-                  </div>
-                  <div className="flex-1 w-full max-w-full min-w-0">
-                    <p className="text-label-md font-bold truncate">
-                      {isIngesting ? 'Đang xử lý...' : 'Import Hoàn Tất'}
-                    </p>
-                    {isIngesting ? (
-                      <p className="text-[10px] text-primary font-bold flex items-center gap-1">
-                        <span className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></span>
-                        Backend đang embedding... 
-                      </p>
-                    ) : (
-                      <div className="flex flex-col gap-1 mt-1">
-                        {ingestData?.result?.indexed_files?.map((filename, idx) => (
-                          <p key={`idx-${idx}`} className="text-[10px] text-green-600 font-bold flex items-center gap-1 truncate" title={filename}>
-                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                            {filename} (Đã thêm)
-                          </p>
-                        ))}
-                        {ingestData?.result?.skipped_files?.map((filename, idx) => (
-                          <p key={`skip-${idx}`} className="text-[10px] text-blue-600 font-bold flex items-center gap-1 truncate" title={filename}>
-                            <span className="material-symbols-outlined text-blue-500 text-[14px]" style={{fontVariationSettings: "'FILL' 1"}}>verified</span>
-                            {filename} (Đã có sẵn)
-                          </p>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                {!isIngesting && ingestData && (
-                  <button className="p-1 text-outline hover:text-error transition-colors" onClick={() => setIngestData(null)}>
-                    <span className="material-symbols-outlined">close</span>
+            <p className="text-[10px] font-bold text-outline uppercase tracking-wider px-1">Imported Documents ({importedFiles.length})</p>
+            <div className="flex flex-wrap gap-2">
+              {importedFiles.map((file, idx) => (
+                <div
+                  key={`file-${idx}`}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-low border border-outline-variant/30 rounded-full text-[11px] font-bold group hover:border-primary/40 transition-colors"
+                  title={file.name}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${file.status === 'new' ? 'bg-green-500' : 'bg-blue-500'}`}></span>
+                  <span className="truncate max-w-[180px] text-on-surface-variant">{file.name}</span>
+                  <button
+                    className="ml-0.5 text-outline hover:text-error transition-colors opacity-0 group-hover:opacity-100"
+                    onClick={() => handleRemoveFile(file.name)}
+                    title="Xoá file này khỏi context"
+                  >
+                    <span className="material-symbols-outlined text-[14px]">close</span>
                   </button>
-                )}
-              </div>
+                </div>
+              ))}
             </div>
           </div>
         )}

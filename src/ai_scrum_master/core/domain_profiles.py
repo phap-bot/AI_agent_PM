@@ -328,6 +328,15 @@ OVERSIZED_CAPABILITIES = (
     "reporting",
     "permissions",
     "audit logs",
+    "crud",
+    "management",
+    "tracking",
+    "delivery",
+    "assignment",
+    "creation",
+    "lifecycle",
+    "end-to-end",
+    "workflow",
 )
 
 
@@ -341,6 +350,12 @@ SPLIT_CAPABILITIES = (
     "reporting",
     "permissions",
     "audit logs",
+    "crud operations",
+    "management module",
+    "tracking system",
+    "delivery flow",
+    "assignment logic",
+    "creation process",
 )
 
 

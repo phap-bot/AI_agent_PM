@@ -32,6 +32,7 @@ def build_crewai_agent(
     tools: list[Any] | None = None,
     verbose: bool = True,
     allow_delegation: bool = False,
+    llm: Any = None,
 ) -> Any:
     payload = {
         "role": role,
@@ -41,6 +42,8 @@ def build_crewai_agent(
         "verbose": verbose,
         "allow_delegation": allow_delegation,
     }
+    if llm is not None:
+        payload["llm"] = llm
     try:
         from crewai import Agent
     except Exception:

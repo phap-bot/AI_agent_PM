@@ -16,10 +16,10 @@ def build_llm(**overrides: Any) -> Any:
     }
 
     return LLM(
-        model=f"ollama/{settings.reasoning_model}",
-        base_url=settings.ollama_base_url,
-        temperature=settings.ollama_temperature,
-        timeout=settings.ollama_timeout,
+        model=overrides.pop("model", f"ollama/{settings.reasoning_model}"),
+        base_url=overrides.pop("base_url", settings.ollama_base_url),
+        temperature=overrides.pop("temperature", settings.ollama_temperature),
+        timeout=overrides.pop("timeout", settings.ollama_timeout),
         extra_body={"options": options},
         **overrides,
     )

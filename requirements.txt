@@ -6,12 +6,15 @@ pytest
 crewai
 langchain
 langchain-community
-langchain-chroma
+langchain-qdrant
 langchain-ollama
 langchain-text-splitters
-chromadb
+qdrant-client
+motor
 pyyaml
 pydantic
 python-dotenv
 ollama
 pypdf
+celery
+redis

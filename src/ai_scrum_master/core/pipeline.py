@@ -30,9 +30,11 @@ def generate_story_pipeline(
     requirement: str,
     n_results: int = 5,
     allow_fallback_without_context: bool = False,
+    forced_context_docs: list[str] | None = None,
     crew: "ScrumMasterCrew | None" = None,
     crewai_builder: Callable[..., Any] | None = None,
     progress_callback: Callable[[str, dict], None] | None = None,
+    project_id: str | None = None,
 ) -> dict:
     builder = crewai_builder or (build_scrum_master_crew if crew is None else None)
     crewai_crew = builder(requirement, n_results=n_results) if builder else None
@@ -44,7 +46,10 @@ def generate_story_pipeline(
     )
     crewai_result = _complete_crewai_response(crewai_output)
     if crewai_result is not None:
-        return _finalize_crewai_response(crewai_result, requirement)
+        final_result = _finalize_crewai_response(crewai_result, requirement)
+        from ai_scrum_master.core.database import DatabaseManager
+        DatabaseManager.save_history(requirement, final_result, project_id=project_id)
+        return final_result
 
     runner = crew or ScrumMasterCrew()
     if crewai_crew is not None:
@@ -53,10 +58,16 @@ def generate_story_pipeline(
         requirement=requirement,
         n_results=n_results,
         allow_fallback_without_context=allow_fallback_without_context,
+        forced_context_docs=forced_context_docs,
         progress_callback=progress_callback,
+        project_id=project_id,
     )
     if crewai_warning:
         result = _mark_crewai_failure_for_revision(result, crewai_warning)
+        
+    from ai_scrum_master.core.database import DatabaseManager
+    DatabaseManager.save_history(requirement, result, project_id=project_id)
+    
     return result
 
 
@@ -216,21 +227,22 @@ class ScrumMasterCrew:
             profile=profiles.agents.get("evaluator"),
             task_profile=profiles.tasks.get("evaluation_task"),
         )
-        self.jira_tool = JiraTool()
-        self.slack_tool = SlackTool()
-    def run(self, requirement: str, n_results: int = 5, allow_fallback_without_context: bool = False, progress_callback: Callable[[str, dict], None] | None = None) -> dict:
+    def run(self, requirement: str, n_results: int = 5, allow_fallback_without_context: bool = False, forced_context_docs: list[str] | None = None, progress_callback: Callable[[str, dict], None] | None = None, project_id: str | None = None) -> dict:
+        self.jira_tool = JiraTool.from_project(project_id)
+        self.slack_tool = SlackTool.from_project(project_id)
         route = route_requirement(requirement)
         requirement_type = route.get("story_type") or classify_requirement(requirement)
         logger.info(
-            "Pipeline started requirement_length=%s n_results=%s allow_fallback_without_context=%s requirement_type=%s route_domain=%s",
+            "Pipeline started requirement_length=%s n_results=%s allow_fallback_without_context=%s requirement_type=%s route_domain=%s project_id=%s",
             len(requirement),
             n_results,
             allow_fallback_without_context,
             requirement_type,
             route.get("domain"),
+            project_id,
         )
         logger.info("Researcher stage started")
-        context = self._run_researcher(requirement=requirement, n_results=n_results, route=route)
+        context = self._run_researcher(requirement=requirement, n_results=n_results, route=route, forced_context_docs=forced_context_docs, project_id=project_id)
         context["route"] = route
         logger.info(
             "Researcher stage completed documents=%s raw_matches=%s confidence=%s warnings=%s retrieval_status=%s",
@@ -332,11 +344,11 @@ class ScrumMasterCrew:
             "actions": actions,
         }
 
-    def _run_researcher(self, requirement: str, n_results: int, route: dict) -> dict:
+    def _run_researcher(self, requirement: str, n_results: int, route: dict, forced_context_docs: list[str] | None = None, project_id: str | None = None) -> dict:
         try:
-            return self.researcher.run(requirement=requirement, n_results=n_results, route=route)
+            return self.researcher.run(requirement=requirement, n_results=n_results, route=route, forced_context_docs=forced_context_docs, project_id=project_id)
         except TypeError as exc:
-            if "route" not in str(exc):
+            if "route" not in str(exc) and "project_id" not in str(exc):
                 raise
             return self.researcher.run(requirement=requirement, n_results=n_results)
 

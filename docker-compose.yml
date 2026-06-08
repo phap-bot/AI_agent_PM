@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant_local
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb_local
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    restart: unless-stopped
+
+  redis:
+    image: redis:alpine
+    container_name: redis_local
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: src/Dockerfile
+    container_name: api_local
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./src:/app/src
+      - shared_tmp:/tmp
+    env_file:
+      - ./src/ai_scrum_master/.env
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017
+      - QDRANT_URL=http://qdrant:6333
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - mongodb
+      - qdrant
+      - redis
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: .
+      dockerfile: src/Dockerfile
+    container_name: worker_local
+    command: ["celery", "-A", "ai_scrum_master.worker.celery_app", "worker", "--loglevel=info"]
+    volumes:
+      - ./src:/app/src
+      - shared_tmp:/tmp
+    env_file:
+      - ./src/ai_scrum_master/.env
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017
+      - QDRANT_URL=http://qdrant:6333
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - redis
+      - api
+    restart: unless-stopped
+
+  ui:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ui_local
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - ./frontend/index.html:/app/index.html
+      - ./frontend/vite.config.js:/app/vite.config.js
+    environment:
+      # Tell Vite to use polling for Hot Reload if needed
+      - CHOKIDAR_USEPOLLING=true
+      # Map API requests to the api container instead of localhost
+      - VITE_API_TARGET=http://api:8000
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  qdrant_data:
+  mongodb_data:
+  shared_tmp:

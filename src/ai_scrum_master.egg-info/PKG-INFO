@@ -11,10 +11,11 @@ Requires-Dist: pytest
 Requires-Dist: crewai
 Requires-Dist: langchain
 Requires-Dist: langchain-community
-Requires-Dist: langchain-chroma
+Requires-Dist: langchain-qdrant
 Requires-Dist: langchain-ollama
 Requires-Dist: langchain-text-splitters
-Requires-Dist: chromadb
+Requires-Dist: qdrant-client
+Requires-Dist: motor
 Requires-Dist: pyyaml
 Requires-Dist: pydantic
 Requires-Dist: python-dotenv

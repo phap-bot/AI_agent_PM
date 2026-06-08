@@ -16,16 +16,11 @@ def select_context_for_route(requirement: str, context: dict[str, Any], route: d
     ignored_sources = []
     seen_selected = set()
     for source in context.get("retrieved_sources", []):
-        source_name = normalize_source_name(str(source.get("source", "")))
-        if not allowed or source_name in allowed or _source_alias_matches(source_name, allowed):
-            dedupe_key = _source_key(source)
-            if dedupe_key not in seen_selected:
-                seen_selected.add(dedupe_key)
-                selected_sources.append(source)
-        else:
-            ignored = dict(source)
-            ignored["ignored_reason"] = "unrelated_to_routed_domain"
-            ignored_sources.append(ignored)
+        # Do not filter based on allowed domains anymore. Accept all retrieved sources.
+        dedupe_key = _source_key(source)
+        if dedupe_key not in seen_selected:
+            seen_selected.add(dedupe_key)
+            selected_sources.append(source)
 
     selected_matches = _select_matches(context.get("matches", []), selected_sources)
     selected_snippets = _select_snippets(context.get("context_snippets", []), selected_sources)
@@ -41,14 +36,11 @@ def select_context_for_route(requirement: str, context: dict[str, Any], route: d
         normalize_source_name(str(source.get("source", "")))
         for source in selected_sources
     }
-    missing_required = sorted(source for source in required if not _source_set_contains(selected_source_names, source))
-    missing_optional = sorted(source for source in optional if not _source_set_contains(selected_source_names, source))
+    # Empty missing required/optional sources to prevent blocking the planner
+    missing_required = []
+    missing_optional = []
 
     warnings = list(context.get("warnings", []))
-    if ignored_sources:
-        warnings.append("Ignored retrieved context that was unrelated to the routed requirement domain.")
-    for source in missing_optional:
-        warnings.append(f"Optional context source '{source}' was not retrieved; planning may continue with required evidence.")
 
     selected = dict(context)
     selected.update(

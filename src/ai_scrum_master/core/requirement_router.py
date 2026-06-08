@@ -22,17 +22,43 @@ def route_requirement(requirement: str) -> dict[str, Any]:
     if _is_ambiguous(text, words):
         return _ambiguous_route(text)
 
+    # For requirements longer than a short sentence (>15 words), only route
+    # to a specific domain if that domain keyword appears in the title
+    # (first line) or first sentence — not just mentioned deep in the body.
+    # This prevents tangential mentions of "notification", "login", etc.
+    # from hijacking routing for a booking or general requirement.
+    is_long = len(words) > 15
+    # Extract the title/first line from the ORIGINAL text (before newlines were stripped)
+    raw_lines = [line.strip().lower() for line in requirement.strip().splitlines() if line.strip()]
+    first_line = raw_lines[0] if raw_lines else text[:100]
+    # Also try first sentence (before first period)
+    first_sentence = text.split(".")[0] if "." in text else first_line
+    # Use the shorter of the two as the "primary context"
+    primary_text = first_line if len(first_line) <= len(first_sentence) else first_sentence
+
+    # Multi-domain conflict: if multiple unrelated domains match in a long
+    # requirement, it's a general/cross-cutting requirement — route to unknown.
+    if is_long:
+        matched_domains = []
+        if _has_auth(text): matched_domains.append("auth")
+        if "checkout" in text or "payment" in text: matched_domains.append("checkout")
+        if _has_notification(text): matched_domains.append("notification")
+        if _has_sprint_planning(text): matched_domains.append("scrum")
+        if len(matched_domains) >= 2 and not any(_has_domain_keyword(primary_text, d) for d in ["auth", "checkout", "notification", "scrum"]):
+            return _route("unknown", f"Requirement mentions multiple domains ({', '.join(matched_domains)}) but none is the primary topic.")
+
     if _has_google_login(text):
         return _route("auth_google_login", "Requirement mentions Google sign-in/login and account access.")
-    if _has_auth(text):
+    if _has_auth(text) and (not is_long or _has_auth(primary_text)):
         return _route("auth_general_login", "Requirement is about login/authentication without a Google-specific ask.")
-    if "checkout" in text and ("duplicate" in text or "twice" in text):
-        return _route("checkout_duplicate_payment", "Requirement mentions checkout and duplicate order/payment prevention.")
-    if "checkout" in text or "payment" in text or "provider timeout" in text or "retry payment" in text:
-        return _route("checkout_payment_retry", "Requirement mentions checkout payment retry or provider timeout.")
-    if _has_sprint_planning(text):
+    if "checkout" in text and (not is_long or "checkout" in primary_text):
+        if "duplicate" in text or "twice" in text:
+            return _route("checkout_duplicate_payment", "Requirement mentions checkout and duplicate order/payment prevention.")
+        if "payment" in text or "provider timeout" in text or "retry payment" in text:
+            return _route("checkout_payment_retry", "Requirement mentions checkout payment retry or provider timeout.")
+    if _has_sprint_planning(text) and (not is_long or _has_sprint_planning(primary_text)):
         return _route("sprint_planning_process", "Requirement is about improving Sprint Planning and Sprint Goal definition.")
-    if _has_notification(text):
+    if _has_notification(text) and (not is_long or _has_notification(primary_text)):
         return _route("notification", "Requirement mentions notification delivery or notification channels.")
     return _route("unknown", "No known domain matched deterministic routing rules.")
 

@@ -102,12 +102,18 @@ def search_context_with_langchain(
     query: str,
     n_results: int = 5,
     collection_name: str | None = None,
+    project_id: str | None = None,
 ) -> list[dict[str, Any]]:
     settings = get_settings()
     retrieval_query = compact_query_for_embedding(query)
     vector_store = build_qdrant_vector_store(collection_name)
     fetch_k = max(n_results, settings.rag_vector_fetch_k if settings.rag_hybrid_search else n_results)
-    results = vector_store.similarity_search_with_score(retrieval_query, k=fetch_k)
+    
+    search_kwargs = {}
+    if project_id:
+        search_kwargs["filter"] = {"project_id": project_id}
+        
+    results = vector_store.similarity_search_with_score(retrieval_query, k=fetch_k, **search_kwargs)
 
     matches: list[dict[str, Any]] = []
     for document, distance in results:

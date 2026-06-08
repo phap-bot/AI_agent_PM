@@ -6,7 +6,8 @@ from pathlib import Path
 import tempfile
 import shutil
 
-from fastapi import Depends, FastAPI, File, UploadFile
+from fastapi import Depends, FastAPI, File, Request, UploadFile
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from ai_scrum_master.actions.jira import JiraTool
@@ -23,6 +24,7 @@ from ai_scrum_master.api.schemas import (
     IngestStatusResponse,
 )
 from ai_scrum_master.core.config import get_settings
+from ai_scrum_master.core.exceptions import BaseAppException
 from ai_scrum_master.core.finalizer import ACTION_BLOCK_WARNING, actions_are_ready
 from ai_scrum_master.core.logging import get_logger
 from ai_scrum_master.ingestion.ingest import ingest_raw_docs
@@ -37,6 +39,36 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.exception_handler(BaseAppException)
+async def app_exception_handler(request: Request, exc: BaseAppException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "success": False,
+            "error": {
+                "code": exc.code,
+                "message": exc.message,
+                "details": exc.details
+            }
+        }
+    )
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    # Fallback for unexpected errors
+    logger.exception(f"Unhandled exception on {request.url.path}: {exc}")
+    return JSONResponse(
+        status_code=500,
+        content={
+            "success": False,
+            "error": {
+                "code": "INTERNAL_SERVER_ERROR",
+                "message": "Đã xảy ra lỗi không xác định từ hệ thống.",
+                "details": str(exc)
+            }
+        }
+    )
 
 import logging
 
@@ -56,57 +88,28 @@ class EndpointFilter(logging.Filter):
 logging.getLogger("uvicorn.access").addFilter(EndpointFilter("/generate/status/"))
 logging.getLogger("uvicorn.access").addFilter(EndpointFilter("/ingest/status/"))
 
+from ai_scrum_master.api.routers.history import router as history_router
+from ai_scrum_master.api.routers.projects import router as projects_router
+from ai_scrum_master.api.routers.sprint import router as sprint_router
+
 logger = get_logger(__name__)
 app.include_router(generate_router)
+app.include_router(history_router)
+app.include_router(projects_router)
+app.include_router(sprint_router)
 
-# ---------------------------------------------------------------------------
-# In-memory job tracker for async ingestion
-# ---------------------------------------------------------------------------
-_ingest_jobs: dict[str, dict] = {}
-_jobs_lock = threading.Lock()
-
-
-def _run_ingest_job(job_id: str, source_dir: Path):
-    """Run ingestion in a background thread and update the job tracker."""
-    logger.info("[JOB %s] Background ingestion started for %s", job_id, source_dir)
-    try:
-        result = ingest_raw_docs(raw_docs_dir=source_dir)
-        with _jobs_lock:
-            _ingest_jobs[job_id] = {
-                "status": "completed",
-                "message": f"Ingested {result['files_indexed']} files / {result['chunks_indexed']} chunks",
-                "result": result,
-            }
-        logger.info("[JOB %s] Ingestion completed: %s", job_id, result)
-    except Exception as exc:
-        logger.exception("[JOB %s] Ingestion FAILED: %s", job_id, exc)
-        with _jobs_lock:
-            _ingest_jobs[job_id] = {
-                "status": "failed",
-                "message": str(exc),
-                "result": None,
-            }
-    finally:
-        # Clean up temp directory if it exists
-        if source_dir and source_dir.exists() and "tmp" in str(source_dir).lower():
-            shutil.rmtree(source_dir, ignore_errors=True)
-            logger.info("[JOB %s] Cleaned up temp dir %s", job_id, source_dir)
-
-
-# ---------------------------------------------------------------------------
-
+from ai_scrum_master.worker.tasks import ingest_docs_task
+from celery.result import AsyncResult
 
 def get_jira_tool() -> JiraTool:
     return JiraTool()
 
-
 def get_slack_tool() -> SlackTool:
     return SlackTool()
 
-
 def get_ingest_runner():
+    from ai_scrum_master.ingestion.ingest import ingest_raw_docs
     return ingest_raw_docs
-
 
 @app.get("/health")
 def health() -> dict[str, str]:
@@ -120,17 +123,18 @@ def ingest_documents(
 ) -> IngestResponse:
     result = ingest_runner(
         raw_docs_dir=Path(payload.raw_docs_dir) if payload.raw_docs_dir else None,
+        project_id=payload.project_id
     )
     return IngestResponse(**result)
 
 
 @app.post("/ingest/upload", response_model=IngestJobResponse)
 def ingest_uploaded_documents(
+    project_id: str | None = None,
     files: list[UploadFile] = File(...),
 ) -> IngestJobResponse:
-    """Accept uploaded files and start ingestion in the background.
+    """Accept uploaded files and start ingestion in the background using Celery.
     Returns immediately with a job_id for polling status."""
-    job_id = str(uuid.uuid4())[:8]
 
     # Save uploaded files to a temp directory
     temp_dir = Path(tempfile.mkdtemp())
@@ -141,22 +145,13 @@ def ingest_uploaded_documents(
             shutil.copyfileobj(file.file, buffer)
         saved_files.append(file.filename)
 
-    logger.info("[JOB %s] Received %d files: %s -> temp_dir=%s", job_id, len(saved_files), saved_files, temp_dir)
+    logger.info("Received %d files: %s -> temp_dir=%s", len(saved_files), saved_files, temp_dir)
 
-    # Register job as processing
-    with _jobs_lock:
-        _ingest_jobs[job_id] = {
-            "status": "processing",
-            "message": f"Processing {len(saved_files)} file(s)...",
-            "result": None,
-        }
-
-    # Start background thread
-    thread = threading.Thread(target=_run_ingest_job, args=(job_id, temp_dir), daemon=True)
-    thread.start()
+    # Start Celery task
+    task = ingest_docs_task.delay(str(temp_dir), project_id)
 
     return IngestJobResponse(
-        job_id=job_id,
+        job_id=task.id,
         status="processing",
         message=f"Started ingesting {len(saved_files)} file(s) in background",
     )
@@ -165,29 +160,49 @@ def ingest_uploaded_documents(
 @app.get("/ingest/status/{job_id}", response_model=IngestStatusResponse)
 def get_ingest_status(job_id: str) -> IngestStatusResponse:
     """Poll ingestion job status."""
-    with _jobs_lock:
-        job = _ingest_jobs.get(job_id)
-
-    if job is None:
+    task_result = AsyncResult(job_id)
+    
+    if task_result.state == 'PENDING':
         return IngestStatusResponse(
             job_id=job_id,
-            status="not_found",
-            message=f"No job with id '{job_id}' found.",
+            status="processing",
+            message="Job is pending...",
+            result=None,
         )
-
-    result_data = None
-    if job.get("result"):
+    elif task_result.state == 'PROCESSING':
+        return IngestStatusResponse(
+            job_id=job_id,
+            status="processing",
+            message="Job is processing...",
+            result=None,
+        )
+    elif task_result.state == 'SUCCESS':
+        raw_result = task_result.result
         result_data = IngestResponse(**{
-            k: v for k, v in job["result"].items()
+            k: v for k, v in raw_result.items()
             if k in ("collection", "source_dir", "files_indexed", "chunks_indexed", "skipped_count", "indexed_files", "skipped_files")
-        })
-
-    return IngestStatusResponse(
-        job_id=job_id,
-        status=job["status"],
-        message=job.get("message", ""),
-        result=result_data,
-    )
+        }) if raw_result else None
+        
+        return IngestStatusResponse(
+            job_id=job_id,
+            status="completed",
+            message="Job completed successfully.",
+            result=result_data,
+        )
+    elif task_result.state == 'FAILURE':
+        return IngestStatusResponse(
+            job_id=job_id,
+            status="failed",
+            message=str(task_result.info),
+            result=None,
+        )
+    else:
+        return IngestStatusResponse(
+            job_id=job_id,
+            status="failed",
+            message=f"Unknown task state: {task_result.state}",
+            result=None,
+        )
 
 
 @app.post("/actions/jira/preview", response_model=ActionPlan)

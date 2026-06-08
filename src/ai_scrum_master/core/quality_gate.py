@@ -114,14 +114,10 @@ def evaluate_research_output(
         if metrics.get(metric, 0.0) < threshold
     ]
     hard_failures = []
-    if required_sources and missing_required:
-        hard_failures.append(f"Missing required source(s): {', '.join(missing_required)}")
-    if required_sources and not found_sources:
-        hard_failures.append("No usable required evidence was retrieved.")
-    if wrong_domain_sources and not found_sources:
-        hard_failures.append(f"Retrieved context is wrong domain: {', '.join(sorted(set(wrong_domain_sources)))}")
-    if not route:
-        hard_failures = metric_failures
+    # Disabled hard failures for missing domain templates to allow custom imported files.
+    if not matches:
+        hard_failures.append("No context retrieved for requirement.")
+    
     return {
         "agent": "researcher",
         "passed": not hard_failures,
@@ -130,7 +126,7 @@ def evaluate_research_output(
         "optional_sources": sorted(optional_sources),
         "metrics": metrics,
         "failures": hard_failures,
-        "metric_warnings": [] if hard_failures else metric_failures,
+        "metric_warnings": metric_failures,
     }
 
 

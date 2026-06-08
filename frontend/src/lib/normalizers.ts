@@ -13,6 +13,7 @@ export function normalizeStoryDraft(draft: StoryDraft | null | undefined, origin
       story_points: null,
       tasks: defaultTasks,
       definition_of_done: [],
+      priority: 'Medium',
       planning_status: 'DRAFT',
       clarification_questions: [],
       assumptions: [],
@@ -36,5 +37,6 @@ export function normalizeStoryDraft(draft: StoryDraft | null | undefined, origin
     tasks: draft.tasks || defaultTasks,
     acceptance_criteria: draft.acceptance_criteria || [],
     definition_of_done: draft.definition_of_done || [],
+    priority: draft.priority || 'Medium',
   };
 }

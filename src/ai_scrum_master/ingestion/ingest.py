@@ -16,7 +16,7 @@ from ai_scrum_master.ingestion.pdf_processing import (
     normalize_pdf_document,
 )
 from ai_scrum_master.retrieval.rag import LANGCHAIN_INSTALL_HINT, add_langchain_documents
-from ai_scrum_master.retrieval.vector_store import canonical_collection_name, get_collection
+from ai_scrum_master.retrieval.vector_store import canonical_collection_name
 
 logger = get_logger(__name__)
 
@@ -169,7 +169,7 @@ def build_chunk_id(path: Path, chunk_index: int, chunk: str = "") -> str:
     return f"{path.stem}-{chunk_index}-{digest}"
 
 
-def build_chunk_metadata(path: Path, source_dir: Path, chunk_index: int, chunk: str, document_sha1: str, ingested_at: str) -> dict:
+def build_chunk_metadata(path: Path, source_dir: Path, chunk_index: int, chunk: str, document_sha1: str, ingested_at: str, project_id: str | None = None) -> dict:
     relative_path = path.relative_to(source_dir)
     return {
         "source": relative_path.as_posix(),
@@ -183,6 +183,7 @@ def build_chunk_metadata(path: Path, source_dir: Path, chunk_index: int, chunk: 
         "chunk_strategy": CHUNK_STRATEGY,
         "chunk_size": get_settings().rag_chunk_size,
         "chunk_overlap": get_settings().rag_chunk_overlap,
+        "project_id": project_id or "",
     }
 
 
@@ -298,7 +299,7 @@ def split_loaded_documents(documents: list[Any]) -> list[Any]:
     return splitter.split_documents(documents)
 
 
-def prepare_langchain_chunks(chunks: list[Any], source_dir: Path, ingested_at: str) -> tuple[list[Any], list[str]]:
+def prepare_langchain_chunks(chunks: list[Any], source_dir: Path, ingested_at: str, project_id: str | None = None) -> tuple[list[Any], list[str]]:
     source_indexes: dict[str, int] = {}
     ids: list[str] = []
     prepared_chunks = []
@@ -319,6 +320,7 @@ def prepare_langchain_chunks(chunks: list[Any], source_dir: Path, ingested_at: s
             chunk=text,
             document_sha1=document_sha1,
             ingested_at=ingested_at,
+            project_id=project_id,
         )
         for key in (
             "page",
@@ -356,17 +358,34 @@ def resolve_chunk_source_path(chunk: Any, source_dir: Path) -> Path:
 
 
 def _get_existing_doc_hashes(collection_name: str) -> set[str]:
-    """Query ChromaDB for all unique document_sha1 values already ingested."""
+    """Query Qdrant for all unique document_sha1 values already ingested."""
     try:
-        collection = get_collection(collection_name)
-        existing = collection.get(include=["metadatas"])
-        if not existing or not existing.get("metadatas"):
+        from ai_scrum_master.retrieval.vector_store import get_qdrant_client, canonical_collection_name
+        client = get_qdrant_client()
+        collection = canonical_collection_name(collection_name)
+        
+        if not client.collection_exists(collection_name=collection):
             return set()
+            
         hashes = set()
-        for meta in existing["metadatas"]:
-            if isinstance(meta, dict) and meta.get("document_sha1"):
-                hashes.add(meta["document_sha1"])
-        logger.info("[INGEST] Found %d unique document hashes already in collection '%s'", len(hashes), collection_name)
+        offset = None
+        while True:
+            records, next_offset = client.scroll(
+                collection_name=collection,
+                limit=1000,
+                with_payload=["document_sha1"],
+                with_vectors=False,
+                offset=offset,
+            )
+            for record in records:
+                if record.payload and record.payload.get("document_sha1"):
+                    hashes.add(record.payload["document_sha1"])
+                    
+            if next_offset is None:
+                break
+            offset = next_offset
+            
+        logger.info("[INGEST] Found %d unique document hashes already in collection '%s'", len(hashes), collection)
         return hashes
     except Exception as exc:
         logger.warning("[INGEST] Could not query existing hashes, will re-index all: %s", exc)
@@ -380,14 +399,19 @@ def _compute_file_hash(path: Path) -> str:
     return hashlib.sha1(path.read_text(encoding="utf-8").encode("utf-8")).hexdigest()
 
 
-def ingest_raw_docs(raw_docs_dir: Path | None = None, collection_name: str | None = None) -> dict:
+def ingest_raw_docs(raw_docs_dir: Path | None = None, collection_name: str | None = None, project_id: str | None = None) -> dict:
     settings = get_settings()
     source_dir = raw_docs_dir or BASE_DIR / "data" / "raw_docs"
+    
+    # If project_id is provided, append it to source_dir so that projects have separate dirs
+    if project_id:
+        source_dir = source_dir / project_id
+        
     target_collection = canonical_collection_name(collection_name)
     t_start = time.time()
 
     logger.info("[INGEST] === Starting ingestion ===")
-    logger.info("[INGEST] source_dir=%s  collection=%s", source_dir, target_collection)
+    logger.info("[INGEST] source_dir=%s  collection=%s project_id=%s", source_dir, target_collection, project_id)
 
     # --- Step 1: Get existing hashes for incremental ingestion ---
     existing_hashes = _get_existing_doc_hashes(target_collection)
@@ -435,6 +459,7 @@ def ingest_raw_docs(raw_docs_dir: Path | None = None, collection_name: str | Non
             split_loaded_documents(new_documents),
             source_dir=source_dir.resolve(),
             ingested_at=ingested_at,
+            project_id=project_id,
         )
         logger.info("[INGEST] Chunked into %d pieces in %.2fs", len(chunks), time.time() - t_chunk)
 
@@ -467,7 +492,7 @@ def ingest_raw_docs(raw_docs_dir: Path | None = None, collection_name: str | Non
         "skipped_files": skipped_files,
         "chunk_strategy": CHUNK_STRATEGY,
         "embedding_model": settings.embedding_model,
-        "vector_store": "langchain_chroma",
+        "vector_store": "langchain_qdrant",
     }
 
 

@@ -52,10 +52,13 @@ class GenerateStoriesRequest(SanitizedBaseModel):
     requirement: str = Field(..., min_length=3)
     n_results: int = Field(default=5, ge=1, le=10)
     allow_fallback_without_context: bool = False
+    forced_context_docs: list[str] = Field(default_factory=list)
+    project_id: str | None = None
 
 
 class IngestRequest(SanitizedBaseModel):
     raw_docs_dir: str | None = None
+    project_id: str | None = None
 
 
 class IngestResponse(SanitizedBaseModel):
@@ -129,6 +132,7 @@ class StoryDraft(SanitizedBaseModel):
     user_story: str = ""
     acceptance_criteria: list[str] = Field(default_factory=list)
     story_points: StrictInt | None = None
+    priority: str | None = None
     tasks: dict[str, list[str]] = Field(default_factory=lambda: {"be": [], "fe": [], "qa": []})
     definition_of_done: list[str] = Field(default_factory=list)
     planning_status: str = "READY"
@@ -186,6 +190,7 @@ class ActionExecutionPlan(SanitizedBaseModel):
 class ActionPreviewRequest(SanitizedBaseModel):
     story: StoryDraft = Field(default_factory=StoryDraft)
     evaluation: EvaluationResult = Field(default_factory=lambda: EvaluationResult(status="APPROVED"))
+    project_id: str | None = None
 
 
 class GenerateStoriesResponse(SanitizedBaseModel):

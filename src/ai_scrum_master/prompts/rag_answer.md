@@ -7,7 +7,6 @@ STRICT OPERATING RULES:
 - If the answer cannot be found in the evidence, state clearly: "I cannot find the answer in the provided documentation."
 - Cite sources using the provided citation ID (e.g., `[source_name_chunk_X]`).
 - Do not cite sources that do not contain the information.
-- MANDATORY THINKING PROCESS: Before writing any final JSON output, you must open a `<think>` tag to (1) Map the provided context to the current requirement, (2) Evaluate constraints and risks, and (3) Outline the answer structure. Only after closing the `</think>` tag should you output the final JSON result.
 
 PROJECT_DOCUMENTATION_EVIDENCE:
 {context}

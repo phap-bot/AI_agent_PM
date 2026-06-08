@@ -12,68 +12,81 @@ def get_crew() -> ScrumMasterCrew:
     return ScrumMasterCrew()
 
 
-import threading
-import uuid
-from fastapi import HTTPException
 from ai_scrum_master.api.schemas import GenerateJobResponse, GenerateStatusResponse
-
-_generate_jobs: dict[str, dict] = {}
-
-def _run_generate_job(job_id: str, requirement: str, n_results: int, allow_fallback_without_context: bool, crew: ScrumMasterCrew):
-    try:
-        def progress_callback(stage: str, partial_data: dict):
-            _generate_jobs[job_id]["stage"] = stage
-            _generate_jobs[job_id]["partial_result"].update(partial_data)
-
-        result = generate_story_pipeline(
-            requirement=requirement,
-            n_results=n_results,
-            allow_fallback_without_context=allow_fallback_without_context,
-            crew=crew,
-            progress_callback=progress_callback
-        )
-        _generate_jobs[job_id]["status"] = "completed"
-        _generate_jobs[job_id]["stage"] = "completed"
-        _generate_jobs[job_id]["result"] = GenerateStoriesResponse(**result)
-    except Exception as e:
-        _generate_jobs[job_id]["status"] = "failed"
-        _generate_jobs[job_id]["message"] = str(e)
-
+from ai_scrum_master.worker.tasks import generate_story_task
+from celery.result import AsyncResult
 
 @router.post("/generate", response_model=GenerateJobResponse)
 def generate_stories(
     payload: GenerateStoriesRequest,
-    crew: ScrumMasterCrew = Depends(get_crew),
 ) -> GenerateJobResponse:
-    job_id = str(uuid.uuid4())
-    _generate_jobs[job_id] = {
-        "status": "processing",
-        "stage": "researcher",
-        "message": "",
-        "partial_result": {},
-        "result": None,
-    }
-    
-    thread = threading.Thread(
-        target=_run_generate_job,
-        args=(job_id, payload.requirement, payload.n_results, payload.allow_fallback_without_context, crew)
+    # Trigger Celery task
+    task = generate_story_task.delay(
+        requirement=payload.requirement,
+        n_results=payload.n_results,
+        allow_fallback=payload.allow_fallback_without_context,
+        forced_docs=payload.forced_context_docs or None,
+        project_id=payload.project_id
     )
-    thread.daemon = True
-    thread.start()
-    
-    return GenerateJobResponse(job_id=job_id)
+    return GenerateJobResponse(job_id=task.id)
 
 
 @router.get("/generate/status/{job_id}", response_model=GenerateStatusResponse)
 def get_generate_status(job_id: str) -> GenerateStatusResponse:
-    job = _generate_jobs.get(job_id)
-    if not job:
-        raise HTTPException(status_code=404, detail="Job not found")
-    return GenerateStatusResponse(
-        job_id=job_id,
-        status=job["status"],
-        stage=job["stage"],
-        message=job["message"],
-        partial_result=job["partial_result"],
-        result=job["result"]
-    )
+    task_result = AsyncResult(job_id)
+    
+    if task_result.state == 'PENDING':
+        return GenerateStatusResponse(
+            job_id=job_id,
+            status="processing",
+            stage="pending",
+            message="Task is pending...",
+            partial_result={},
+            result=None
+        )
+    elif task_result.state == 'STARTED':
+        return GenerateStatusResponse(
+            job_id=job_id,
+            status="processing",
+            stage="started",
+            message="Task has started...",
+            partial_result={},
+            result=None
+        )
+    elif task_result.state == 'PROCESSING':
+        meta = task_result.info or {}
+        return GenerateStatusResponse(
+            job_id=job_id,
+            status="processing",
+            stage=meta.get("stage", "processing"),
+            message="Task is in progress...",
+            partial_result=meta.get("partial_result", {}),
+            result=None
+        )
+    elif task_result.state == 'SUCCESS':
+        return GenerateStatusResponse(
+            job_id=job_id,
+            status="completed",
+            stage="completed",
+            message="Task completed successfully.",
+            partial_result={},
+            result=task_result.result
+        )
+    elif task_result.state == 'FAILURE':
+        return GenerateStatusResponse(
+            job_id=job_id,
+            status="failed",
+            stage="failed",
+            message=str(task_result.info),
+            partial_result={},
+            result=None
+        )
+    else:
+        return GenerateStatusResponse(
+            job_id=job_id,
+            status="failed",
+            stage="unknown",
+            message=f"Unknown task state: {task_result.state}",
+            partial_result={},
+            result=None
+        )

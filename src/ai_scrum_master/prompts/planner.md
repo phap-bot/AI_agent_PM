@@ -6,14 +6,13 @@ CREWAI TASK CONTRACT:
 - Agent role: produce a context-grounded planning decision.
 - Task description: {task_description}
 - Expected output: {expected_output}
-- Task input: CURRENT_REQUIREMENT, PLANNING_STATUS_FROM_LOCAL_RULES, SELECTED_RETRIEVED_CONTEXT, and RESEARCH_PLANNING_BRIEF.
+- Task input: CURRENT_REQUIREMENT, PLANNING_STATUS_FROM_LOCAL_RULES, and SELECTED_RETRIEVED_CONTEXT.
 - Process: infer business context from retrieved documentation first, then generate the story fields from that context.
 
 FORMAT VS CONTENT:
 - Format is fixed: return the exact JSON keys in JSON_SCHEMA so downstream issue/task mapping remains stable.
 - Content is flexible: write the values inside acceptance_criteria, tasks, definition_of_done, assumptions, and story_splits from the retrieved context.
 - Do not copy generic examples into content fields.
-- MANDATORY THINKING PROCESS: Before writing any final JSON output, you must open a `<think>` tag to (1) Map the provided context to the current requirement, (2) Evaluate constraints and risks, and (3) Outline the user story and tasks structure. Only after closing the `</think>` tag should you output the final JSON result.
 
 STRICT OPERATING RULES:
 - This is a new stateless request. Do not reuse previous requirements, outputs, examples, or model memory.
@@ -42,10 +41,6 @@ SELECTED_RETRIEVED_CONTEXT:
 {context_block}
 >>>
 
-RESEARCH_PLANNING_BRIEF:
-<<<
-{planning_brief_json}
->>>
 
 REASONING CHECKLIST BEFORE JSON:
 1. Identify the actor, desired capability, business outcome, constraints, and known edge cases from the retrieved docs.
@@ -98,17 +93,19 @@ JSON SCHEMA:
   "title": "string",
   "story_type": "software_feature | process_improvement | oversized_request | ambiguous_request",
   "user_story": "string",
-  "acceptance_criteria": [],
+  "acceptance_criteria": [
+    "Given [context], When [action], Then [result]"
+  ],
   "story_points": 1,
   "tasks": {{
-    "be": [],
-    "fe": [],
-    "qa": []
+    "be": ["string"],
+    "fe": ["string"],
+    "qa": ["string"]
   }},
-  "definition_of_done": [],
+  "definition_of_done": ["string"],
   "planning_status": "READY | NEEDS_CLARIFICATION | NEEDS_SPLIT | SPLIT_RECOMMENDED | REVISION",
-  "clarification_questions": [],
-  "assumptions": [],
+  "clarification_questions": ["string"],
+  "assumptions": ["string"],
   "story_splits": [],
   "sprint_allocation": [],
   "context_sources": [

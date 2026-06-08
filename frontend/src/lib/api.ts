@@ -12,6 +12,27 @@ import type {
 
 const API_BASE_URL = '/api';
 
+async function handleResponse(response: Response) {
+  if (!response.ok) {
+    let errorMessage = `Failed with status ${response.status} ${response.statusText}`;
+    try {
+      const errorData = await response.json();
+      if (errorData?.error?.message) {
+        errorMessage = errorData.error.message;
+        if (errorData.error.details) {
+          errorMessage += ` - ${JSON.stringify(errorData.error.details)}`;
+        }
+      } else {
+        errorMessage += ` ${JSON.stringify(errorData)}`;
+      }
+    } catch (e) {
+      // Ignored if response is not JSON
+    }
+    throw new Error(errorMessage);
+  }
+  return response.json();
+}
+
 export async function generateStoriesAsync(request: GenerateStoriesRequest): Promise<GenerateJobResponse> {
   const response = await fetch(`${API_BASE_URL}/generate`, {
     method: 'POST',
@@ -21,23 +42,13 @@ export async function generateStoriesAsync(request: GenerateStoriesRequest): Pro
     body: JSON.stringify(request),
   });
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(`Failed to generate stories: ${response.status} ${response.statusText} ${JSON.stringify(errorData)}`);
-  }
-
-  return response.json();
+  return handleResponse(response);
 }
 
 export async function getGenerateStatus(jobId: string): Promise<GenerateStatusResponse> {
   const response = await fetch(`${API_BASE_URL}/generate/status/${jobId}`);
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(`Failed to get generate status: ${response.status} ${response.statusText} ${JSON.stringify(errorData)}`);
-  }
-
-  return response.json();
+  return handleResponse(response);
 }
 
 export async function previewJiraAction(request: ActionPreviewRequest): Promise<ActionPlan> {
@@ -49,12 +60,7 @@ export async function previewJiraAction(request: ActionPreviewRequest): Promise<
     body: JSON.stringify(request),
   });
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(`Failed to preview Jira action: ${response.status} ${response.statusText} ${JSON.stringify(errorData)}`);
-  }
-
-  return response.json();
+  return handleResponse(response);
 }
 
 export async function previewSlackAction(request: ActionPreviewRequest): Promise<ActionPlan> {
@@ -66,12 +72,7 @@ export async function previewSlackAction(request: ActionPreviewRequest): Promise
     body: JSON.stringify(request),
   });
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(`Failed to preview Slack action: ${response.status} ${response.statusText} ${JSON.stringify(errorData)}`);
-  }
-
-  return response.json();
+  return handleResponse(response);
 }
 
 export async function executeJiraAction(request: ActionPreviewRequest): Promise<ActionExecutionPlan> {
@@ -83,12 +84,7 @@ export async function executeJiraAction(request: ActionPreviewRequest): Promise<
     body: JSON.stringify(request),
   });
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(`Failed to execute Jira action: ${response.status} ${response.statusText} ${JSON.stringify(errorData)}`);
-  }
-
-  return response.json();
+  return handleResponse(response);
 }
 
 export async function ingestDocuments(request: IngestRequest = {}): Promise<IngestResponse> {
@@ -100,40 +96,86 @@ export async function ingestDocuments(request: IngestRequest = {}): Promise<Inge
     body: JSON.stringify(request),
   });
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(`Failed to ingest documents: ${response.status} ${response.statusText} ${JSON.stringify(errorData)}`);
-  }
-
-  return response.json();
+  return handleResponse(response);
 }
 
-export async function uploadDocumentsAsync(files: FileList): Promise<IngestJobResponse> {
+export async function uploadDocumentsAsync(files: FileList, projectId?: string): Promise<IngestJobResponse> {
   const formData = new FormData();
   for (let i = 0; i < files.length; i++) {
     formData.append('files', files[i]);
   }
 
-  const response = await fetch(`${API_BASE_URL}/ingest/upload`, {
+  let url = `${API_BASE_URL}/ingest/upload`;
+  if (projectId) {
+    url += `?project_id=${projectId}`;
+  }
+
+  const response = await fetch(url, {
     method: 'POST',
     body: formData,
   });
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(`Failed to upload documents: ${response.status} ${response.statusText} ${JSON.stringify(errorData)}`);
-  }
-
-  return response.json();
+  return handleResponse(response);
 }
 
 export async function getIngestStatus(jobId: string): Promise<IngestStatusResponse> {
   const response = await fetch(`${API_BASE_URL}/ingest/status/${jobId}`);
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(`Failed to get ingest status: ${response.status} ${response.statusText} ${JSON.stringify(errorData)}`);
-  }
+  return handleResponse(response);
+}
 
-  return response.json();
+export async function fetchHistory(projectId?: string) {
+  let url = `${API_BASE_URL}/history`;
+  if (projectId) {
+    url += `?project_id=${projectId}`;
+  }
+  const response = await fetch(url);
+  return handleResponse(response);
+}
+
+export async function fetchSprintBoard(projectId?: string) {
+  let url = `${API_BASE_URL}/sprint`;
+  if (projectId) {
+    url += `?project_id=${projectId}`;
+  }
+  const response = await fetch(url);
+  return handleResponse(response);
+}
+
+export async function getProjects(): Promise<any[]> {
+  const response = await fetch(`${API_BASE_URL}/projects`);
+  return handleResponse(response);
+}
+
+export async function fetchJiraPriorities(projectId: string): Promise<any[]> {
+  if (!projectId) return [];
+  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/jira-priorities`);
+  return handleResponse(response);
+}
+
+export async function getProject(projectId: string): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/projects/${projectId}`);
+  return handleResponse(response);
+}
+
+export async function createProject(data: any): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/projects`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function updateProject(projectId: string, data: any): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/projects/${projectId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
 }
