@@ -24,6 +24,12 @@ Hệ thống được xây dựng trên các công nghệ hiện đại và mạ
 
 ---
 
+## 📚 Kiến trúc & Tài liệu chi tiết
+- **RAG System:** Tham khảo [RAG_DOCUMENTATION.md](docs/RAG_DOCUMENTATION.md) để hiểu cách hệ thống nhúng (embedding), tìm kiếm (hybrid search), và trích xuất ngữ cảnh dự án.
+- **Agent Pipeline:** System prompt và role của các Agents được quản lý qua CrewAI.
+
+---
+
 ## ⚙️ 1. Chuẩn bị môi trường
 
 Đảm bảo bạn đang mở terminal ở thư mục gốc của dự án `D:/Antigravity/AI_Agent_PM_PRJ`.
@@ -148,7 +154,30 @@ Giao diện sẽ được mở trên trình duyệt (thông thường là `http:
 
 ---
 
-## 🔗 7. Xem Trước Jira/Slack Action
+## 🐳 7. Triển khai Production (Docker)
+
+Hệ thống cung cấp sẵn `Dockerfile` và `docker-compose.yml` để bạn có thể chạy một cách độc lập và đồng nhất trên mọi môi trường.
+
+1. **Khởi chạy bằng Docker Compose:**
+   ```bash
+   docker-compose up --build -d
+   ```
+   Lệnh này sẽ build image cho backend FastAPI và khởi chạy Frontend. Cả hai sẽ chạy nền.
+   
+2. **Kiểm tra Logs:**
+   ```bash
+   docker-compose logs -f
+   ```
+   
+3. **Truy cập ứng dụng:**
+   - Frontend UI: `http://localhost:5173`
+   - Backend API: `http://localhost:8000`
+
+> **Lưu ý Docker:** Ollama cần được cài đặt trên máy host. File `docker-compose.yml` đã được cấu hình trỏ tới `host.docker.internal:11434` để Backend container có thể gọi được Ollama trên máy của bạn.
+
+---
+
+## 🔗 8. Xem Trước Jira/Slack Action
 
 Hệ thống chỉ khởi tạo thông tin gửi đến Jira/Slack khi tính năng đã được Evaluator phê duyệt (Status = `APPROVED`).
 
@@ -188,7 +217,7 @@ curl -X POST http://127.0.0.1:8000/actions/jira/preview \
 
 ---
 
-## ⚠️ 8. Gỡ Lỗi Thường Gặp (Troubleshooting)
+## ⚠️ 9. Gỡ Lỗi Thường Gặp (Troubleshooting)
 
 ### ❌ `ModuleNotFoundError: No module named 'ai_scrum_master'`
 Giải pháp là đảm bảo bạn đang đứng ở thư mục gốc của project hoặc set lại `PYTHONPATH`:

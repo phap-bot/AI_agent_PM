@@ -11,7 +11,7 @@ class FakeCrewAiCrew:
 
 
 class FakeDeterministicCrew:
-    def run(self, requirement: str, n_results: int = 5, allow_fallback_without_context: bool = False) -> dict:
+    def run(self, requirement: str, n_results: int = 5, allow_fallback_without_context: bool = False, progress_callback=None) -> dict:
         return {
             "context": {"retrieval_status": "ok", "warnings": []},
             "story": {"title": requirement, "planning_status": "READY"},
@@ -83,7 +83,7 @@ def test_generate_story_pipeline_revises_invalid_crewai_response() -> None:
             super().kickoff(inputs)
             return {
                 "context": {"retrieval_status": "ok", "warnings": []},
-                "story": {"planning_status": "READY"},
+                "story": "this is not a dictionary",
                 "evaluation": {"status": "APPROVED", "issues": [], "revision_instructions": [], "warnings": []},
                 "actions": {
                     "jira": {"ready": True, "payload": {"summary": "bad"}, "warnings": []},

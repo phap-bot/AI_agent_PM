@@ -46,7 +46,7 @@ class FakeCrew:
     def __init__(self) -> None:
         self.allow_fallback_without_context = None
 
-    def run(self, requirement: str, n_results: int = 5, allow_fallback_without_context: bool = False) -> dict:
+    def run(self, requirement: str, n_results: int = 5, allow_fallback_without_context: bool = False, progress_callback=None) -> dict:
         self.allow_fallback_without_context = allow_fallback_without_context
         return {
             "context": {
@@ -117,7 +117,7 @@ class FakeExecutingSlackTool:
     def __init__(self) -> None:
         self.called = False
 
-    def execute_action(self, story: dict, evaluation: dict) -> dict:
+    def execute_action(self, story: dict, evaluation: dict, jira_created: dict | None = None) -> dict:
         self.called = True
         return {
             "ready": True,
@@ -141,13 +141,16 @@ def test_generate_route_lives_in_generate_router() -> None:
 def test_generate_endpoint_returns_action_plan() -> None:
     crew = FakeCrew()
     response = generate_stories(GenerateStoriesRequest(requirement="Add Google login"), crew=crew)
-    body = response.model_dump()
+    import time; time.sleep(0.1)
+    from ai_scrum_master.api.routers.generate import get_generate_status
+    status = get_generate_status(response.job_id)
+    body = status.result.model_dump() if status.result else {}
 
-    assert body["story"]["title"] == "Google Login"
-    assert body["evaluation"]["status"] == "APPROVED"
-    assert "jira" in body["actions"]
-    assert "slack" in body["actions"]
-    assert body["context"]["retrieval_status"] == "ok"
+    assert body.get("story", {}).get("title") == "Google Login"
+    assert body.get("evaluation", {}).get("status") == "APPROVED"
+    assert "jira" in body.get("actions", {})
+    assert "slack" in body.get("actions", {})
+    assert body.get("context", {}).get("retrieval_status") == "ok"
     assert body["context"]["matches"][0]["metadata"]["source"] == "auth.md"
     assert body["context"]["retrieved_sources"][0]["source"] == "auth.md"
     assert body["context"]["retrieval_threshold"] == 0.6
@@ -161,7 +164,7 @@ def test_generate_endpoint_passes_fallback_flag() -> None:
         GenerateStoriesRequest(requirement="Add Google login", allow_fallback_without_context=True),
         crew=crew,
     )
-
+    import time; time.sleep(0.1)
     assert crew.allow_fallback_without_context is True
 
 
@@ -206,7 +209,7 @@ def test_slack_preview_endpoint() -> None:
     body = response.model_dump()
 
     assert body["slack"]["ready"] is True
-    assert body["slack"]["payload"]["text"] == "AI Scrum Master prepared story: Google Login"
+    assert body["slack"]["payload"]["text"] == "AI Scrum Master created a Jira story: Google Login"
 
 
 def test_jira_preview_blocks_non_ready_planning_status() -> None:
