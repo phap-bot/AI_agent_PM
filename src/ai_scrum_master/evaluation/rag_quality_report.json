@@ -11,22 +11,22 @@
     "ndcg_at_k": 0.9
   },
   "per_source": {
-    "authcontext": {
+    "auth_context": {
       "expected_queries": 7,
       "hit_queries": 7,
       "recall_at_k": 1.0
     },
-    "checkoutcontext": {
+    "checkout_context": {
       "expected_queries": 6,
       "hit_queries": 6,
       "recall_at_k": 1.0
     },
-    "notificationcontext": {
+    "notification_context": {
       "expected_queries": 3,
       "hit_queries": 3,
       "recall_at_k": 1.0
     },
-    "sprintpolicy": {
+    "sprint_policy": {
       "expected_queries": 5,
       "hit_queries": 3,
       "recall_at_k": 0.6
@@ -45,7 +45,7 @@
       "mrr": 1.0,
       "ndcg": 1.0,
       "found_sources": [
-        "authcontext"
+        "auth_context"
       ]
     },
     {
@@ -60,7 +60,7 @@
       "mrr": 1.0,
       "ndcg": 1.0,
       "found_sources": [
-        "authcontext"
+        "auth_context"
       ]
     },
     {
@@ -75,7 +75,7 @@
       "mrr": 1.0,
       "ndcg": 1.0,
       "found_sources": [
-        "authcontext"
+        "auth_context"
       ]
     },
     {
@@ -90,7 +90,7 @@
       "mrr": 1.0,
       "ndcg": 1.0,
       "found_sources": [
-        "authcontext"
+        "auth_context"
       ]
     },
     {
@@ -105,7 +105,7 @@
       "mrr": 1.0,
       "ndcg": 1.0,
       "found_sources": [
-        "authcontext"
+        "auth_context"
       ]
     },
     {
@@ -120,7 +120,7 @@
       "mrr": 1.0,
       "ndcg": 1.0,
       "found_sources": [
-        "authcontext"
+        "auth_context"
       ]
     },
     {
@@ -135,7 +135,7 @@
       "mrr": 1.0,
       "ndcg": 1.0,
       "found_sources": [
-        "checkoutcontext"
+        "checkout_context"
       ]
     },
     {
@@ -150,7 +150,7 @@
       "mrr": 1.0,
       "ndcg": 1.0,
       "found_sources": [
-        "checkoutcontext"
+        "checkout_context"
       ]
     },
     {
@@ -165,7 +165,7 @@
       "mrr": 1.0,
       "ndcg": 1.0,
       "found_sources": [
-        "checkoutcontext"
+        "checkout_context"
       ]
     },
     {
@@ -180,7 +180,7 @@
       "mrr": 1.0,
       "ndcg": 1.0,
       "found_sources": [
-        "checkoutcontext"
+        "checkout_context"
       ]
     },
     {
@@ -195,7 +195,7 @@
       "mrr": 1.0,
       "ndcg": 1.0,
       "found_sources": [
-        "checkoutcontext"
+        "checkout_context"
       ]
     },
     {
@@ -210,7 +210,7 @@
       "mrr": 1.0,
       "ndcg": 1.0,
       "found_sources": [
-        "notificationcontext"
+        "notification_context"
       ]
     },
     {
@@ -225,7 +225,7 @@
       "mrr": 1.0,
       "ndcg": 1.0,
       "found_sources": [
-        "notificationcontext"
+        "notification_context"
       ]
     },
     {
@@ -240,7 +240,7 @@
       "mrr": 1.0,
       "ndcg": 1.0,
       "found_sources": [
-        "notificationcontext"
+        "notification_context"
       ]
     },
     {
@@ -268,7 +268,7 @@
       "mrr": 1.0,
       "ndcg": 1.0,
       "found_sources": [
-        "sprintpolicy"
+        "sprint_policy"
       ]
     },
     {
@@ -296,7 +296,7 @@
       "mrr": 1.0,
       "ndcg": 1.0,
       "found_sources": [
-        "sprintpolicy"
+        "sprint_policy"
       ]
     },
     {
@@ -312,8 +312,8 @@
       "mrr": 1.0,
       "ndcg": 1.0,
       "found_sources": [
-        "authcontext",
-        "checkoutcontext"
+        "auth_context",
+        "checkout_context"
       ]
     },
     {
@@ -328,7 +328,7 @@
       "mrr": 1.0,
       "ndcg": 1.0,
       "found_sources": [
-        "sprintpolicy"
+        "sprint_policy"
       ]
     }
   ],

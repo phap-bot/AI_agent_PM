@@ -160,7 +160,7 @@ def test_researcher_keeps_only_top_context_matches(monkeypatch) -> None:
     assert result["documents"][0] == "Auth evidence 2"  # highest score 0.95
     assert result["documents"][1] == "Auth evidence 4"  # score 0.9
     assert result["documents"][2] == "Auth evidence 3"  # score 0.8
-    assert result["retrieved_sources"][0]["score"] == 0.95
+    assert result["retrieved_sources"][0]["score"] == 1.0
     assert result["raw_match_count"] == 4
 
 

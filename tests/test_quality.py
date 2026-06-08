@@ -216,7 +216,7 @@ def test_research_quality_gate_fails_when_expected_source_is_missing() -> None:
     )
 
     assert result["passed"] is False
-    assert "authcontext" in result["expected_sources"]
+    assert "auth_context" in result["expected_sources"]
     assert any("hit_rate_at_k" in failure for failure in result["failures"])
 
 

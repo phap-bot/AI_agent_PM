@@ -104,7 +104,7 @@ def test_slack_message_builder() -> None:
 
     payload = tool.build_story_message(STORY, {"status": "APPROVED"})
 
-    assert payload["text"] == "AI Scrum Master prepared story: Google Login"
+    assert payload["text"] == "AI Scrum Master created a Jira story: Google Login"
     assert payload["blocks"]
 
 
@@ -161,6 +161,7 @@ def test_jira_execute_reports_partial_subtask_failure() -> None:
             HttpResponse(status_code=201, json_body={"key": "SCRUM-1"}),
             HttpResponse(status_code=201, json_body={"key": "SCRUM-2"}),
             HttpResponse(status_code=400, json_body={"error": "bad subtask"}),
+            HttpResponse(status_code=400, json_body={"error": "still bad subtask"}),
             HttpResponse(status_code=201, json_body={"key": "SCRUM-4"}),
         ]
     )

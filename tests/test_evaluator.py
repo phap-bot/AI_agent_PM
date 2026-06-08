@@ -131,8 +131,8 @@ def test_evaluator_parses_llm_json_output() -> None:
 
     result = evaluator.run(VALID_STORY)
 
-    assert len(evaluator.llm.messages) == 2
-    assert [message["role"] for message in evaluator.llm.messages] == ["system", "user"]
+    assert len(evaluator.llm.messages) == 1
+    assert evaluator.llm.messages[0]["role"] == "user"
     assert result["status"] == "APPROVED"
     assert result["warnings"] == ["Looks ready"]
 
