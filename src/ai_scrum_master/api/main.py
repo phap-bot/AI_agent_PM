@@ -162,21 +162,7 @@ def get_ingest_status(job_id: str) -> IngestStatusResponse:
     """Poll ingestion job status."""
     task_result = AsyncResult(job_id)
     
-    if task_result.state == 'PENDING':
-        return IngestStatusResponse(
-            job_id=job_id,
-            status="processing",
-            message="Job is pending...",
-            result=None,
-        )
-    elif task_result.state == 'PROCESSING':
-        return IngestStatusResponse(
-            job_id=job_id,
-            status="processing",
-            message="Job is processing...",
-            result=None,
-        )
-    elif task_result.state == 'SUCCESS':
+    if task_result.state == 'SUCCESS':
         raw_result = task_result.result
         result_data = IngestResponse(**{
             k: v for k, v in raw_result.items()
@@ -197,10 +183,11 @@ def get_ingest_status(job_id: str) -> IngestStatusResponse:
             result=None,
         )
     else:
+        # PENDING, STARTED, RETRY, RECEIVED, etc.
         return IngestStatusResponse(
             job_id=job_id,
-            status="failed",
-            message=f"Unknown task state: {task_result.state}",
+            status="processing",
+            message=f"Job is {task_result.state.lower()}...",
             result=None,
         )
 

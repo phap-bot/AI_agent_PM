@@ -94,6 +94,16 @@ class DatabaseManager:
             return False
 
     @classmethod
+    def delete_project(cls, project_id: str) -> bool:
+        from bson.objectid import ObjectId
+        try:
+            res = cls.get_projects_collection().delete_one({"_id": ObjectId(project_id)})
+            return res.deleted_count > 0
+        except Exception as e:
+            logger.error("Failed to delete project: %s", e)
+            return False
+
+    @classmethod
     def save_history(cls, requirement: str, result: dict, project_id: str | None = None) -> str | None:
         """Save a generated story and requirement to history."""
         try:

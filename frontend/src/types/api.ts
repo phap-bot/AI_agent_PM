@@ -70,6 +70,7 @@ export interface StoryDraft {
     qa: string[];
   };
   definition_of_done: string[];
+  priority?: string;
   planning_status: string;
   clarification_questions: string[];
   assumptions: string[];
@@ -133,4 +134,21 @@ export interface GenerateStoriesResponse {
   evaluation: EvaluationResult;
   actions: ActionPlan;
   next_steps: string[];
+}
+
+export interface GenerateJobResponse {
+  job_id: string;
+  status: string;
+  message: string;
+}
+
+export interface GenerateStatusResponse {
+  job_id: string;
+  status: string; // processing | completed | failed
+  message: string;
+  result?: GenerateStoriesResponse | null;
+  partial_result?: {
+    context?: ResearchContext;
+    story?: StoryDraft;
+  } | null;
 }

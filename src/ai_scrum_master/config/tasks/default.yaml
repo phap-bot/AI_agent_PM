@@ -1,7 +1,7 @@
 tasks:
   research_task:
     name_task: research_task
-    description: Retrieve relevant documentation, rank evidence, and produce a planning brief for the incoming requirement.
+    description: "Retrieve relevant documentation, rank evidence, and produce a planning brief for the incoming requirement. IMPORTANT: The planning brief MUST be extremely concise. Summarize the key points and do NOT copy the full text of documents."
     expected_output: Context bundle with documents, source snippets, planning_brief, confidence score, and retrieval warnings.
     agent: researcher
 

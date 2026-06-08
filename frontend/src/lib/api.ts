@@ -7,7 +7,9 @@ import type {
   IngestRequest,
   IngestResponse,
   IngestJobResponse,
-  IngestStatusResponse
+  IngestStatusResponse,
+  GenerateJobResponse,
+  GenerateStatusResponse
 } from '../types/api';
 
 const API_BASE_URL = '/api';
@@ -177,5 +179,14 @@ export async function updateProject(projectId: string, data: any): Promise<any> 
     },
     body: JSON.stringify(data),
   });
+  return handleResponse(response);
+}
+
+export async function deleteProject(projectId: string): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/projects/${projectId}`, {
+    method: 'DELETE',
+  });
+  // 204 No Content won't have JSON body to parse, so just return true if ok
+  if (response.status === 204) return true;
   return handleResponse(response);
 }
