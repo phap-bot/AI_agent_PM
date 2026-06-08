@@ -8,7 +8,7 @@ import HistoryPanel from './components/HistoryPanel';
 import SprintBoardPanel from './components/SprintBoardPanel';
 import JiraConfigPanel from './components/JiraConfigPanel';
 import SlackConfigPanel from './components/SlackConfigPanel';
-import { getProjects, createProject } from './lib/api';
+import { getProjects, createProject, updateProject, deleteProject } from './lib/api';
 
 function App() {
   const [currentView, setCurrentView] = useState('project'); // 'project', 'sprint', 'history'
@@ -35,6 +35,12 @@ function App() {
   const [showCreateProject, setShowCreateProject] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
 
+  const [showEditProject, setShowEditProject] = useState(false);
+  const [editProjectName, setEditProjectName] = useState('');
+  const [showDeleteProjectConfirm, setShowDeleteProjectConfirm] = useState(false);
+
+  const [historyItemView, setHistoryItemView] = useState(null);
+
   useEffect(() => {
     getProjects().then(data => {
       setProjects(data);
@@ -54,6 +60,38 @@ function App() {
       setNewProjectName('');
     } catch (err) {
       alert("Error creating project: " + err.message);
+    }
+  };
+
+  const handleUpdateProject = async () => {
+    if (!editProjectName.trim() || !activeProjectId) return;
+    try {
+      const proj = await updateProject(activeProjectId, { name: editProjectName });
+      setProjects(projects.map(p => p.id === activeProjectId ? proj : p));
+      setShowEditProject(false);
+      setEditProjectName('');
+    } catch (err) {
+      alert("Error updating project: " + err.message);
+    }
+  };
+
+  const handleDeleteProject = async () => {
+    if (!activeProjectId) return;
+    try {
+      await deleteProject(activeProjectId);
+      const newProjects = projects.filter(p => p.id !== activeProjectId);
+      setProjects(newProjects);
+      setActiveProjectId(newProjects.length > 0 ? newProjects[0].id : '');
+      setShowDeleteProjectConfirm(false);
+      
+      // Clear current states just in case
+      setContext(null);
+      setStoryDraft(null);
+      setEvaluation(null);
+      setActions(null);
+      setHistoryItemView(null);
+    } catch (err) {
+      alert("Error deleting project: " + err.message);
     }
   };
 
@@ -198,6 +236,11 @@ function App() {
     }
   };
 
+  const displayContext = historyItemView?.result?.context || context;
+  const displayStoryDraft = historyItemView ? normalizeStoryDraft(historyItemView.result?.story, "") : storyDraft;
+  const displayEvaluation = historyItemView?.result?.evaluation || evaluation;
+  const displayActions = historyItemView?.result?.actions || actions;
+
   return (
     <>
       {/* Top Navigation Bar */}
@@ -213,25 +256,49 @@ function App() {
         <div className="flex items-center gap-stack-md">
           <div className="relative flex items-center gap-2">
             <span className="text-sm font-medium text-on-surface-variant">Dự án:</span>
-            <select 
-              className="bg-surface-container border border-outline-variant rounded-lg px-3 py-1.5 text-sm font-medium focus:outline-none focus:border-primary"
-              value={activeProjectId}
-              onChange={(e) => {
-                if (e.target.value === 'NEW') {
-                  setShowCreateProject(true);
-                  // reset value so they can click it again if they close the modal
-                  e.target.value = activeProjectId; 
-                } else {
-                  setActiveProjectId(e.target.value);
-                }
-              }}
-            >
-              <option value="" disabled>-- Chọn dự án --</option>
-              {projects.map(p => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-              <option value="NEW" className="font-bold text-primary">+ Tạo dự án mới</option>
-            </select>
+            <div className="flex items-center bg-surface-container border border-outline-variant rounded-lg focus-within:border-primary overflow-hidden">
+              <select 
+                className="bg-transparent px-3 py-1.5 text-sm font-medium focus:outline-none appearance-none"
+                value={activeProjectId}
+                onChange={(e) => {
+                  if (e.target.value === 'NEW') {
+                    setShowCreateProject(true);
+                    // reset value so they can click it again if they close the modal
+                    e.target.value = activeProjectId; 
+                  } else {
+                    setActiveProjectId(e.target.value);
+                  }
+                }}
+              >
+                <option value="" disabled>-- Chọn dự án --</option>
+                {projects.map(p => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+                <option value="NEW" className="font-bold text-primary">+ Tạo dự án mới</option>
+              </select>
+              {activeProjectId && (
+                <div className="flex items-center pr-1 border-l border-outline-variant/30 pl-1">
+                  <button 
+                    onClick={() => {
+                      const proj = projects.find(p => p.id === activeProjectId);
+                      setEditProjectName(proj ? proj.name : '');
+                      setShowEditProject(true);
+                    }}
+                    className="p-1 text-on-surface-variant hover:text-primary transition-colors"
+                    title="Đổi tên dự án"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">edit</span>
+                  </button>
+                  <button 
+                    onClick={() => setShowDeleteProjectConfirm(true)}
+                    className="p-1 text-on-surface-variant hover:text-error transition-colors"
+                    title="Xóa dự án"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">delete</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           <button className="bg-primary text-on-primary px-container-padding py-unit rounded-lg font-label-md text-label-md hover:opacity-80 transition-all active:scale-95">Create Sprint</button>
@@ -268,6 +335,63 @@ function App() {
                 onClick={handleCreateProject}
               >
                 Tạo mới
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Project Modal */}
+      {showEditProject && (
+        <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center">
+          <div className="bg-surface rounded-xl p-6 w-[400px] shadow-xl border border-outline-variant">
+            <h3 className="text-xl font-bold mb-4">Đổi tên dự án</h3>
+            <input 
+              autoFocus
+              className="w-full px-3 py-2 border border-outline-variant rounded-lg mb-4 focus:outline-none focus:border-primary"
+              placeholder="Nhập tên mới..."
+              value={editProjectName}
+              onChange={e => setEditProjectName(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleUpdateProject()}
+            />
+            <div className="flex justify-end gap-2">
+              <button 
+                className="px-4 py-2 rounded-lg font-medium text-on-surface-variant hover:bg-surface-container-high"
+                onClick={() => setShowEditProject(false)}
+              >
+                Hủy
+              </button>
+              <button 
+                className="px-4 py-2 bg-primary text-on-primary rounded-lg font-medium"
+                onClick={handleUpdateProject}
+              >
+                Lưu thay đổi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Project Confirm Modal */}
+      {showDeleteProjectConfirm && (
+        <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center">
+          <div className="bg-surface rounded-xl p-6 w-[400px] shadow-xl border border-outline-variant">
+            <h3 className="text-xl font-bold mb-2 text-error">Xóa dự án</h3>
+            <p className="text-on-surface-variant mb-6 text-sm">
+              Bạn có chắc chắn muốn xóa dự án này? Thao tác này không thể hoàn tác.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button 
+                className="px-4 py-2 rounded-lg font-medium text-on-surface-variant hover:bg-surface-container-high"
+                onClick={() => setShowDeleteProjectConfirm(false)}
+              >
+                Hủy
+              </button>
+              <button 
+                className="px-4 py-2 bg-error text-on-error rounded-lg font-medium hover:opacity-90"
+                onClick={handleDeleteProject}
+              >
+                Xóa vĩnh viễn
               </button>
             </div>
           </div>
@@ -348,14 +472,30 @@ function App() {
       <main className="ml-64 mt-16 p-margin-page min-h-[calc(100vh-64px)]">
         <div style={{ display: currentView === 'project' ? 'block' : 'none' }}>
             <div className="space-y-stack-lg">
-              <RequirementInputPanel 
-                onSubmit={handleGenerate} 
-                isLoading={isLoading} 
-                generationMessage={generationMessage}
-                projectId={activeProjectId} 
-              />
-              {isLoading && <ProcessingStatusPanel isLoading={isLoading} context={context} storyDraft={storyDraft} evaluation={evaluation} />}
-              {error && (
+              {historyItemView && (
+                <div className="bg-primary/10 text-primary p-4 rounded-xl flex items-center justify-between border border-primary/20">
+                  <div>
+                    <h3 className="font-bold">Đang xem lịch sử</h3>
+                    <p className="text-sm">Bạn đang xem một bản phân tích từ lịch sử. Phiên làm việc hiện tại của bạn đã được ẩn đi.</p>
+                  </div>
+                  <button 
+                    onClick={() => setHistoryItemView(null)}
+                    className="px-4 py-2 bg-primary text-on-primary rounded-lg font-medium text-sm hover:opacity-90 transition-opacity"
+                  >
+                    Quay lại dự án đang chạy
+                  </button>
+                </div>
+              )}
+              {!historyItemView && (
+                <RequirementInputPanel 
+                  onSubmit={handleGenerate} 
+                  isLoading={isLoading} 
+                  generationMessage={generationMessage}
+                  projectId={activeProjectId} 
+                />
+              )}
+              {isLoading && !historyItemView && <ProcessingStatusPanel isLoading={isLoading} context={displayContext} storyDraft={displayStoryDraft} evaluation={displayEvaluation} />}
+              {error && !historyItemView && (
                 <div className="bg-error-container text-on-error-container p-4 rounded-xl shadow-sm border border-error/20 flex gap-3">
                   <span className="material-symbols-outlined text-error">error</span>
                   <div>
@@ -364,11 +504,11 @@ function App() {
                   </div>
                 </div>
               )}
-              {storyDraft && evaluation && (
+              {displayStoryDraft && displayEvaluation && (
                 <StoryDraftEditor
-                  draft={storyDraft}
-                  evaluation={evaluation}
-                  actions={actions}
+                  draft={displayStoryDraft}
+                  evaluation={displayEvaluation}
+                  actions={displayActions}
                   actionExecution={actionExecution}
                   isPushingJira={isPushingJira}
                   isRegenerating={isLoading}
@@ -395,13 +535,7 @@ function App() {
             isActive={currentView === 'history'} 
             projectId={activeProjectId}
             onSelectHistory={(item) => {
-              setLastRequirement(item.requirement);
-              if (item.result) {
-                setContext(item.result.context);
-                setStoryDraft(normalizeStoryDraft(item.result.story, ""));
-                setEvaluation(item.result.evaluation);
-                setActions(item.result.actions);
-              }
+              setHistoryItemView(item);
               setCurrentView('project');
             }}
           />
