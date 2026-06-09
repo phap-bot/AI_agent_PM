@@ -169,6 +169,21 @@ class ResearcherAgent:
         )
         if not quality_gate["passed"]:
             warnings.extend([f"Research quality gate failed: {failure}" for failure in quality_gate["failures"]])
+
+        if route and route.get("evaluate_metrics"):
+            logger.info("Evaluating RAG metrics for researcher output...")
+            try:
+                from ai_scrum_master.evaluation.metrics import evaluate_faithfulness, evaluate_answer_relevancy
+                answer_text = planning_brief.get("brief", "") if isinstance(planning_brief, dict) else str(planning_brief)
+                docs = [s.get("excerpt", "") for s in retrieved_sources]
+                faithfulness = evaluate_faithfulness(requirement, answer_text, docs, self.llm)
+                relevancy = evaluate_answer_relevancy(requirement, answer_text, self.llm)
+                quality_gate["rag_metrics"] = {
+                    "faithfulness": faithfulness,
+                    "answer_relevancy": relevancy
+                }
+            except Exception as e:
+                logger.warning(f"Failed to evaluate RAG metrics: {e}")
         for source in retrieved_sources:
             logger.info(
                 "Research evidence source=%s chunk=%s score=%s excerpt=%s",
@@ -295,29 +310,61 @@ class ResearcherAgent:
                 return True
         return False
 
+    def _classify_requirement(self, requirement: str, route: dict) -> dict:
+        from ai_scrum_master.core.llm_setup import build_llm
+        if not self.llm:
+            self.llm = build_llm(temperature=0.2)
+            
+        prompt = f"""You are an expert technical product manager. Analyze the following requirement to extract key information for vector database retrieval.
+Requirement: {requirement}
+
+Output in strict JSON format with the following keys:
+- "domain": The core domain or feature area (e.g., "auth", "payment", "user_profile").
+- "tech_stack": Likely technologies involved (e.g., "react", "fastapi", "postgres").
+- "search_keywords": A list of highly relevant, specific keywords for vector search.
+
+Do not output anything other than JSON.
+"""
+        import json
+        import re
+        try:
+            response = self.llm.call([{"role": "user", "content": prompt}])
+            text = str(response)
+            text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+            match = re.search(r"\{.*\}", text, flags=re.DOTALL)
+            if match:
+                text = match.group(0)
+            return json.loads(text)
+        except Exception as e:
+            logger.warning("Requirement classification failed: %s", e)
+            return {"domain": "", "tech_stack": "", "search_keywords": []}
+
     def _build_retrieval_query(self, requirement: str, route: dict | None = None) -> str:
+        route = route or {}
+        # Perform LLM classification to enrich search keywords
+        classification = self._classify_requirement(requirement, route)
+        
+        keywords = classification.get("search_keywords", [])
+        domain = classification.get("domain", "")
+        tech_stack = classification.get("tech_stack", "")
+        
         query = " ".join(requirement.replace(",", " ").split())
-        lower = query.lower()
-        replacements = [
-            ("as a returning user", "returning user"),
-            ("as an existing user", "existing user"),
-            ("as a user", "user"),
-            ("i want to", ""),
-            ("i want", ""),
-            ("so that", ""),
-        ]
-        for old, new in replacements:
-            lower = lower.replace(old, new)
-        expanded = " ".join(lower.split())
-        if any(term in expanded for term in ("login", "log in", "sign in", "signin", "logout", "password", "token", "jwt", "oauth", "authentication")):
-            expanded = f"{expanded} authentication login logout oauth callback jwt token account session"
-        if "google" in expanded and any(term in expanded for term in ("sign in", "signin", "login", "log in")):
-            expanded = f"{expanded} google oauth authentication login callback jwt"
+        expanded_parts = [query]
+        
+        if isinstance(keywords, list):
+            expanded_parts.extend(keywords)
+        if domain:
+            expanded_parts.append(domain)
+        if tech_stack:
+            expanded_parts.append(tech_stack)
+            
         if route:
             required_concepts = " ".join(str(item).replace("_", " ") for item in route.get("required_concepts", []))
             template_name = str(route.get("template_name", "")).replace("_", " ")
-            expanded = " ".join(part for part in (expanded, template_name, required_concepts) if part)
-        return expanded or requirement
+            if template_name: expanded_parts.append(template_name)
+            if required_concepts: expanded_parts.append(required_concepts)
+            
+        return " ".join(part for part in expanded_parts if part).strip()
 
     def _top_matches(self, matches: list[dict], limit: int) -> list[dict]:
         deduped = []

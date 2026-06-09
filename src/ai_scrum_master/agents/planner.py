@@ -145,6 +145,12 @@ class PlannerAgent:
             if self.task_profile
             else "JSON story with title, user_story, acceptance_criteria, story_points, tasks, definition_of_done, assumptions, context_sources, and planning_status."
         )
+        try:
+            from ai_scrum_master.core.prompts import render_prompt as load_prompt
+            few_shot = load_prompt("planner_few_shot.md")
+        except Exception:
+            few_shot = ""
+
         return render_prompt(
             self._prompt_name("planner"),
             role=role,
@@ -153,8 +159,9 @@ class PlannerAgent:
             task_description=task_description,
             expected_output=expected_output,
             requirement=self._compact_requirement_for_prompt(requirement),
-            planning_status=planning_status,
             context_block=context_block,
+            planning_status=planning_status,
+            few_shot_examples=few_shot,
         )
 
     def _attach_latency_metadata(
@@ -339,6 +346,7 @@ class PlannerAgent:
             "requirement": requirement,
             "title": self._clean_text_field(requirement, story.get("title") or requirement.strip(), requirement.strip(), "title", warnings_out),
             "story_type": requirement_type,
+            "jira_issue_type": story.get("jira_issue_type") or ("Epic" if requirement_type == "oversized_request" else "Task" if requirement_type == "process_improvement" else "Story"),
             "user_story": self._normalize_user_story(
                 self._clean_text_field(requirement, story.get("user_story") or "", "", "user_story", warnings_out),
             ),
@@ -621,6 +629,10 @@ class PlannerAgent:
             if not isinstance(source, dict):
                 continue
             normalized_source = dict(source)
+            if not normalized_source.get("source"):
+                normalized_source["source"] = "unknown"
+            else:
+                normalized_source["source"] = str(normalized_source["source"])
             if "chunk_index" not in normalized_source and "chunk" in normalized_source:
                 normalized_source["chunk_index"] = normalized_source["chunk"]
             normalized.append(normalized_source)

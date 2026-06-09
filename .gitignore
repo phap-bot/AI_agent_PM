@@ -73,3 +73,7 @@ mcp/
 # Local env config
 .env
 src/ai_scrum_master/.env
+
+# Models
+src/Models/
+*.gguf

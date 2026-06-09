@@ -52,6 +52,13 @@ REASONING CHECKLIST BEFORE JSON:
 
 OUTPUT RULES:
 - Return only valid JSON.
+- Set `jira_issue_type` accurately based on the requirement:
+  - "Bug": Use when the requirement describes a defect, error, or unintended behavior in an existing feature.
+  - "Epic": Use when the requirement is oversized (needs splitting across multiple stories/sprints).
+  - "Task": Use for pure technical/internal work without direct end-user value.
+  - "Story": Use for new features or capabilities delivering direct value to end-users.
+- Generate `jira_labels` as a list of 1-3 short, relevant tags (e.g., ["frontend", "security", "database"]).
+- Generate `jira_linked_items` only if the requirement mentions blocking or related issues (e.g., "Blocks SPARK-123").
 - Use Given / When / Then acceptance criteria only when the story is READY.
 - Keep tasks actionable and specific to the generated story. Do not write task placeholders.
 - Estimate `story_points` dynamically based on the complexity of the capability and number of tasks required by the context. Do not default to 3. Use Fibonacci story points only: 1, 2, 3, 5, 8, 13. Use null when the item is not ready for estimation.
@@ -87,11 +94,20 @@ Use this shape when PLANNING_STATUS_FROM_LOCAL_RULES is NEEDS_CLARIFICATION or t
   "warnings": ["Requirement is too vague for sprint-ready planning."]
 }}
 
+{few_shot_examples}
 
 JSON SCHEMA:
 {{
   "title": "string",
   "story_type": "software_feature | process_improvement | oversized_request | ambiguous_request",
+  "jira_issue_type": "Story | Task | Bug | Epic",
+  "jira_labels": ["string"],
+  "jira_linked_items": [
+    {{
+      "relationship": "blocks | is blocked by | relates to",
+      "issue_key": "string"
+    }}
+  ],
   "user_story": "string",
   "acceptance_criteria": [
     "Given [context], When [action], Then [result]"

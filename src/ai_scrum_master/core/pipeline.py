@@ -232,121 +232,73 @@ class ScrumMasterCrew:
         self.slack_tool = SlackTool.from_project(project_id)
         route = route_requirement(requirement)
         requirement_type = route.get("story_type") or classify_requirement(requirement)
-        logger.info(
-            "Pipeline started requirement_length=%s n_results=%s allow_fallback_without_context=%s requirement_type=%s route_domain=%s project_id=%s",
-            len(requirement),
-            n_results,
-            allow_fallback_without_context,
-            requirement_type,
-            route.get("domain"),
-            project_id,
-        )
-        logger.info("Researcher stage started")
-        context = self._run_researcher(requirement=requirement, n_results=n_results, route=route, forced_context_docs=forced_context_docs, project_id=project_id)
-        context["route"] = route
-        logger.info(
-            "Researcher stage completed documents=%s raw_matches=%s confidence=%s warnings=%s retrieval_status=%s",
-            len(context.get("documents", [])),
-            context.get("raw_match_count", len(context.get("matches", []))),
-            context.get("confidence"),
-            len(context.get("warnings", [])),
-            context.get("retrieval_status"),
-        )
+        
+        max_retries = 2
+        iteration = 0
+        research_feedback = None
+        
+        while iteration <= max_retries:
+            iteration += 1
+            logger.info("Pipeline iteration %s started", iteration)
+            
+            context = self._run_researcher(requirement=requirement, n_results=n_results, route=route, forced_context_docs=forced_context_docs, project_id=project_id, feedback=research_feedback)
+            context["route"] = route
+            context = self._select_context_for_requirement(requirement, context, route)
+            
+            if progress_callback:
+                progress_callback("planner", {"context": context})
 
-        context = self._select_context_for_requirement(requirement, context, route)
-        if progress_callback:
-            progress_callback("planner", {"context": context})
+            if should_block_planning(context, allow_fallback_without_context):
+                return self._context_required_response(context, route)
 
-        if should_block_planning(context, allow_fallback_without_context):
-            return self._context_required_response(context, route)
-        if context.get("retrieval_status") in {"empty", "no_relevant_context", "failed"} and allow_fallback_without_context:
-            context.setdefault("warnings", []).append(
-                "Fallback planning was user-approved even though no relevant retrieved context met the threshold."
+            planner_context = dict(context)
+            story = self._run_planner(
+                requirement=requirement,
+                context=planner_context,
+                requirement_type=requirement_type,
+                route=route,
             )
-
-        planner_context = dict(context)
-        logger.info("Planner stage started")
-        story = self._run_planner(
-            requirement=requirement,
-            context=planner_context,
-            requirement_type=requirement_type,
-            route=route,
-        )
-        story["requirement"] = requirement
-        story["story_type"] = requirement_type
-        story["route"] = route
-        story["context_quality"] = {
-            "retrieval_status": planner_context.get("retrieval_status"),
-            "confidence": planner_context.get("confidence"),
-            "source_count": len(planner_context.get("retrieved_sources", [])),
-            "research_quality_gate": planner_context.get("quality_gate", {}),
-        }
-        planner_quality = evaluate_planner_output(requirement, story, planner_context)
-        story["planner_quality"] = planner_quality
-        post_validation = validate_post_generation(requirement, story, planner_context, route)
-        if post_validation.get("warnings"):
-            story["warnings"] = list(dict.fromkeys(story.get("warnings", []) + post_validation["warnings"]))
-        if not post_validation["passed"]:
-            story = post_validation["normalized_story"] or story
+            story["requirement"] = requirement
+            story["story_type"] = requirement_type
+            story["route"] = route
+            
             planner_quality = evaluate_planner_output(requirement, story, planner_context)
-            planner_quality["passed"] = False
-            planner_quality["failures"] = list(dict.fromkeys(planner_quality.get("failures", []) + post_validation["issues"]))
             story["planner_quality"] = planner_quality
-        logger.info(
-            "Planner stage completed title=%s planning_status=%s warnings=%s quality_passed=%s quality_failures=%s",
-            story.get("title"),
-            story.get("planning_status", "READY"),
-            len(story.get("warnings", [])),
-            planner_quality.get("passed"),
-            len(planner_quality.get("failures", [])),
-        )
+            
+            if not planner_quality["passed"]:
+                # If planner quality gate fails completely without LLM evaluator
+                if iteration <= max_retries:
+                    research_feedback = " ".join(planner_quality.get("failures", []))
+                    continue
+                else:
+                    evaluation = self._planner_quality_failed_response(planner_quality)
+                    actions = self._prepare_actions(story, evaluation)
+                    return {"context": context, "story": story, "evaluation": evaluation, "actions": actions}
 
-        if not planner_quality["passed"]:
-            evaluation = self._planner_quality_failed_response(planner_quality)
+            if progress_callback:
+                progress_callback("evaluator", {"story": story})
+
+            evaluation = self.evaluator.run(story=story)
             evaluation = self._apply_runtime_safety_issues(story, evaluation, planner_context)
             evaluation = self._apply_post_generation_validation(requirement, story, evaluation, requirement_type)
-            story["planner_quality"] = evaluate_planner_output(requirement, story, planner_context)
-            if story.get("planning_status") == "REVISION":
-                story["planner_quality"]["passed"] = False
-            actions = self._prepare_actions(story, evaluation)
-            logger.info("Evaluator stage blocked because planner quality gate failed")
-            return {
-                "context": context,
-                "story": story,
-                "evaluation": evaluation,
-                "actions": actions,
-            }
+            evaluation = finalize_generation(story, evaluation)["evaluation"]
+            
+            if evaluation.get("status") == "APPROVED" or iteration > max_retries:
+                actions = self._prepare_actions(story, evaluation)
+                return {"context": context, "story": story, "evaluation": evaluation, "actions": actions}
+                
+            # If REVISION and we have retries left, extract feedback and loop
+            issues = evaluation.get("issues", [])
+            instructions = evaluation.get("revision_instructions", [])
+            research_feedback = " ".join(issues + instructions)
+            logger.info("Evaluator returned REVISION. Feedback: %s", research_feedback)
+            
+        return {}
 
-        if progress_callback:
-            progress_callback("evaluator", {"story": story})
 
-        logger.info("Evaluator stage started")
-        evaluation = self.evaluator.run(story=story)
-        evaluation = self._apply_runtime_safety_issues(story, evaluation, planner_context)
-        evaluation = self._apply_post_generation_validation(requirement, story, evaluation, requirement_type)
-        evaluation = finalize_generation(story, evaluation)["evaluation"]
-        story["planner_quality"] = evaluate_planner_output(requirement, story, planner_context)
-        if story.get("planning_status") == "REVISION":
-            story["planner_quality"]["passed"] = False
-        logger.info(
-            "Evaluator stage completed status=%s issues=%s warnings=%s",
-            evaluation.get("status"),
-            len(evaluation.get("issues", [])),
-            len(evaluation.get("warnings", [])),
-        )
-
-        actions = self._prepare_actions(story, evaluation)
-        logger.info("Pipeline completed action_ready jira=%s slack=%s", actions["jira"]["ready"], actions["slack"]["ready"])
-        return {
-            "context": context,
-            "story": story,
-            "evaluation": evaluation,
-            "actions": actions,
-        }
-
-    def _run_researcher(self, requirement: str, n_results: int, route: dict, forced_context_docs: list[str] | None = None, project_id: str | None = None) -> dict:
+    def _run_researcher(self, requirement: str, n_results: int, route: dict, forced_context_docs: list[str] | None = None, project_id: str | None = None, feedback: str | None = None) -> dict:
         try:
-            return self.researcher.run(requirement=requirement, n_results=n_results, route=route, forced_context_docs=forced_context_docs, project_id=project_id)
+            return self.researcher.run(requirement=requirement, n_results=n_results, route=route, forced_context_docs=forced_context_docs, project_id=project_id, feedback=feedback)
         except TypeError as exc:
             if "route" not in str(exc) and "project_id" not in str(exc):
                 raise

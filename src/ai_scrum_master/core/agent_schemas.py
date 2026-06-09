@@ -89,6 +89,9 @@ class PlannerStoryOutput(BaseModel):
 
     title: str = ""
     story_type: Literal["software_feature", "process_improvement", "oversized_request", "ambiguous_request"] = "software_feature"
+    jira_issue_type: Literal["Story", "Task", "Bug", "Epic"] = "Story"
+    jira_labels: list[str] = Field(default_factory=list)
+    jira_linked_items: list[dict[str, str]] = Field(default_factory=list)
     user_story: str = ""
     acceptance_criteria: list[str] = Field(default_factory=list)
     story_points: StrictInt | None = None

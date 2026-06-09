@@ -70,7 +70,7 @@ export interface StoryDraft {
     qa: string[];
   };
   definition_of_done: string[];
-  priority?: string;
+  priority: string;
   planning_status: string;
   clarification_questions: string[];
   assumptions: string[];

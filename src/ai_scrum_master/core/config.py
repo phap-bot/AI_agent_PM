@@ -67,6 +67,7 @@ class Settings:
     app_version: str = field(default_factory=lambda: os.getenv("APP_VERSION", "0.1.0"))
     ollama_base_url: str = field(default_factory=lambda: os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"))
     reasoning_model: str = field(default_factory=lambda: os.getenv("OLLAMA_REASONING_MODEL", "pm-agent"))
+    researcher_model: str = field(default_factory=lambda: os.getenv("OLLAMA_RESEARCHER_MODEL", os.getenv("OLLAMA_REASONING_MODEL", "pm-agent")))
     embedding_model: str = field(default_factory=lambda: os.getenv("OLLAMA_EMBED_MODEL", "nomic-embed-text"))
     ollama_timeout: int = field(default_factory=lambda: int(os.getenv("OLLAMA_TIMEOUT", "240")))
     ollama_num_ctx: int = field(default_factory=lambda: int(os.getenv("OLLAMA_NUM_CTX", "8192")))
