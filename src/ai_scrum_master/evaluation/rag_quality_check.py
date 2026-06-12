@@ -155,6 +155,72 @@ QUERY_CASES: list[dict[str, Any]] = [
         "query": "Improve sprint planning process with automated story generation",
         "expected_sources": ["sprint_policy.md"],
     },
+    # --- ADDITIONAL GROUND TRUTH (10 queries: Q21-Q30) ---
+    # Auth — deeper scenarios
+    {
+        "id": "Q21",
+        "domain": "auth",
+        "query": "Map Google email to existing user or create pending user record",
+        "expected_sources": ["auth_context.md"],
+    },
+    {
+        "id": "Q22",
+        "domain": "auth",
+        "query": "Unit tests for token handling and callback validation",
+        "expected_sources": ["auth_context.md"],
+    },
+    # Checkout — deeper scenarios
+    {
+        "id": "Q23",
+        "domain": "checkout",
+        "query": "Cart review and shipping address before payment confirmation",
+        "expected_sources": ["checkout_context.md"],
+    },
+    {
+        "id": "Q24",
+        "domain": "checkout",
+        "query": "Frontend displays totals returned by backend pricing API",
+        "expected_sources": ["checkout_context.md"],
+    },
+    # Notification — deeper scenarios
+    {
+        "id": "Q25",
+        "domain": "notification",
+        "query": "In-app notification for user dashboard events",
+        "expected_sources": ["notification_context.md"],
+    },
+    {
+        "id": "Q26",
+        "domain": "notification",
+        "query": "Slack message must include title story points and Jira reference",
+        "expected_sources": ["notification_context.md"],
+    },
+    # Sprint/Scrum — deeper scenarios
+    {
+        "id": "Q27",
+        "domain": "scrum",
+        "query": "Jira issues must not be created before evaluator status APPROVED",
+        "expected_sources": ["sprint_policy.md"],
+    },
+    {
+        "id": "Q28",
+        "domain": "scrum",
+        "query": "Each story must be independently deliverable and testable",
+        "expected_sources": ["sprint_policy.md"],
+    },
+    # Cross-domain — new combinations
+    {
+        "id": "Q29",
+        "domain": "cross",
+        "query": "Notify team on Slack after successful checkout order creation",
+        "expected_sources": ["notification_context.md", "checkout_context.md"],
+    },
+    {
+        "id": "Q30",
+        "domain": "cross",
+        "query": "QA test plan for login callback and payment failure scenarios",
+        "expected_sources": ["auth_context.md", "checkout_context.md"],
+    },
 ]
 
 K = 3  # top-K for evaluation

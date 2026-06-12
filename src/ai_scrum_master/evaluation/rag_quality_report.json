@@ -1,35 +1,35 @@
 {
   "k": 3,
-  "queries": 20,
+  "queries": 30,
   "aggregate": {
-    "queries": 20,
+    "queries": 30,
     "top_k": 3,
-    "hit_rate_at_k": 0.9,
-    "recall_at_k": 0.9,
-    "precision_at_k": 0.4167,
-    "mrr": 0.9,
-    "ndcg_at_k": 0.9
+    "hit_rate_at_k": 0.9333,
+    "recall_at_k": 0.9333,
+    "precision_at_k": 0.4556,
+    "mrr": 0.9333,
+    "ndcg_at_k": 0.9333
   },
   "per_source": {
     "auth_context": {
-      "expected_queries": 7,
-      "hit_queries": 7,
+      "expected_queries": 10,
+      "hit_queries": 10,
       "recall_at_k": 1.0
     },
     "checkout_context": {
+      "expected_queries": 10,
+      "hit_queries": 10,
+      "recall_at_k": 1.0
+    },
+    "notification_context": {
       "expected_queries": 6,
       "hit_queries": 6,
       "recall_at_k": 1.0
     },
-    "notification_context": {
-      "expected_queries": 3,
-      "hit_queries": 3,
-      "recall_at_k": 1.0
-    },
     "sprint_policy": {
-      "expected_queries": 5,
-      "hit_queries": 3,
-      "recall_at_k": 0.6
+      "expected_queries": 7,
+      "hit_queries": 5,
+      "recall_at_k": 0.7143
     }
   },
   "query_results": [
@@ -329,6 +329,160 @@
       "ndcg": 1.0,
       "found_sources": [
         "sprint_policy"
+      ]
+    },
+    {
+      "id": "Q21",
+      "domain": "auth",
+      "query": "Map Google email to existing user or create pending user record",
+      "expected_sources": [
+        "auth_context.md"
+      ],
+      "hit_rate": 1.0,
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "found_sources": [
+        "auth_context"
+      ]
+    },
+    {
+      "id": "Q22",
+      "domain": "auth",
+      "query": "Unit tests for token handling and callback validation",
+      "expected_sources": [
+        "auth_context.md"
+      ],
+      "hit_rate": 1.0,
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "found_sources": [
+        "auth_context"
+      ]
+    },
+    {
+      "id": "Q23",
+      "domain": "checkout",
+      "query": "Cart review and shipping address before payment confirmation",
+      "expected_sources": [
+        "checkout_context.md"
+      ],
+      "hit_rate": 1.0,
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "found_sources": [
+        "checkout_context"
+      ]
+    },
+    {
+      "id": "Q24",
+      "domain": "checkout",
+      "query": "Frontend displays totals returned by backend pricing API",
+      "expected_sources": [
+        "checkout_context.md"
+      ],
+      "hit_rate": 1.0,
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "found_sources": [
+        "checkout_context"
+      ]
+    },
+    {
+      "id": "Q25",
+      "domain": "notification",
+      "query": "In-app notification for user dashboard events",
+      "expected_sources": [
+        "notification_context.md"
+      ],
+      "hit_rate": 1.0,
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "found_sources": [
+        "notification_context"
+      ]
+    },
+    {
+      "id": "Q26",
+      "domain": "notification",
+      "query": "Slack message must include title story points and Jira reference",
+      "expected_sources": [
+        "notification_context.md"
+      ],
+      "hit_rate": 1.0,
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "found_sources": [
+        "notification_context"
+      ]
+    },
+    {
+      "id": "Q27",
+      "domain": "scrum",
+      "query": "Jira issues must not be created before evaluator status APPROVED",
+      "expected_sources": [
+        "sprint_policy.md"
+      ],
+      "hit_rate": 1.0,
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "found_sources": [
+        "sprint_policy"
+      ]
+    },
+    {
+      "id": "Q28",
+      "domain": "scrum",
+      "query": "Each story must be independently deliverable and testable",
+      "expected_sources": [
+        "sprint_policy.md"
+      ],
+      "hit_rate": 1.0,
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "found_sources": [
+        "sprint_policy"
+      ]
+    },
+    {
+      "id": "Q29",
+      "domain": "cross",
+      "query": "Notify team on Slack after successful checkout order creation",
+      "expected_sources": [
+        "notification_context.md",
+        "checkout_context.md"
+      ],
+      "hit_rate": 1.0,
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "found_sources": [
+        "checkout_context",
+        "notification_context"
+      ]
+    },
+    {
+      "id": "Q30",
+      "domain": "cross",
+      "query": "QA test plan for login callback and payment failure scenarios",
+      "expected_sources": [
+        "auth_context.md",
+        "checkout_context.md"
+      ],
+      "hit_rate": 1.0,
+      "recall": 1.0,
+      "mrr": 1.0,
+      "ndcg": 1.0,
+      "found_sources": [
+        "auth_context",
+        "checkout_context"
       ]
     }
   ],
