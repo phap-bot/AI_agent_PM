@@ -156,10 +156,9 @@ def test_researcher_keeps_only_top_context_matches(monkeypatch) -> None:
 
     result = ResearcherAgent().run("Add Google login", n_results=4)
 
-    # All matches above threshold are now retained, ranked by score
+    # Source-level dedup: all 4 chunks are from auth.md, so only the best one is kept
+    assert len(result["documents"]) == 1
     assert result["documents"][0] == "Auth evidence 2"  # highest score 0.95
-    assert result["documents"][1] == "Auth evidence 4"  # score 0.9
-    assert result["documents"][2] == "Auth evidence 3"  # score 0.8
     assert result["retrieved_sources"][0]["score"] == 1.0
     assert result["raw_match_count"] == 4
 
@@ -181,3 +180,117 @@ def test_researcher_truncates_evidence_excerpt(monkeypatch) -> None:
     )
 
     assert source[0]["excerpt"] == "Auth stack u..."
+
+
+def test_researcher_no_relevant_context_populates_planning_brief(monkeypatch) -> None:
+    """Edge case: all results below threshold must still produce a usable planning brief."""
+    def fake_search_context(*args, **kwargs):
+        return [
+            {
+                "id": "noise-0",
+                "document": "Unrelated marketing copy about branding.",
+                "metadata": {"source": "marketing.md", "chunk_index": 0},
+                "distance": 1.5,
+                "score": 0.2,
+            },
+            {
+                "id": "noise-1",
+                "document": "Company holiday schedule 2026.",
+                "metadata": {"source": "hr_policy.md", "chunk_index": 0},
+                "distance": 1.8,
+                "score": 0.1,
+            },
+        ]
+
+    monkeypatch.setattr(researcher, "search_context", fake_search_context)
+
+    result = ResearcherAgent().run("Add biometric fingerprint login")
+
+    assert result["retrieval_status"] == "no_relevant_context"
+    assert result["documents"] == []
+    assert result["confidence"] == 0.0
+    assert result["planning_brief"] is not None
+    assert result["planning_brief"]["retrieval_status"] == "no_relevant_context"
+    assert any("threshold" in w for w in result["warnings"])
+
+
+def test_researcher_source_level_dedup_improves_precision(monkeypatch) -> None:
+    """Source-level dedup: when 3 chunks come from auth.md and 1 from checkout.md,
+    only the best chunk per source is kept, so both sources appear in top results."""
+    def fake_search_context(*args, **kwargs):
+        return [
+            {
+                "id": "auth-0",
+                "document": "Auth chunk 1: JWT login flow.",
+                "metadata": {"source": "auth.md", "chunk_index": 0},
+                "distance": 0.1,
+                "score": 0.95,
+            },
+            {
+                "id": "auth-1",
+                "document": "Auth chunk 2: OAuth callback.",
+                "metadata": {"source": "auth.md", "chunk_index": 1},
+                "distance": 0.15,
+                "score": 0.90,
+            },
+            {
+                "id": "auth-2",
+                "document": "Auth chunk 3: Token refresh.",
+                "metadata": {"source": "auth.md", "chunk_index": 2},
+                "distance": 0.2,
+                "score": 0.85,
+            },
+            {
+                "id": "checkout-0",
+                "document": "Checkout: payment retry with idempotency key.",
+                "metadata": {"source": "checkout.md", "chunk_index": 0},
+                "distance": 0.3,
+                "score": 0.80,
+            },
+        ]
+
+    monkeypatch.setattr(researcher, "search_context", fake_search_context)
+
+    result = ResearcherAgent().run("Login and checkout integration", n_results=3)
+
+    # Without source-level dedup, all 3 slots would be auth.md chunks.
+    # With dedup, only the best auth.md chunk is kept + checkout.md appears.
+    sources = [s["source"] for s in result["retrieved_sources"]]
+    assert "auth.md" in sources
+    assert "checkout.md" in sources
+    assert len(result["retrieved_sources"]) == 2
+
+
+def test_researcher_empty_chromadb_returns_actionable_warnings(monkeypatch) -> None:
+    """Edge case: brand-new project with no documents ingested."""
+    monkeypatch.setattr(researcher, "search_context", lambda *args, **kwargs: [])
+
+    result = ResearcherAgent().run("Build entire payment gateway from scratch")
+
+    assert result["retrieval_status"] == "empty"
+    assert result["confidence"] == 0.0
+    assert result["raw_match_count"] == 0
+    assert result["documents"] == []
+    assert result["retrieved_sources"] == []
+    assert result["context_snippets"] == []
+    assert any("No relevant project context" in w for w in result["warnings"])
+    # Planning brief should exist and be usable even with no context
+    assert result["planning_brief"]["retrieval_status"] == "empty"
+    assert result["planning_brief"]["confidence"] == 0.0
+
+
+def test_researcher_exception_returns_graceful_failure(monkeypatch) -> None:
+    """Edge case: ChromaDB crashes during query."""
+    def exploding_search(*args, **kwargs):
+        raise ConnectionError("ChromaDB connection refused on port 8001")
+
+    monkeypatch.setattr(researcher, "search_context", exploding_search)
+
+    result = ResearcherAgent().run("Any requirement")
+
+    assert result["retrieval_status"] == "failed"
+    assert result["confidence"] == 0.0
+    assert result["documents"] == []
+    assert any("Context retrieval failed" in w for w in result["warnings"])
+    assert any("ChromaDB connection refused" in w for w in result["warnings"])
+

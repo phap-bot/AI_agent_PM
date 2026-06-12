@@ -270,19 +270,20 @@ class ResearcherAgent:
         return expanded or requirement
 
     def _top_matches(self, matches: list[dict], limit: int) -> list[dict]:
-        deduped = []
-        seen = set()
+        """Return the top `limit` matches, keeping only the best chunk per source file.
+
+        Source-level deduplication prevents a single document from dominating
+        all Top-K slots, which directly improves Precision@K when different
+        sources are expected for a query.
+        """
+        seen_sources: set[str] = set()
+        deduped: list[dict] = []
         ranked_matches = sorted(matches, key=lambda item: float(item.get("score") or 0.0), reverse=True)
         for match in ranked_matches:
-            metadata = match.get("metadata") if isinstance(match.get("metadata"), dict) else {}
-            key = (
-                metadata.get("source") or metadata.get("file_name") or match.get("id"),
-                metadata.get("chunk_index", "?"),
-                " ".join(str(match.get("document", "")).split())[:200],
-            )
-            if key in seen:
+            source_key = self._source_name(match)
+            if source_key in seen_sources:
                 continue
-            seen.add(key)
+            seen_sources.add(source_key)
             deduped.append(match)
             if len(deduped) >= limit:
                 break
