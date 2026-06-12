@@ -1,0 +1,55 @@
+{
+  "strategies": [
+    {
+      "strategy": "small_chunk",
+      "chunk_size": 800,
+      "overlap": 100,
+      "chunks": 2072,
+      "ingest_ms": 51081,
+      "eval_ms": 96346,
+      "metrics": {
+        "queries": 30,
+        "top_k": 3,
+        "hit_rate_at_k": 0.9667,
+        "recall_at_k": 0.9667,
+        "precision_at_k": 0.5889,
+        "mrr": 0.9667,
+        "ndcg_at_k": 0.9667
+      }
+    },
+    {
+      "strategy": "baseline",
+      "chunk_size": 1200,
+      "overlap": 200,
+      "chunks": 1430,
+      "ingest_ms": 45600,
+      "eval_ms": 79438,
+      "metrics": {
+        "queries": 30,
+        "top_k": 3,
+        "hit_rate_at_k": 1.0,
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.5889,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "strategy": "large_chunk",
+      "chunk_size": 1600,
+      "overlap": 300,
+      "chunks": 1107,
+      "ingest_ms": 43647,
+      "eval_ms": 79156,
+      "metrics": {
+        "queries": 30,
+        "top_k": 3,
+        "hit_rate_at_k": 1.0,
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.5,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    }
+  ]
+}
