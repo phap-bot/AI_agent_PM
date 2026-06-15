@@ -10,11 +10,13 @@ from ai_scrum_master.ingestion.ingest import ingest_raw_docs
 def generate_story_task(self, requirement: str, n_results: int, allow_fallback: bool, forced_docs: list[str] | None = None, project_id: str | None = None):
     """Celery task to run the generation pipeline."""
     partial_result = {}
+    task_id = self.request.id
     
     def progress_callback(stage: str, partial_data: dict):
         partial_result.update(partial_data)
-        # Update celery state so API can poll progress
-        self.update_state(state='PROCESSING', meta={'stage': stage, 'partial_result': partial_result})
+        # Update celery state so API can poll progress.
+        # Pass task_id explicitly because LangGraph runs this in a background thread.
+        self.update_state(task_id=task_id, state='PROCESSING', meta={'stage': stage, 'partial_result': partial_result})
 
     result = generate_story_pipeline(
         requirement=requirement,

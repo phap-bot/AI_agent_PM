@@ -6,9 +6,12 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
   onPushToJira,
   onProvideClarification,
   onSelectSplit,
+  onOpenSplitManager,
+  onReset,
   projectId
 }) {
   const [clarificationInput, setClarificationInput] = useState('');
+  const [answers, setAnswers] = useState({});
   const [chatHistory, setChatHistory] = useState([]);
   const [priorities, setPriorities] = useState([]);
   const chatEndRef = useRef(null);
@@ -73,17 +76,32 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
     || evaluation?.status === 'REVISION'
     || (draft.clarification_questions?.length > 0);
 
+  const unansweredQuestions = draft.clarification_questions || [];
+
   const handleSendClarification = () => {
-    const text = clarificationInput.trim();
-    if (!text || isRegenerating) return;
+    let combinedText = '';
+    
+    unansweredQuestions.forEach((q, idx) => {
+      const ans = answers[idx]?.trim();
+      if (ans) {
+         combinedText += `Câu hỏi: ${q}\nTrả lời: ${ans}\n\n`;
+      }
+    });
+
+    if (clarificationInput.trim()) {
+       combinedText += `Thông tin bổ sung: ${clarificationInput.trim()}\n`;
+    }
+
+    if (!combinedText || isRegenerating) return;
 
     // Add user reply to chat history
-    setChatHistory(prev => [...prev, { role: 'user', text }]);
+    setChatHistory(prev => [...prev, { role: 'user', text: combinedText }]);
+    setAnswers({});
     setClarificationInput('');
 
     // Trigger re-generation with the clarification
     if (onProvideClarification) {
-      onProvideClarification(text);
+      onProvideClarification(combinedText);
     }
   };
 
@@ -94,19 +112,8 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
     }
   };
 
-  // Build the list of AI messages to show
-  const aiMessages = [];
-  if (draft.clarification_questions?.length > 0) {
-    draft.clarification_questions.forEach(q => aiMessages.push(q));
-  }
-  if (evaluation?.issues?.length > 0) {
-    evaluation.issues.forEach(issue => {
-      if (!aiMessages.includes(issue)) aiMessages.push(issue);
-    });
-  }
-  if (aiMessages.length === 0) {
-    aiMessages.push("Mọi thứ đã rõ ràng, bạn có thể duyệt để push lên Jira.");
-  }
+  const hasIssues = evaluation?.issues?.length > 0;
+  const showAllClear = unansweredQuestions.length === 0 && !hasIssues;
 
   return (
     <section className="bg-white/40 glass-panel rounded-2xl border border-white/40 overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.08)] border-l-4 border-l-primary-container max-h-[800px] overflow-y-auto">
@@ -149,42 +156,21 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
               <h3 className="text-title-lg font-bold text-amber-700">Yêu cầu quá lớn (Oversized Request)</h3>
             </div>
             <p className="text-body-md text-on-surface-variant">
-              Yêu cầu này chứa quá nhiều tính năng để đưa vào một Ticket duy nhất. Dưới đây là đề xuất phân tách (Story Splits) thành các Ticket nhỏ hơn:
+              Yêu cầu này chứa quá nhiều tính năng để đưa vào một Ticket duy nhất. Hệ thống đề xuất phân tách (Story Splits) thành các Ticket nhỏ hơn.
             </p>
 
             {draft.story_splits?.length > 0 ? (
-              <div className="space-y-4">
-                {draft.story_splits.map(split => (
-                  <div key={split.id} className="p-4 border border-outline-variant/50 rounded-xl bg-surface hover:shadow-md transition-shadow">
-                    <div className="flex justify-between items-start mb-2">
-                      <h5 className="font-bold text-primary">{split.title}</h5>
-                      <span className={`text-[12px] px-2 py-1 rounded-full font-bold uppercase tracking-wider ${
-                        split.priority === 'high' ? 'bg-red-100 text-red-700' : 
-                        split.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' : 
-                        'bg-blue-100 text-blue-700'
-                      }`}>
-                        {split.priority}
-                      </span>
-                    </div>
-                    <p className="text-body-md text-on-surface-variant mb-4">{split.description}</p>
-                    
-                    <div className="flex flex-wrap gap-4 text-[12px] text-outline border-t border-outline-variant/30 pt-3">
-                      <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">confirmation_number</span>Points: <strong>{split.estimated_points}</strong></span>
-                      <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">skateboarding</span>Sprint đề xuất: <strong>{
-                        draft.sprint_allocation?.find(a => a.story_split_id === split.id)?.recommended_sprint || 'N/A'
-                      }</strong></span>
-                    </div>
-                    {split.related_endpoints?.length > 0 && (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {split.related_endpoints.map((ep, i) => (
-                          <span key={i} className="text-[10px] bg-surface-container-high px-2 py-1 rounded-md text-on-surface-variant font-mono">
-                            {ep}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
+              <div className="bg-amber-50 p-6 rounded-xl border border-amber-200 flex flex-col items-center text-center space-y-4">
+                <p className="text-amber-800 font-medium">Có {draft.story_splits.length} split được đề xuất cho yêu cầu này.</p>
+                {onOpenSplitManager && (
+                  <button 
+                    onClick={onOpenSplitManager}
+                    className="bg-primary text-on-primary px-6 py-3 rounded-xl font-bold hover:opacity-90 active:scale-95 shadow-lg flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined">splitscreen</span>
+                    Mở Popup Quản Lý Splits
+                  </button>
+                )}
               </div>
             ) : (
               <p className="text-body-md italic text-outline">Chưa có đề xuất phân tách nào.</p>
@@ -313,63 +299,101 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
               )}
             </div>
 
-            {/* Chat Messages */}
-            <div className="space-y-stack-md max-h-64 overflow-y-auto mb-stack-md px-2 scroll-smooth">
-              {/* AI Messages */}
-              {aiMessages.map((msg, idx) => (
-                <div key={`ai-${idx}`} className="flex gap-stack-sm">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-primary text-[18px]">smart_toy</span>
+            {/* Chat History (Past Iterations) */}
+            {chatHistory.length > 0 && (
+              <div className="space-y-stack-md max-h-64 overflow-y-auto mb-stack-md px-2 scroll-smooth">
+                {chatHistory.map((entry, idx) => (
+                  <div key={`chat-${idx}`} className="flex gap-stack-sm flex-row-reverse">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-secondary-container">
+                      <span className="material-symbols-outlined text-[18px] text-on-secondary-container">person</span>
+                    </div>
+                    <div className="p-3 rounded-2xl shadow-sm text-body-md border max-w-[85%] bg-primary/10 border-primary/20 rounded-tr-none text-on-surface whitespace-pre-wrap">
+                      {entry.text}
+                    </div>
                   </div>
-                  <div className="bg-white p-3 rounded-2xl rounded-tl-none shadow-sm text-body-md border border-outline-variant/10 max-w-[85%]">
-                    {msg}
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
+            )}
 
-              {/* Chat History (user replies) */}
-              {chatHistory.map((entry, idx) => (
-                <div key={`chat-${idx}`} className={`flex gap-stack-sm ${entry.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${entry.role === 'user' ? 'bg-secondary-container' : 'bg-primary/10'}`}>
-                    <span className={`material-symbols-outlined text-[18px] ${entry.role === 'user' ? 'text-on-secondary-container' : 'text-primary'}`}>
-                      {entry.role === 'user' ? 'person' : 'smart_toy'}
-                    </span>
+            {/* Error/Warning Issues */}
+            {hasIssues && (
+              <div className="mb-stack-md space-y-2 px-2">
+                {evaluation.issues.map((issue, idx) => (
+                  <div key={`issue-${idx}`} className="flex gap-stack-sm">
+                    <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-red-600 text-[18px]">error</span>
+                    </div>
+                    <div className="bg-red-50 p-3 rounded-2xl rounded-tl-none shadow-sm text-body-md border border-red-100 max-w-[85%] text-red-800">
+                      {issue}
+                    </div>
                   </div>
-                  <div className={`p-3 rounded-2xl shadow-sm text-body-md border max-w-[85%] ${
-                    entry.role === 'user' 
-                      ? 'bg-primary/10 border-primary/20 rounded-tr-none text-on-surface' 
-                      : 'bg-white border-outline-variant/10 rounded-tl-none'
-                  }`}>
-                    {entry.text}
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
+            )}
 
-              {/* Regeneration loading indicator */}
-              {isRegenerating && (
-                <div className="flex gap-stack-sm">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-primary text-[18px] animate-spin">progress_activity</span>
+            {/* Clarification Questions Form */}
+            {unansweredQuestions.length > 0 && (
+              <div className="space-y-4 mb-stack-md px-2">
+                <p className="text-sm font-bold text-on-surface-variant flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary text-[20px]">smart_toy</span>
+                  AI cần bạn làm rõ các câu hỏi sau để hoàn thiện Story:
+                </p>
+                {unansweredQuestions.map((q, idx) => (
+                  <div key={`q-${idx}`} className="bg-white p-4 rounded-xl border border-primary/20 shadow-sm space-y-3 relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-primary/40"></div>
+                    <div className="flex gap-2 text-on-surface font-medium text-body-md">
+                      <span className="bg-primary/10 text-primary w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0">{idx + 1}</span>
+                      <p>{q}</p>
+                    </div>
+                    <textarea
+                      className="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-lg px-3 py-3 text-body-md focus:ring-2 focus:ring-primary/40 outline-none resize-none transition-all placeholder:text-outline-variant"
+                      rows={2}
+                      placeholder="Nhập câu trả lời của bạn cho câu hỏi này..."
+                      value={answers[idx] || ''}
+                      onChange={(e) => setAnswers(prev => ({ ...prev, [idx]: e.target.value }))}
+                      disabled={isRegenerating}
+                    />
                   </div>
-                  <div className="bg-white p-3 rounded-2xl rounded-tl-none shadow-sm text-body-md border border-outline-variant/10 italic text-on-surface-variant">
-                    <span className="flex items-center gap-2">
-                      <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{animationDelay: '0ms'}}></span>
-                      <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{animationDelay: '150ms'}}></span>
-                      <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{animationDelay: '300ms'}}></span>
-                      AI đang phân tích lại với thông tin bổ sung...
-                    </span>
-                  </div>
-                </div>
-              )}
+                ))}
+              </div>
+            )}
 
-              <div ref={chatEndRef} />
-            </div>
+            {/* All Clear Message */}
+            {showAllClear && !isRegenerating && (
+              <div className="flex gap-stack-sm mb-stack-md px-2">
+                <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-green-600 text-[18px]">check_circle</span>
+                </div>
+                <div className="bg-green-50 p-3 rounded-2xl rounded-tl-none shadow-sm text-body-md border border-green-100 max-w-[85%] text-green-800">
+                  Mọi thứ đã rõ ràng, bạn có thể duyệt để push lên Jira.
+                </div>
+              </div>
+            )}
+
+            {/* Regeneration loading indicator */}
+            {isRegenerating && (
+              <div className="flex gap-stack-sm mb-stack-md px-2">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-primary text-[18px] animate-spin">progress_activity</span>
+                </div>
+                <div className="bg-white p-3 rounded-2xl rounded-tl-none shadow-sm text-body-md border border-outline-variant/10 italic text-on-surface-variant">
+                  <span className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{animationDelay: '0ms'}}></span>
+                    <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{animationDelay: '150ms'}}></span>
+                    <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{animationDelay: '300ms'}}></span>
+                    AI đang phân tích lại với thông tin phản hồi của bạn...
+                  </span>
+                </div>
+              </div>
+            )}
+
+            <div ref={chatEndRef} />
 
             {/* Chat Input */}
-            <div className="flex gap-2">
+            <div className="flex gap-2 mt-4 px-2">
               <input 
                 className="flex-1 bg-white border border-outline-variant/50 rounded-xl px-4 py-2 font-body-md focus:ring-2 focus:ring-primary/20 outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-all" 
-                placeholder={isRegenerating ? "Đang xử lý..." : "Phản hồi để làm rõ yêu cầu..."} 
+                placeholder={isRegenerating ? "Đang xử lý..." : "Nhập thông tin bổ sung chung (nếu cần)..."} 
                 type="text"
                 value={clarificationInput}
                 onChange={(e) => setClarificationInput(e.target.value)}
@@ -377,15 +401,16 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
                 disabled={isRegenerating}
               />
               <button 
-                className={`p-2 rounded-xl transition-all ${
-                  clarificationInput.trim() && !isRegenerating
+                className={`px-4 py-2 rounded-xl font-bold flex items-center gap-2 transition-all ${
+                  (Object.keys(answers).some(k => answers[k].trim()) || clarificationInput.trim()) && !isRegenerating
                     ? 'bg-primary text-on-primary hover:opacity-90 active:scale-95 shadow-md'
                     : 'bg-outline/20 text-outline cursor-not-allowed'
                 }`}
                 onClick={handleSendClarification}
-                disabled={!clarificationInput.trim() || isRegenerating}
+                disabled={(!Object.keys(answers).some(k => answers[k].trim()) && !clarificationInput.trim()) || isRegenerating}
               >
-                <span className="material-symbols-outlined">send</span>
+                <span className="material-symbols-outlined text-[20px]">send</span>
+                Gửi Phản Hồi
               </button>
             </div>
           </div>
@@ -407,53 +432,63 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
           </div>
         )}
 
+        {actionExecution?.slack && (
+          <div className={`p-4 rounded-xl border text-body-md mt-2 ${actionExecution.slack.executed ? 'bg-blue-50 border-blue-200 text-blue-800' : 'bg-amber-50 border-amber-200 text-amber-800'}`}>
+            <strong>{actionExecution.slack.executed ? 'Slack notification sent.' : 'Slack notification failed or skipped.'}</strong>
+            {actionExecution.slack.warnings?.length > 0 && (
+              <ul className="list-disc ml-5 mt-2">
+                {actionExecution.slack.warnings.map((warning, i) => <li key={i}>{warning}</li>)}
+              </ul>
+            )}
+          </div>
+        )}
+
         {/* Story Splits Suggestion */}
-        {draft.story_splits && draft.story_splits.length > 0 && (
-          <div className="mt-stack-lg p-stack-md bg-blue-50 border border-blue-200 rounded-xl">
-            <div className="flex items-center gap-2 mb-unit">
-              <span className="material-symbols-outlined text-blue-500" style={{fontVariationSettings: "'FILL' 1"}}>call_split</span>
-              <h4 className="text-label-md font-bold text-blue-700 uppercase tracking-wider">AI Gợi Ý Tách Ticket</h4>
+        {draft.story_splits && draft.story_splits.length > 0 && onOpenSplitManager && (
+          <div className="mt-stack-lg p-stack-md bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="material-symbols-outlined text-blue-500" style={{fontVariationSettings: "'FILL' 1"}}>call_split</span>
+                <h4 className="text-label-md font-bold text-blue-700 uppercase tracking-wider">AI Gợi Ý Tách Ticket</h4>
+              </div>
+              <p className="text-body-sm text-blue-800">
+                Yêu cầu của bạn có thể tách thành {draft.story_splits.length} ticket con (Epic).
+              </p>
             </div>
-            <p className="text-body-sm text-blue-800 mb-stack-sm">
-              Yêu cầu của bạn khá lớn (Epic), AI đề xuất nên tách thành các Ticket con dưới đây. Bạn có thể click vào để AI tập trung viết riêng cho ticket đó:
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {draft.story_splits.map((split, idx) => {
-                const splitTitle = typeof split === 'string' ? split : (split.title || split.name || `Sub-ticket ${idx+1}`);
-                const splitDesc = typeof split === 'string' ? '' : (split.description || split.reason || '');
-                const splitText = splitTitle + (splitDesc ? `: ${splitDesc}` : '');
-                
-                return (
-                  <button 
-                    key={idx}
-                    onClick={() => onSelectSplit(splitText)}
-                    disabled={isRegenerating || isPushingJira}
-                    className="text-left bg-white p-3 rounded-lg border border-blue-200 hover:border-blue-400 hover:shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
-                  >
-                    <div className="font-bold text-label-sm text-blue-900 mb-1">{splitTitle}</div>
-                    {splitDesc && <div className="text-body-sm text-blue-700 line-clamp-2">{splitDesc}</div>}
-                  </button>
-                )
-              })}
-            </div>
+            <button 
+              onClick={onOpenSplitManager}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-sm"
+            >
+              <span className="material-symbols-outlined text-[18px]">splitscreen</span>
+              Xử Lý Splits
+            </button>
           </div>
         )}
 
         {/* Footer Buttons */}
         <div className="flex gap-gutter pt-stack-lg">
-          <button 
-            className="flex-1 py-4 border border-outline-variant text-on-surface-variant font-bold text-label-md rounded-xl hover:bg-surface-container-high transition-colors disabled:opacity-50"
-            onClick={onPreviewJira}
-            disabled={isRegenerating}
-          >
-            ↻ TẠO LẠI BẢN NHÁP (PREVIEW)
-          </button>
+          {actionExecution?.jira?.executed ? (
+            <button 
+              className="flex-1 py-4 border-2 border-primary text-primary font-bold text-label-md rounded-xl hover:bg-primary/5 transition-colors"
+              onClick={onReset}
+            >
+              + TẠO YÊU CẦU MỚI
+            </button>
+          ) : (
+            <button 
+              className="flex-1 py-4 border border-outline-variant text-on-surface-variant font-bold text-label-md rounded-xl hover:bg-surface-container-high transition-colors disabled:opacity-50"
+              onClick={onPreviewJira}
+              disabled={isRegenerating}
+            >
+              ↻ TẠO LẠI BẢN NHÁP (PREVIEW)
+            </button>
+          )}
           <button
             disabled={isPushingJira || !isApproved || (actions && !isJiraReady) || isRegenerating}
             onClick={onPushToJira}
             className={`flex-[2] py-4 font-bold text-label-md rounded-xl shadow-lg transition-all ${(isPushingJira || !isApproved || (actions && !isJiraReady) || isRegenerating) ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-primary text-on-primary shadow-primary/20 hover:opacity-90 active:scale-95'}`}
           >
-            {isPushingJira ? '⏳ PUSHING TO JIRA...' : '✅ PUSH TO JIRA'}
+            {isPushingJira ? '⏳ EXECUTING ACTIONS...' : '✅ EXECUTE ACTIONS (JIRA & SLACK)'}
           </button>
         </div>
         

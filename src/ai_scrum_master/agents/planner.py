@@ -5,7 +5,6 @@ import re
 import time
 from typing import Any
 
-from ai_scrum_master.agents.crewai_contract import build_crewai_agent
 from ai_scrum_master.core.agent_schemas import PlannerStoryOutput, build_planning_brief, dump_model
 from ai_scrum_master.core.config import AgentProfileConfig, TaskProfileConfig, get_settings
 from ai_scrum_master.core.domain_profiles import (
@@ -56,20 +55,6 @@ class PlannerAgent:
         self.profile = profile
         self.task_profile = task_profile
         self.settings = get_settings()
-
-    def create_agent(self) -> Any:
-        from ai_scrum_master.core.llm_setup import build_llm
-        if not self.llm:
-            # Planner cần một chút sáng tạo để viết User Story hay và tự nhiên (temperature = 0.7)
-            self.llm = build_llm(temperature=0.7)
-            
-        role = self.profile.role if self.profile else "Scrum Story Planner"
-        goal = self.profile.goal if self.profile else "Convert stakeholder requests into sprint-ready user stories."
-        backstory = self.profile.backstory if self.profile else (
-            "You derive business logic from retrieved documentation first, then create traceable user stories, "
-            "acceptance criteria, BE/FE/QA tasks, assumptions, and Definition of Done."
-        )
-        return build_crewai_agent(role=role, goal=goal, backstory=backstory, tools=[], verbose=True, llm=self.llm)
 
     def run(self, requirement: str, context: dict, requirement_type: str | None = None, route: dict | None = None) -> dict:
         started_at = time.perf_counter()
@@ -367,12 +352,6 @@ class PlannerAgent:
         if normalized["planning_status"] not in {READY, NEEDS_CLARIFICATION, NEEDS_SPLIT, SPLIT_RECOMMENDED, "REVISION"}:
             normalized["planning_status"] = planning_status
             normalized["warnings"].append("Planner returned invalid planning_status; reset by local classifier.")
-        if planning_status != READY and normalized["planning_status"] != planning_status:
-            normalized["planning_status"] = planning_status
-            normalized["warnings"].append("Planner planning_status was reset to the local non-ready decision.")
-        elif planning_status == READY and normalized["planning_status"] != READY:
-            normalized["planning_status"] = READY
-            normalized["warnings"].append("Planner planning_status was reset to READY to match local classifier.")
         if normalized["planning_status"] == READY and normalized["story_points"] not in FIBONACCI_POINTS:
             normalized["story_points"] = None
             normalized["warnings"].append("Planner returned missing or non-Fibonacci story points; evaluator must request revision.")

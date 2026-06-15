@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, StrictInt
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, field_validator
 
 
 class ContextSourceOutput(BaseModel):
@@ -14,6 +14,11 @@ class ContextSourceOutput(BaseModel):
     score: float = 0.0
     distance: Any = None
     excerpt: str = ""
+
+    @field_validator("id", mode="before")
+    @classmethod
+    def coerce_id_to_str(cls, v):
+        return str(v) if v is not None else ""
 
 
 class EvidenceOutput(BaseModel):

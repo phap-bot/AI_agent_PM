@@ -19,7 +19,9 @@ async function handleResponse(response: Response) {
     let errorMessage = `Failed with status ${response.status} ${response.statusText}`;
     try {
       const errorData = await response.json();
-      if (errorData?.error?.message) {
+      if (errorData?.detail) {
+        errorMessage = typeof errorData.detail === 'string' ? errorData.detail : JSON.stringify(errorData.detail);
+      } else if (errorData?.error?.message) {
         errorMessage = errorData.error.message;
         if (errorData.error.details) {
           errorMessage += ` - ${JSON.stringify(errorData.error.details)}`;
@@ -79,6 +81,18 @@ export async function previewSlackAction(request: ActionPreviewRequest): Promise
 
 export async function executeJiraAction(request: ActionPreviewRequest): Promise<ActionExecutionPlan> {
   const response = await fetch(`${API_BASE_URL}/actions/jira/execute`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(request),
+  });
+
+  return handleResponse(response);
+}
+
+export async function executeAllActions(request: ActionPreviewRequest): Promise<ActionExecutionPlan> {
+  const response = await fetch(`${API_BASE_URL}/actions/execute-all`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

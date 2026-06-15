@@ -35,6 +35,13 @@ def actions_are_ready(story: dict[str, Any] | None, evaluation: dict[str, Any]) 
 def should_block_planning(context: dict[str, Any], allow_fallback_without_context: bool) -> bool:
     if allow_fallback_without_context:
         return False
+        
+    # Allow oversized requests to proceed to planning so that the planner can suggest splits,
+    # even if no relevant context was found.
+    route = context.get("route", {})
+    if route.get("story_type") == "oversized_request":
+        return False
+        
     if context.get("missing_required_sources"):
         return True
     if context.get("retrieval_status") in {"empty", "no_relevant_context", "failed"}:

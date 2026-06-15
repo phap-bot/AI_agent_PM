@@ -2,7 +2,20 @@ import { useState, useRef, useEffect } from 'react';
 import { uploadDocumentsAsync, getIngestStatus } from '../lib/api';
 
 export default function RequirementInputPanel({ onSubmit, isLoading, projectId }) {
+  const storageKey = `draftRequirement_${projectId || 'default'}`;
   const [requirement, setRequirement] = useState('');
+
+  useEffect(() => {
+    const saved = localStorage.getItem(storageKey);
+    setRequirement(saved || '');
+  }, [storageKey]);
+
+  const handleRequirementChange = (e) => {
+    const val = e.target.value;
+    setRequirement(val);
+    localStorage.setItem(storageKey, val);
+  };
+
   const [nResults, setNResults] = useState(5);
   const [allowFallback, setAllowFallback] = useState(false);
 
@@ -118,7 +131,7 @@ export default function RequirementInputPanel({ onSubmit, isLoading, projectId }
           className="w-full h-40 bg-surface-container-lowest border border-outline-variant rounded-lg p-stack-md font-body-md text-on-surface focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all resize-none" 
           placeholder="Dán email hoặc tin nhắn Slack vào đây..."
           value={requirement}
-          onChange={(e) => setRequirement(e.target.value)}
+          onChange={handleRequirementChange}
           disabled={isLoading}
         />
       </div>

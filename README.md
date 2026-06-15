@@ -1,245 +1,134 @@
-# 🚀 AI Scrum Master Agent
+# 🚀 AI Scrum Master Agent (Next-Gen Architecture)
 
-AI Scrum Master Agent là một hệ thống tự động hoá thông minh, giúp chuyển đổi các yêu cầu thô (raw requirements) từ các bên liên quan (stakeholders) thành các Jira work items (sprint-ready) thông qua một quy trình hoàn chỉnh.
+AI Scrum Master Agent là một hệ thống tự động hoá thông minh, giúp chuyển đổi các yêu cầu thô (raw requirements) từ các bên liên quan (stakeholders) thành các Jira work items (sprint-ready) thông qua một quy trình hoàn chỉnh. 
 
-**Quy trình hoạt động (Pipeline):**
-`Input ➔ Researcher ➔ Planner ➔ Evaluator ➔ Human Approval ➔ Jira/Slack Action Preview`
+Hệ thống đã được nâng cấp toàn diện sang kiến trúc Bất đồng bộ (Asynchronous) với Celery, lưu trữ vector bằng Qdrant và sử dụng các mô hình AI chuyên biệt (Qwen 2.5 Coder) được Fine-tune riêng cho tác vụ Product Management.
+
+**Quy trình hoạt động (Multi-Agent Pipeline):**
+`User Request ➔ FastAPI ➔ Redis Queue ➔ Celery Worker ➔ CrewAI (Researcher ➔ Planner ➔ Evaluator) ➔ Human Approval ➔ Jira/Slack Action`
 
 ---
 
-## 🛠️ Tech Stack
+## 🛠️ Tech Stack & Architecture
 
-Hệ thống được xây dựng trên các công nghệ hiện đại và mạnh mẽ:
-
-- **Agent Framework:** CrewAI
+- **Agent Framework:** CrewAI (Researcher, Planner, Evaluator)
 - **Backend API:** FastAPI
-- **Frontend:** React (Vite)
-- **LLM Runtime:** Ollama (chạy local tại `http://localhost:11434`)
-- **Reasoning Model:** `deepseek-r1:7b`
-- **Embedding Model:** `nomic-embed-text`
-- **Vector Store:** ChromaDB (local persistent)
-- **Testing:** pytest
-
-> 💡 **Lưu ý:** Chức năng Jira/Slack hiện đang hoạt động ở chế độ **preview mode**. Ứng dụng chỉ tạo ra các payload/action plan để bạn xem trước, chưa thực hiện gọi API thực tế để tạo Jira issue hay gửi tin nhắn Slack.
-
----
-
-## 📚 Kiến trúc & Tài liệu chi tiết
-- **RAG System:** Tham khảo [RAG_DOCUMENTATION.md](docs/RAG_DOCUMENTATION.md) để hiểu cách hệ thống nhúng (embedding), tìm kiếm (hybrid search), và trích xuất ngữ cảnh dự án.
-- **Agent Pipeline:** System prompt và role của các Agents được quản lý qua CrewAI.
+- **Frontend UI:** React (Vite)
+- **Background Tasks:** Celery + Redis (Message Queue)
+- **Database:** MongoDB (Lưu trữ lịch sử)
+- **Vector Store:** Qdrant (Lưu trữ tài liệu dự án RAG)
+- **LLM Runtime:** Ollama (Chạy 100% Local, bảo mật dữ liệu)
+- **AI Models:**
+  - `qwen2.5-coder:7b`: Tác vụ Research (Hỗ trợ Tool Calling, trích xuất tài liệu)
+  - `pm_planner_7b`: Tác vụ Planning (Mô hình Qwen 2.5 Coder được Fine-tune chuyên biệt bằng Unsloth)
+  - `qwen-embed`: Tác vụ Embedding nhúng dữ liệu tài liệu
 
 ---
 
-## ⚙️ 1. Chuẩn bị môi trường
+## 🤖 1. Thiết lập Mô hình AI (Ollama)
 
-Đảm bảo bạn đang mở terminal ở thư mục gốc của dự án `D:/Antigravity/AI_Agent_PM_PRJ`.
+Hệ thống yêu cầu 3 mô hình AI chạy local thông qua Ollama.
 
+**1. Cài đặt các mô hình gốc:**
+```bash
+ollama pull qwen2.5-coder:7b
+ollama pull qwen-embed
+```
 
-**Sử dụng PowerShell (Windows):**
+**2. Khởi tạo mô hình Planner đã được Fine-tune:**
+Mô hình `pm_planner_7b` là linh hồn của hệ thống, được huấn luyện riêng biệt từ Data Vàng của PM. 
+- Sau khi chạy file [Google Colab/Kaggle Fine-tune](project_colab.zip), bạn sẽ nhận được một file `.gguf`.
+- Chép file `.gguf` đó vào thư mục `src/Models/`.
+- Mở Terminal tại thư mục `src/Models/` và chạy lệnh sau để đưa mô hình vào Ollama:
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
+ollama create pm_planner_7b -f Modelfile.txt
 ```
 
 ---
 
-## 🤖 2. Thiết lập & Chạy Ollama
+## 🐳 2. Khởi chạy Hệ thống bằng Docker Compose
 
-Hệ thống sử dụng các mô hình ngôn ngữ lớn (LLM) chạy local thông qua Ollama để đảm bảo tính bảo mật và tiết kiệm chi phí.
+Hệ thống đã được Docker hóa hoàn toàn. Bạn không cần tự cài đặt DB hay Redis.
 
-1. **Cài đặt [Ollama](https://ollama.com/)** và khởi động server local.
-2. **Tải các models bắt buộc:**
-   ```bash
-   ollama pull deepseek-r1:7b
-   ollama pull nomic-embed-text
-   ollama list
-   ```
-3. **Kiểm tra trạng thái Ollama đang hoạt động:**
-   ```bash
-   curl http://localhost:11434/api/tags
-   ```
+**1. Copy file cấu hình:**
+Đảm bảo bạn đã sao chép `src/ai_scrum_master/.env.example` thành `src/ai_scrum_master/.env` và cấu hình các biến cơ bản.
 
-**Tối ưu cấu hình (Khuyên dùng cho thiết bị có GPU VRAM hạn chế như RTX 3050 4GB):**
-Để tránh lỗi Out of Memory, hãy cấu hình giới hạn qua các biến môi trường:
+**2. Chạy toàn bộ hệ thống:**
+Mở Terminal tại thư mục gốc của project và gõ lệnh:
 ```bash
-export OLLAMA_BASE_URL=http://localhost:11434
-export OLLAMA_REASONING_MODEL=deepseek-r1:7b
-export OLLAMA_EMBED_MODEL=nomic-embed-text
-export OLLAMA_NUM_CTX=2048
-export OLLAMA_TIMEOUT=180
-export OLLAMA_TEMPERATURE=0.1
+docker-compose up -d
 ```
+Lệnh này sẽ tự động tải các base image và khởi động 6 Containers:
+1. `api_local` (FastAPI chạy ở port 8000)
+2. `ui_local` (React chạy ở port 5173)
+3. `worker_local` (Celery Worker xử lý AI ngầm)
+4. `mongodb_local` (Database cổng 27017)
+5. `qdrant_local` (Vector DB cổng 6333)
+6. `redis_local` (Message Broker cổng 6379)
 
-**Kiểm tra kết nối LLM thật bằng CrewAI + Ollama:**
-```bash
-python test_crewai_ollama.py
-```
-*(Lần đầu chạy có thể mất một chút thời gian để tải model vào bộ nhớ)*
+**Truy cập ứng dụng:**
+- **Giao diện người dùng:** [http://localhost:5173](http://localhost:5173)
+- **Tài liệu API Swagger:** [http://localhost:8000/docs](http://localhost:8000/docs)
 
 ---
 
-## 🧠 3. Ingest Tài Liệu Vào ChromaDB (RAG Context)
+## 💻 3. Quy trình Local Development (Code Nhàn Tênh)
 
-Để Agent có đầy đủ thông tin bối cảnh (context) về dự án của bạn khi lập kế hoạch, bạn cần cung cấp các tài liệu (định dạng `.md` hoặc `.txt`).
+Hệ thống đã được cấu hình **Hot-Reload thông qua Docker Volumes** và tối ưu hoá `.dockerignore`. 
 
-1. Đặt các tài liệu vào thư mục:
-   ```text
-   src/ai_scrum_master/data/raw_docs/
-   ```
-2. Chạy quá trình ingest (đọc và lưu trữ thành dạng vector):
-   ```bash
-   PYTHONPATH=src python -m ai_scrum_master.ingestion.ingest
-   ```
-
-**Kết quả mong đợi:**
-Bạn sẽ thấy báo cáo số lượng file được đọc: `{'collection': 'project_context', 'source_dir': '...', 'files_indexed': 1, ...}`. Dữ liệu ChromaDB sẽ được lưu trữ lâu dài tại `src/ai_scrum_master/data/chromadb/`.
+- **KHÔNG CẦN CHẠY LẠI `--build`:** Trừ khi bạn sửa file `requirements.txt` hoặc `package.json`, bạn tuyệt đối không cần dùng lệnh `--build`.
+- **Sửa API (Python) hoặc UI (React):** Hệ thống sử dụng `uvicorn --reload` và `vite`. Bạn chỉ cần gõ code, ấn Save (Ctrl+S), ứng dụng sẽ tự cập nhật ngay lập tức.
+- **Sửa Worker (Celery Task):** Do đặc thù của Celery, mỗi khi sửa code liên quan đến agent hoặc pipeline trong Worker, bạn hãy nạp lại code mới bằng đúng một lệnh siêu tốc:
+  ```bash
+  docker-compose restart worker
+  ```
 
 ---
 
-## 🧪 4. Chạy Unit Tests
+## ⚙️ 4. Cấu hình Biến Môi Trường (.env)
 
-Hệ thống đi kèm với một bộ test nội bộ giúp bạn kiểm tra: chức năng Planner, Evaluator, tính hợp lệ của JSON schemas, và Action Preview.
+Các biến quan trọng cần lưu ý trong file `src/ai_scrum_master/.env`:
 
-```bash
-python -m pytest tests/ -v
-```
+```env
+# Ollama LLM Config
+OLLAMA_BASE_URL=http://host.docker.internal:11434
+OLLAMA_REASONING_MODEL=pm_planner_7b
+OLLAMA_RESEARCHER_MODEL=qwen2.5-coder:7b
+OLLAMA_EMBED_MODEL=qwen-embed
 
----
+# Database Config
+MONGODB_URI=mongodb://mongodb:27017
+QDRANT_URL=http://qdrant:6333
+RAG_BACKEND=direct_qdrant
 
-## 🚀 5. Chạy API Demo (FastAPI)
+# Background Worker
+CELERY_BROKER_URL=redis://redis:6379/0
+CELERY_RESULT_BACKEND=redis://redis:6379/0
 
-Khởi động backend server:
-```bash
-PYTHONPATH=src uvicorn ai_scrum_master.api.main:app --reload --host 127.0.0.1 --port 8000
-```
-
-**Kiểm tra API có hoạt động không:**
-```bash
-curl http://127.0.0.1:8000/health
-# Trả về: {"status":"ok"}
-```
-
-**Gọi trực tiếp API pipeline để tạo User Story:**
-```bash
-curl -X POST http://127.0.0.1:8000/generate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "requirement":"Add Google login for users using the existing JWT auth stack",
-    "n_results":5
-  }'
+# Integrations (Tuỳ chọn để test Action)
+JIRA_BASE_URL=https://your-company.atlassian.net
+JIRA_PROJECT_KEY=SCRUM
+JIRA_API_TOKEN=xxx
+SLACK_WEBHOOK_URL=https://hooks.slack.com/services/xxx
 ```
 
 ---
 
-## 🎨 6. Chạy Giao Diện Frontend (React)
+## ⚠️ 5. Gỡ Lỗi Thường Gặp (Troubleshooting)
 
-Hệ thống sử dụng React (Vite) cho giao diện người dùng. Để chạy Frontend:
+### ❌ Lỗi: `pm_planner_7b does not support tools`
+- **Nguyên nhân:** Mô hình tự tạo thông qua `Modelfile` không hỗ trợ gọi hàm Python (Function Calling). Mà con `Researcher Agent` bắt buộc phải xài Tool để tìm tài liệu.
+- **Giải pháp:** Kiểm tra lại file `.env` xem biến `OLLAMA_RESEARCHER_MODEL` đã được cấu hình đúng là `qwen2.5-coder:7b` chưa. Sau đó chạy lệnh `docker-compose restart worker`.
 
-1. Di chuyển vào thư mục `frontend`:
-   ```bash
-   cd frontend
-   ```
-2. Cài đặt các thư viện (chỉ cần chạy lần đầu):
-   ```bash
-   npm install
-   ```
-3. Khởi động môi trường phát triển (Dev Server):
-   ```bash
-   npm run dev
-   ```
-
-Giao diện sẽ được mở trên trình duyệt (thông thường là `http://localhost:5173`). Tại đây, bạn có thể nhập các yêu cầu tính năng và quan sát quá trình Agent phân tích và tạo Jira Stories.
-
----
-
-## 🐳 7. Triển khai Production (Docker)
-
-Hệ thống cung cấp sẵn `Dockerfile` và `docker-compose.yml` để bạn có thể chạy một cách độc lập và đồng nhất trên mọi môi trường.
-
-1. **Khởi chạy bằng Docker Compose:**
-   ```bash
-   docker-compose up --build -d
-   ```
-   Lệnh này sẽ build image cho backend FastAPI và khởi chạy Frontend. Cả hai sẽ chạy nền.
-   
-2. **Kiểm tra Logs:**
-   ```bash
-   docker-compose logs -f
-   ```
-   
-3. **Truy cập ứng dụng:**
-   - Frontend UI: `http://localhost:5173`
-   - Backend API: `http://localhost:8000`
-
-> **Lưu ý Docker:** Ollama cần được cài đặt trên máy host. File `docker-compose.yml` đã được cấu hình trỏ tới `host.docker.internal:11434` để Backend container có thể gọi được Ollama trên máy của bạn.
-
----
-
-## 🔗 8. Xem Trước Jira/Slack Action
-
-Hệ thống chỉ khởi tạo thông tin gửi đến Jira/Slack khi tính năng đã được Evaluator phê duyệt (Status = `APPROVED`).
-
-### Chuẩn bị Biến môi trường
-Cần chuẩn bị những thông tin sau:
-- **JIRA_BASE_URL**: URL site Atlassian của công ty (vd: `https://your-company.atlassian.net`)
-- **JIRA_PROJECT_KEY**: Key của project (vd: `SCRUM`)
-- **JIRA_EMAIL**: Email Atlassian của bạn
-- **JIRA_API_TOKEN**: [Tạo API Token của Atlassian](https://id.atlassian.com/manage-profile/security/api-tokens)
-- **SLACK_WEBHOOK_URL**: Lấy từ cài đặt Incoming Webhooks trong App Slack của bạn.
-
-### Khởi tạo trên bash
-```bash
-export JIRA_BASE_URL=https://your-company.atlassian.net
-export JIRA_PROJECT_KEY=SCRUM
-export JIRA_EMAIL=your-email@company.com
-export JIRA_API_TOKEN=your-atlassian-api-token
-export SLACK_WEBHOOK_URL=https://hooks.slack.com/services/xxx/yyy/zzz
-```
-
-### Chạy API xem trước Jira Payload:
-```bash
-curl -X POST http://127.0.0.1:8000/actions/jira/preview \
-  -H "Content-Type: application/json" \
-  -d '{
-    "story": {
-      "title": "Google Login",
-      "user_story": "As a user, I want Google login so that I can sign in faster.",
-      "acceptance_criteria": ["Given Google auth is enabled..."],
-      "story_points": 3,
-      "tasks": {"be": ["OAuth callback"], "fe": ["Login button"], "qa": ["Auth tests"]},
-      "definition_of_done": ["Acceptance criteria pass."]
-    },
-    "evaluation": {"status": "APPROVED", "issues": [], "revision_instructions": []}
-  }'
-```
-
----
-
-## ⚠️ 9. Gỡ Lỗi Thường Gặp (Troubleshooting)
-
-### ❌ `ModuleNotFoundError: No module named 'ai_scrum_master'`
-Giải pháp là đảm bảo bạn đang đứng ở thư mục gốc của project hoặc set lại `PYTHONPATH`:
-```bash
-export PYTHONPATH=D:/Antigravity/AI_Agent_PM_PRJ
-```
-
-### ⏳ Ollama gọi quá lâu hoặc Timeout
-Model có thể đang trong trạng thái "lạnh" chưa load vào RAM/VRAM. Hãy gọi nháp một câu trước khi chạy Pipeline:
-```bash
-ollama run deepseek-r1:7b "Return only: ok"
-```
+### ⏳ Hệ thống treo / Chạy rất lâu khi ấn Generate
+- **Nguyên nhân:** Đây không phải lỗi. API đã đẩy lệnh xuống cho Worker xử lý ngầm (Asynchronous). Model LLM chạy local nên thời gian phân tích có thể tốn từ 2-5 phút tuỳ độ mạnh của Card đồ hoạ (VRAM).
+- **Giải pháp:** Bạn có thể xem dòng suy nghĩ (Brainwaves) của hệ thống AI theo thời gian thực bằng cách xem log của Worker:
+  ```bash
+  docker-compose logs -f worker
+  ```
 
 ### 💥 Lỗi bộ nhớ / Unable to allocate CPU buffer (OOM)
-Nếu card đồ họa của bạn không đủ đáp ứng, ứng dụng sẽ báo lỗi (thường hiện qua `OpenAI API call failed` do API tương thích ngược của CrewAI bị huỷ). Cách xử lý:
-1. Chuyển xuống dùng model nhẹ hơn như `deepseek-r1:1.5b`.
-2. Chỉnh `OLLAMA_NUM_CTX` xuống `1024` hoặc `512`.
-```bash
-ollama pull deepseek-r1:1.5b
-export OLLAMA_REASONING_MODEL=deepseek-r1:1.5b
-export OLLAMA_NUM_CTX=1024
-```
-
-### 🔍 ChromaDB báo `No relevant project context found`
-Hiện tượng này nghĩa là chưa có tài liệu nào trong ChromaDB. Bạn hãy chạy lại câu lệnh Ingest ở phần **3. Ingest Tài Liệu Vào ChromaDB** phía trên.
+- **Nguyên nhân:** Máy không đủ RAM hoặc Card đồ họa thiếu VRAM.
+- **Giải pháp:** 
+  1. Đảm bảo bạn chỉ cài các model 4-bit (q4_k_m)
+  2. Giảm giá trị `OLLAMA_NUM_CTX` trong file `.env` xuống (VD: `4096` hoặc `2048`).

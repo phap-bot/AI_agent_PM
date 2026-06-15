@@ -1,0 +1,26 @@
+.git
+.venv
+__pycache__
+.pytest_cache
+.pytest_tmp
+test_tmp
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Project specific huge files
+project_colab.zip
+scratch/
+Models/
+frontend/node_modules/
+node_modules/
+
+# Mac/Windows clutter
+.DS_Store
+Thumbs.db

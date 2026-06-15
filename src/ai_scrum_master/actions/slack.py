@@ -92,6 +92,16 @@ class SlackTool:
                     mentions.append(f"<@{uid}>")
             mention_text = " ".join(mentions) + " "
 
+        priority_val = story.get("priority") or "Medium"
+        if "high" in priority_val.lower():
+            priority_str = f"{priority_val} 🔴"
+        elif "medium" in priority_val.lower():
+            priority_str = f"{priority_val} 🟠"
+        elif "low" in priority_val.lower():
+            priority_str = f"{priority_val} 🟢"
+        else:
+            priority_str = f"{priority_val} ⚪"
+
         blocks = [
             {
                 "type": "header",
@@ -105,7 +115,7 @@ class SlackTool:
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"{mention_text}*Story:* {story.get('title')}\n*Jira:* {jira_text}"
+                    "text": f"<!channel> {mention_text}*Story:* {story.get('title')}\n*Jira:* {jira_text}"
                 }
             },
             {
@@ -113,7 +123,7 @@ class SlackTool:
                 "fields": [
                     {
                         "type": "mrkdwn",
-                        "text": "*Priority:*\nHigh 🔴"
+                        "text": f"*Priority:*\n{priority_str}"
                     },
                     {
                         "type": "mrkdwn",

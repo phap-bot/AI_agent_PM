@@ -134,9 +134,9 @@ def evaluate_planner_output(requirement: str, story: dict[str, Any], context: di
     }
 
     failures = list(issues)
-    if classify_requirement(requirement) not in {AMBIGUOUS_REQUEST, OVERSIZED_REQUEST}:
-        if metrics["planning_status"] not in {READY, REVISION}:
-            failures.append("Planner must return READY or REVISION for ready-capable requirements.")
+    actual_status = metrics.get("planning_status", READY)
+
+    if actual_status == READY:
         if metrics["acceptance_criteria_count"] < 3:
             failures.append("Planner quality gate requires at least 3 acceptance criteria.")
         if metrics["given_when_then_ordered_count"] < 3:
@@ -150,7 +150,12 @@ def evaluate_planner_output(requirement: str, story: dict[str, Any], context: di
                 failures.append(f"Planner quality gate requires an actionable {group.upper()} task.")
         if metrics["definition_of_done_count"] < 4:
             failures.append("Planner quality gate requires at least 4 Definition of Done checks.")
-        # Disabled context_source_hit failure to allow custom uploaded files instead of expected templates
+    elif actual_status == NEEDS_CLARIFICATION:
+        if len(story.get("clarification_questions", [])) < 3:
+            failures.append("Planner quality gate requires at least 3 clarification questions for ambiguous requests.")
+    elif actual_status in {NEEDS_SPLIT, SPLIT_RECOMMENDED}:
+        if not story.get("story_splits"):
+            failures.append("Planner quality gate requires story_splits for oversized requests.")
 
     return {
         "agent": "planner",

@@ -303,5 +303,8 @@ def _ambiguous_issues(expected_type: str, story: dict) -> list[str]:
 
 
 def _starts_with_ambiguous_verb(text: str) -> bool:
-    ambiguous_terms = ("improve", "optimize", "enhance", "fix", "update", "better")
+    ambiguous_terms = (
+        "improve", "optimize", "enhance", "fix", "update", "better",
+        "cải thiện", "tối ưu", "sửa", "sửa lỗi", "nâng cấp", "cập nhật", "làm mới", "cải tiến"
+    )
     return any(text == term or text.startswith(f"{term} ") for term in ambiguous_terms)

@@ -210,8 +210,7 @@ class JiraTool:
         if self.config.board_id and (story_key or created_splits):
             logger.info("Attempting to move stories to active sprint on board %s", self.config.board_id)
             try:
-                sprint_data = self._get_active_sprint(self.config.board_id)
-                sprint_id = sprint_data.get("id") if sprint_data else None
+                sprint_id = self._get_active_sprint(self.config.board_id)
                 if sprint_id:
                     keys_to_move = []
                     if story_key:

@@ -21,6 +21,7 @@ STRICT OPERATING RULES:
 - If context is weak, missing, or contradictory, return a revision/clarification/split decision with explicit warnings instead of fabricating a complete story.
 - Every non-obvious claim must be traceable to context_sources or listed as an assumption.
 - If PLANNING_STATUS_FROM_LOCAL_RULES is READY and retrieved context provides the actor/capability, system constraints, failure modes, and QA or DoD expectations, output a READY story even if low-level implementation details are not exhaustive.
+- Do NOT blindly trust PLANNING_STATUS_FROM_LOCAL_RULES = READY. If the CURRENT_REQUIREMENT is verbose but fundamentally vague, broad, or lacks specific actionable capabilities (e.g., "manage requests efficiently", "improve the user experience"), you MUST override the status and return NEEDS_CLARIFICATION or NEEDS_SPLIT.
 - If PLANNING_STATUS_FROM_LOCAL_RULES is READY and RESEARCH_PLANNING_BRIEF.retrieval_status is "ok" with confidence >= 0.5, planning_status must be READY unless the retrieved docs directly contradict the requirement.
 - Do not mark REVISION only because exact UI layout, exact endpoint names, or exact implementation files are missing. Capture those as assumptions or implementation tasks.
 - Do not leave acceptance_criteria or definition_of_done empty for a READY-capable request. Derive them from documented constraints, failure modes, and QA/DoD expectations.
@@ -44,14 +45,15 @@ SELECTED_RETRIEVED_CONTEXT:
 
 REASONING CHECKLIST BEFORE JSON:
 1. Identify the actor, desired capability, business outcome, constraints, and known edge cases from the retrieved docs.
-2. Decide whether the request is READY, NEEDS_CLARIFICATION, NEEDS_SPLIT, SPLIT_RECOMMENDED, or REVISION.
+2. Decide whether the request is READY, NEEDS_CLARIFICATION, NEEDS_SPLIT, SPLIT_RECOMMENDED, or REVISION. Evaluate the actual clarity of CURRENT_REQUIREMENT. If the requirement is extremely broad or lacks concrete functionality (e.g., "manage requests efficiently"), you MUST return NEEDS_CLARIFICATION.
 3. For READY output, generate business-specific US, AC, tasks, and DoD from the evidence.
-4. For unclear, contradictory, low-confidence, or oversized output, do not force a ready story. Ask questions or propose LLM-generated splits based on the requirement and docs.
+4. For unclear, contradictory, low-confidence, oversized, or vague output, do not force a ready story. Ask questions or propose LLM-generated splits based on the requirement and docs.
 5. Remove any content that does not belong to the current requirement or retrieved context.
 6. If you choose REVISION, explain exactly what evidence is missing and leave Jira/task fields empty enough for the Evaluator to block actions.
 
 OUTPUT RULES:
 - Return only valid JSON.
+- CRITICAL RULE: If the requirement is classified as a Bug or Story (or if planning_status is READY), YOU MUST ALWAYS GENERATE AT LEAST 1 TASK in the 'tasks' array (either in 'be', 'fe', or 'qa'). NEVER return an empty tasks list unless it is completely impossible.
 - Set `jira_issue_type` accurately based on the requirement:
   - "Bug": Use when the requirement describes a defect, error, or unintended behavior in an existing feature.
   - "Epic": Use when the requirement is oversized (needs splitting across multiple stories/sprints).
@@ -60,8 +62,9 @@ OUTPUT RULES:
 - Generate `jira_labels` as a list of 1-3 short, relevant tags (e.g., ["frontend", "security", "database"]).
 - Generate `jira_linked_items` only if the requirement mentions blocking or related issues (e.g., "Blocks SPARK-123").
 - Use Given / When / Then acceptance criteria only when the story is READY.
-- Keep tasks actionable and specific to the generated story. Do not write task placeholders.
+- Keep tasks highly actionable, granular, and specific to the generated story. Break down broad actions into smaller technical steps. NEVER write generic placeholders like "Implement backend endpoints" or "Develop frontend interface" or "Create test cases".
 - Estimate `story_points` dynamically based on the complexity of the capability and number of tasks required by the context. Do not default to 3. Use Fibonacci story points only: 1, 2, 3, 5, 8, 13. Use null when the item is not ready for estimation.
+- Scale the number of generated tasks to match the `story_points`. A larger story (e.g. 5, 8, 13 points) MUST have multiple detailed sub-tasks per discipline (e.g. 2-4 tasks for 'be', 2-4 for 'fe', 2-4 for 'qa'). Do not compress a 5-point story into just 1 task per discipline.
 - context_sources must contain only sources actually used.
 - warnings must explain weak context, missing evidence, or generation limitations.
 - If planning_status is READY, acceptance_criteria must contain at least 3 context-specific Given/When/Then items.

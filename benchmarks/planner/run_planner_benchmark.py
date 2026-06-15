@@ -151,6 +151,23 @@ def main():
         out_path.parent.mkdir(parents=True, exist_ok=True)
         df_temp.to_csv(out_path, index=False, encoding="utf-8-sig")
 
+        # Save raw data for fine-tuning if planning was successful
+        if planner_output.get("planning_status") == "READY" and coverage_res.score >= 0.8:
+            raw_data_path = out_path.parent / f"{out_path.stem}_raw.jsonl"
+            fine_tune_record = {
+                "issue_id": issue_id,
+                "requirement": requirement,
+                "context": planner_context,
+                "planner_output": planner_output,
+                "metrics": {
+                    "coverage_score": coverage_res.score,
+                    "completeness_score": completeness_res.score,
+                    "breakdown_score": breakdown_res.score
+                }
+            }
+            with open(raw_data_path, "a", encoding="utf-8") as f:
+                f.write(json.dumps(fine_tune_record, ensure_ascii=False) + "\n")
+
     logger.info(f"\nBenchmark completed! Report saved to {out_path}")
     
     # Print summary

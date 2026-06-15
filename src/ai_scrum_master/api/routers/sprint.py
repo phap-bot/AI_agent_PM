@@ -13,24 +13,27 @@ def get_sprint_board(project_id: Optional[str] = Query(None)):
     else:
         jira = JiraTool()
         
-    settings = get_settings()
+    # We should get board_id from project config if available
+    board_id = jira.config.board_id
     
-    # We should get board_id from project config if available, otherwise fallback to env
-    # Currently jira_config in DB doesn't have board_id explicitly, maybe we use the one from env
-    # or let's assume it's in the env for now.
-    # Ideally, board_id would be in JiraConfig.
-    
-    if not settings.jira_board_id:
+    if not board_id:
         return {"error": "JIRA_BOARD_ID is not configured"}
         
-    sprint_data = jira._get_active_sprint(settings.jira_board_id)
-    if not sprint_data:
+    sprint_id = jira._get_active_sprint(board_id)
+    if not sprint_id:
         return {"error": "No active sprint found"}
         
-    sprint_id = sprint_data.get("id")
+    # Get sprint details
+    sprint_url = f"{jira.config.base_url.rstrip('/')}/rest/agile/1.0/sprint/{sprint_id}"
+    sprint_resp = jira.http_client.get_json(
+        url=sprint_url,
+        basic_auth=(jira.config.email, jira.config.api_token),
+        headers={"Accept": "application/json"}
+    )
+    sprint_data = sprint_resp.json_body if sprint_resp.status_code == 200 else {"id": sprint_id, "name": f"Sprint {sprint_id}"}
         
     # Get issues in sprint
-    url = f"{jira.config.base_url.rstrip('/')}/rest/agile/1.0/board/{settings.jira_board_id}/sprint/{sprint_id}/issue"
+    url = f"{jira.config.base_url.rstrip('/')}/rest/agile/1.0/board/{board_id}/sprint/{sprint_id}/issue"
     response = jira.http_client.get_json(
         url=url,
         basic_auth=(jira.config.email, jira.config.api_token),
