@@ -77,3 +77,10 @@ src/ai_scrum_master/.env
 # Models
 src/Models/
 *.gguf
+
+# Added by agent
+*.zip
+*.csv
+evaluator_diff.txt
+src/ai_scrum_master/data/chromadb/
+
