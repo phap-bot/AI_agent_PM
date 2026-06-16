@@ -8,8 +8,8 @@ from importlib import import_module
 from pathlib import Path
 from typing import Any, Iterable, Sequence
 
-from ai_scrum_master.core.config import BASE_DIR, get_settings
-from ai_scrum_master.core.logging import get_logger
+from ai_scrum_master.core.config.settings import BASE_DIR, get_settings
+from ai_scrum_master.core.utils.logging import get_logger
 from ai_scrum_master.ingestion.pdf_processing import (
     chunk_pdf_document,
     extract_pdf_document,

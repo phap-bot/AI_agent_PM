@@ -4,7 +4,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from ai_scrum_master.core.config import get_settings
+from ai_scrum_master.core.config.settings import get_settings
 from ai_scrum_master.retrieval.vector_store import search_context
 
 

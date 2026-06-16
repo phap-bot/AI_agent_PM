@@ -168,7 +168,7 @@ def normalize_source(source: str) -> str:
 def run_quality_check(k: int = K) -> dict[str, Any]:
     """Run all 20 queries and compute aggregate metrics."""
     try:
-        from ai_scrum_master.core.quality_gate import evaluate_retrieval_cases
+        from ai_scrum_master.core.validation.quality_gate import evaluate_retrieval_cases
     except ImportError as exc:
         print(f"[ERROR] Cannot import quality gate: {exc}", file=sys.stderr)
         print("Make sure PYTHONPATH=src and dependencies are installed.", file=sys.stderr)

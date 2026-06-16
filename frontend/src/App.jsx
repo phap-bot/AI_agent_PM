@@ -1,17 +1,19 @@
-import { useState, useEffect, useRef } from 'react';
+                                                                                                                                                        import { useState, useEffect, useRef } from 'react';
 import RequirementInputPanel from './components/RequirementInputPanel';
 import ProcessingStatusPanel from './components/ProcessingStatusPanel';
 import StoryDraftEditor from './components/StoryDraftEditor';
-import { executeJiraAction, generateStoriesAsync, getGenerateStatus, previewJiraAction } from './lib/api';
+import StorySplitManagerModal from './components/StorySplitManagerModal';
+import { executeAllActions, generateStoriesAsync, getGenerateStatus, previewJiraAction } from './lib/api';
 import { normalizeStoryDraft } from './lib/normalizers';
 import HistoryPanel from './components/HistoryPanel';
 import SprintBoardPanel from './components/SprintBoardPanel';
 import JiraConfigPanel from './components/JiraConfigPanel';
 import SlackConfigPanel from './components/SlackConfigPanel';
+import ProjectDropdown from './components/ProjectDropdown';
 import { getProjects, createProject, updateProject, deleteProject } from './lib/api';
 
 function App() {
-  const [currentView, setCurrentView] = useState('project'); // 'project', 'sprint', 'history'
+  const [currentView, setCurrentView] = useState(() => localStorage.getItem('currentView') || 'project');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   
@@ -21,6 +23,7 @@ function App() {
   const [actions, setActions] = useState(null);
   const [actionExecution, setActionExecution] = useState(null);
   const [isPushingJira, setIsPushingJira] = useState(false);
+  const [showSplitModal, setShowSplitModal] = useState(false);
   
   const [sprintName, setSprintName] = useState('Đang tải...');
 
@@ -31,7 +34,7 @@ function App() {
   const generatePollingRef = useRef(null);
 
   const [projects, setProjects] = useState([]);
-  const [activeProjectId, setActiveProjectId] = useState('');
+  const [activeProjectId, setActiveProjectId] = useState(() => localStorage.getItem('activeProjectId') || '');
   const [showCreateProject, setShowCreateProject] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
 
@@ -42,13 +45,35 @@ function App() {
   const [historyItemView, setHistoryItemView] = useState(null);
 
   useEffect(() => {
+    localStorage.setItem('currentView', currentView);
+  }, [currentView]);
+
+  useEffect(() => {
+    localStorage.setItem('activeProjectId', activeProjectId);
+  }, [activeProjectId]);
+
+  useEffect(() => {
     getProjects().then(data => {
       setProjects(data);
       if (data.length > 0) {
-        setActiveProjectId(data[0].id);
+        // If no saved ID or saved ID doesn't exist in fetched data, fallback to first project
+        const savedId = localStorage.getItem('activeProjectId');
+        if (!savedId || !data.some(p => p.id === savedId)) {
+          setActiveProjectId(data[0].id);
+        }
       }
     }).catch(err => console.error("Failed to load projects", err));
   }, []);
+
+  const clearWorkspace = () => {
+    setContext(null);
+    setStoryDraft(null);
+    setEvaluation(null);
+    setActions(null);
+    setHistoryItemView(null);
+    setLastRequirement(null);
+    setCurrentView('project');
+  };
 
   const handleCreateProject = async () => {
     if (!newProjectName.trim()) return;
@@ -58,6 +83,7 @@ function App() {
       setActiveProjectId(proj.id);
       setShowCreateProject(false);
       setNewProjectName('');
+      clearWorkspace();
     } catch (err) {
       alert("Error creating project: " + err.message);
     }
@@ -223,17 +249,28 @@ function App() {
     setIsPushingJira(true);
     setActionExecution(null);
     try {
-      const result = await executeJiraAction({
+      const result = await executeAllActions({
         story: storyDraft,
         evaluation: evaluation,
         project_id: activeProjectId || undefined,
       });
       setActionExecution(result);
     } catch (err) {
-      alert(`Jira Execute Error: ${err.message}`);
+      alert(`Execute Error: ${err.message}`);
     } finally {
       setIsPushingJira(false);
     }
+  };
+
+  const handleReset = () => {
+    setLastRequirement(null);
+    setContext(null);
+    setStoryDraft(null);
+    setEvaluation(null);
+    setActions(null);
+    setActionExecution(null);
+    setError(null);
+    setGenerationMessage('');
   };
 
   const displayContext = historyItemView?.result?.context || context;
@@ -256,49 +293,21 @@ function App() {
         <div className="flex items-center gap-stack-md">
           <div className="relative flex items-center gap-2">
             <span className="text-sm font-medium text-on-surface-variant">Dự án:</span>
-            <div className="flex items-center bg-surface-container border border-outline-variant rounded-lg focus-within:border-primary overflow-hidden">
-              <select 
-                className="bg-transparent px-3 py-1.5 text-sm font-medium focus:outline-none appearance-none"
-                value={activeProjectId}
-                onChange={(e) => {
-                  if (e.target.value === 'NEW') {
-                    setShowCreateProject(true);
-                    // reset value so they can click it again if they close the modal
-                    e.target.value = activeProjectId; 
-                  } else {
-                    setActiveProjectId(e.target.value);
-                  }
-                }}
-              >
-                <option value="" disabled>-- Chọn dự án --</option>
-                {projects.map(p => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
-                <option value="NEW" className="font-bold text-primary">+ Tạo dự án mới</option>
-              </select>
-              {activeProjectId && (
-                <div className="flex items-center pr-1 border-l border-outline-variant/30 pl-1">
-                  <button 
-                    onClick={() => {
-                      const proj = projects.find(p => p.id === activeProjectId);
-                      setEditProjectName(proj ? proj.name : '');
-                      setShowEditProject(true);
-                    }}
-                    className="p-1 text-on-surface-variant hover:text-primary transition-colors"
-                    title="Đổi tên dự án"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">edit</span>
-                  </button>
-                  <button 
-                    onClick={() => setShowDeleteProjectConfirm(true)}
-                    className="p-1 text-on-surface-variant hover:text-error transition-colors"
-                    title="Xóa dự án"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">delete</span>
-                  </button>
-                </div>
-              )}
-            </div>
+            <ProjectDropdown
+              projects={projects}
+              activeProjectId={activeProjectId}
+              onChange={(newId) => {
+                setActiveProjectId(newId);
+                clearWorkspace();
+              }}
+              onCreateNew={() => setShowCreateProject(true)}
+              onEdit={() => {
+                const proj = projects.find(p => p.id === activeProjectId);
+                setEditProjectName(proj ? proj.name : '');
+                setShowEditProject(true);
+              }}
+              onDelete={() => setShowDeleteProjectConfirm(true)}
+            />
           </div>
 
           <button className="bg-primary text-on-primary px-container-padding py-unit rounded-lg font-label-md text-label-md hover:opacity-80 transition-all active:scale-95">Create Sprint</button>
@@ -486,24 +495,24 @@ function App() {
                   </button>
                 </div>
               )}
-              {!historyItemView && (
+              <div className="space-y-stack-lg" style={{ display: historyItemView ? 'none' : 'block' }}>
                 <RequirementInputPanel 
                   onSubmit={handleGenerate} 
                   isLoading={isLoading} 
                   generationMessage={generationMessage}
                   projectId={activeProjectId} 
                 />
-              )}
-              {isLoading && !historyItemView && <ProcessingStatusPanel isLoading={isLoading} context={displayContext} storyDraft={displayStoryDraft} evaluation={displayEvaluation} />}
-              {error && !historyItemView && (
-                <div className="bg-error-container text-on-error-container p-4 rounded-xl shadow-sm border border-error/20 flex gap-3">
-                  <span className="material-symbols-outlined text-error">error</span>
-                  <div>
-                    <h3 className="font-bold">Lỗi sinh luồng</h3>
-                    <p className="text-sm">{error}</p>
+                {isLoading && <ProcessingStatusPanel isLoading={isLoading} context={displayContext} storyDraft={displayStoryDraft} evaluation={displayEvaluation} />}
+                {error && (
+                  <div className="bg-error-container text-on-error-container p-4 rounded-xl shadow-sm border border-error/20 flex gap-3">
+                    <span className="material-symbols-outlined text-error">error</span>
+                    <div>
+                      <h3 className="font-bold">Lỗi sinh luồng</h3>
+                      <p className="text-sm">{error}</p>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
               {displayStoryDraft && displayEvaluation && (
                 <StoryDraftEditor
                   draft={displayStoryDraft}
@@ -524,6 +533,8 @@ function App() {
                       forced_context_docs: forcedContextDocs,
                     });
                   }}
+                  onOpenSplitManager={() => setShowSplitModal(true)}
+                  onReset={handleReset}
                   projectId={activeProjectId}
                 />
               )}
@@ -553,6 +564,16 @@ function App() {
           <SlackConfigPanel projectId={activeProjectId} />
         </div>
       </main>
+
+      {/* Story Split Manager Modal */}
+      {showSplitModal && displayStoryDraft?.story_splits && (
+        <StorySplitManagerModal 
+          splits={displayStoryDraft.story_splits}
+          projectId={activeProjectId}
+          forcedContextDocs={forcedContextDocs}
+          onClose={() => setShowSplitModal(false)}
+        />
+      )}
     </>
   );
 }

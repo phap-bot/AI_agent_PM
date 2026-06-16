@@ -12,13 +12,13 @@ from typing import Any
 from ai_scrum_master.agents.evaluator import EvaluatorAgent
 from ai_scrum_master.agents.planner import PlannerAgent
 from ai_scrum_master.agents.researcher import ResearcherAgent
-from ai_scrum_master.core.quality import (
+from ai_scrum_master.core.validation.quality import (
     classify_requirement,
     domain_contamination_issues,
     is_generic_acceptance_criterion,
     is_placeholder_task,
 )
-from ai_scrum_master.core.story_validator import evaluate_planner_output, has_actionable_task, similar_item_pairs
+from ai_scrum_master.core.validation.story_validator import evaluate_planner_output, has_actionable_task, similar_item_pairs
 
 
 def load_cases(path: Path) -> list[dict[str, Any]]:

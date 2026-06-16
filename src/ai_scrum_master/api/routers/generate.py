@@ -3,13 +3,8 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends
 
 from ai_scrum_master.api.schemas import GenerateStoriesRequest, GenerateStoriesResponse
-from ai_scrum_master.core.pipeline import ScrumMasterCrew, generate_story_pipeline
 
 router = APIRouter()
-
-
-def get_crew() -> ScrumMasterCrew:
-    return ScrumMasterCrew()
 
 
 from ai_scrum_master.api.schemas import GenerateJobResponse, GenerateStatusResponse
@@ -31,9 +26,11 @@ def generate_stories(
     return GenerateJobResponse(job_id=task.id)
 
 
+from ai_scrum_master.worker.celery_app import celery_app
+
 @router.get("/generate/status/{job_id}", response_model=GenerateStatusResponse)
 def get_generate_status(job_id: str) -> GenerateStatusResponse:
-    task_result = AsyncResult(job_id)
+    task_result = AsyncResult(job_id, app=celery_app)
     
     if task_result.state == 'PENDING':
         return GenerateStatusResponse(

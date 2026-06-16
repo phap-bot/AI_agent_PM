@@ -18,3 +18,5 @@ ollama
 pypdf
 celery
 redis
+langsmith
+langgraph

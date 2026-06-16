@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from ai_scrum_master.actions.jira import JiraTool
 from ai_scrum_master.actions.slack import SlackTool
-from ai_scrum_master.api.routers.generate import generate_stories, get_crew, router as generate_router
+from ai_scrum_master.api.routers.generate import generate_stories, router as generate_router
 from ai_scrum_master.api.schemas import (
     ActionExecutionPlan,
     ActionExecutionResult,
@@ -23,10 +23,10 @@ from ai_scrum_master.api.schemas import (
     IngestResponse,
     IngestStatusResponse,
 )
-from ai_scrum_master.core.config import get_settings
-from ai_scrum_master.core.exceptions import BaseAppException
-from ai_scrum_master.core.finalizer import ACTION_BLOCK_WARNING, actions_are_ready
-from ai_scrum_master.core.logging import get_logger
+from ai_scrum_master.core.config.settings import get_settings
+from ai_scrum_master.core.utils.exceptions import BaseAppException
+from ai_scrum_master.core.pipeline.finalizer import ACTION_BLOCK_WARNING, actions_are_ready
+from ai_scrum_master.core.utils.logging import get_logger
 from ai_scrum_master.ingestion.ingest import ingest_raw_docs
 
 settings = get_settings()
@@ -157,10 +157,12 @@ def ingest_uploaded_documents(
     )
 
 
+from ai_scrum_master.worker.celery_app import celery_app
+
 @app.get("/ingest/status/{job_id}", response_model=IngestStatusResponse)
 def get_ingest_status(job_id: str) -> IngestStatusResponse:
     """Poll ingestion job status."""
-    task_result = AsyncResult(job_id)
+    task_result = AsyncResult(job_id, app=celery_app)
     
     if task_result.state == 'SUCCESS':
         raw_result = task_result.result
@@ -195,7 +197,6 @@ def get_ingest_status(job_id: str) -> IngestStatusResponse:
 @app.post("/actions/jira/preview", response_model=ActionPlan)
 def preview_jira_action(
     payload: ActionPreviewRequest,
-    jira_tool: JiraTool = Depends(get_jira_tool),
 ) -> ActionPlan:
     story = payload.story.model_dump()
     evaluation = payload.evaluation.model_dump()
@@ -205,6 +206,7 @@ def preview_jira_action(
             slack={"ready": False, "payload": None, "warnings": ["Slack preview is not part of this endpoint."]},
         )
 
+    jira_tool = JiraTool.from_project(payload.project_id)
     return ActionPlan(
         jira=jira_tool.prepare_action(story),
         slack={"ready": False, "payload": None, "warnings": ["Slack preview is not part of this endpoint."]},
@@ -233,7 +235,6 @@ def preview_slack_action(
 @app.post("/actions/jira/execute", response_model=ActionExecutionPlan)
 def execute_jira_action(
     payload: ActionPreviewRequest,
-    jira_tool: JiraTool = Depends(get_jira_tool),
 ) -> ActionExecutionPlan:
     story = payload.story.model_dump()
     evaluation = payload.evaluation.model_dump()
@@ -243,6 +244,11 @@ def execute_jira_action(
             jira=_blocked_execution(_action_block_warning()),
             slack=_not_part_of_execution("Slack execution is not part of this endpoint."),
         )
+
+    jira_tool = JiraTool.from_project(payload.project_id)
+    if not jira_tool.config.is_configured:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail="Jira configuration is missing for this project. Please configure Jira in Settings first.")
 
     return ActionExecutionPlan(
         jira=jira_tool.execute_action(story),
@@ -273,8 +279,6 @@ def execute_slack_action(
 @app.post("/actions/execute-all", response_model=ActionExecutionPlan)
 def execute_all_actions(
     payload: ActionPreviewRequest,
-    jira_tool: JiraTool = Depends(get_jira_tool),
-    slack_tool: SlackTool = Depends(get_slack_tool),
 ) -> ActionExecutionPlan:
     story = payload.story.model_dump()
     evaluation = payload.evaluation.model_dump()
@@ -283,9 +287,15 @@ def execute_all_actions(
         blocked = _blocked_execution(_action_block_warning())
         return ActionExecutionPlan(jira=blocked, slack=blocked)
 
+    jira_tool = JiraTool.from_project(payload.project_id)
+    if not jira_tool.config.is_configured:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail="Jira configuration is missing for this project. Please configure Jira in Settings first.")
+
     # Execute Jira first so we can include the Jira link in the Slack message
     jira_result = jira_tool.execute_action(story)
     
+    slack_tool = SlackTool() # If we had SlackTool.from_project, we'd use it. Assuming it uses global or DB config similarly.
     # Pass the Jira 'created' result to Slack execution
     slack_result = slack_tool.execute_action(story, evaluation, jira_created=jira_result.get("created"))
 

@@ -5,8 +5,8 @@ from typing import Any, Sequence
 from qdrant_client import QdrantClient
 from qdrant_client.http import models as rest
 
-from ai_scrum_master.core.config import get_settings
-from ai_scrum_master.core.logging import get_logger
+from ai_scrum_master.core.config.settings import get_settings
+from ai_scrum_master.core.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -41,8 +41,8 @@ def _ensure_collection_exists(client: QdrantClient, collection_name: str, vector
 
 
 def get_embedding_function() -> Any:
-    from ai_scrum_master.retrieval.rag import build_ollama_embeddings
-    return build_ollama_embeddings()
+    from ai_scrum_master.retrieval.rag import build_embeddings
+    return build_embeddings()
 
 
 def upsert_documents(
@@ -66,6 +66,7 @@ def upsert_documents(
     
     # Ensure collection exists before we start
     # We do a dummy embed of first document just to get vector size
+    logger.info("[EMBED] Waking up Ollama embedding model (this may take 5-15 seconds)...")
     sample_embedding = embedder.embed_query(documents_list[0])
     vector_size = len(sample_embedding)
     _ensure_collection_exists(client, collection, vector_size)
@@ -116,7 +117,7 @@ def add_documents(
 
 def query_documents(
     query: str,
-    n_results: int = 5,
+    n_results: int = 20,
     collection_name: str | None = None,
     project_id: str | None = None,
 ) -> dict:
@@ -160,7 +161,7 @@ def query_documents(
 
 def search_context(
     query: str,
-    n_results: int = 5,
+    n_results: int = 20,
     collection_name: str | None = None,
     project_id: str | None = None,
 ) -> list[dict]:
@@ -228,7 +229,7 @@ def distance_to_score(distance: float | None) -> float:
 def get_chunks_by_filenames(
     filenames: list[str],
     query: str | None = None,
-    n_results: int = 10,
+    n_results: int = 20,
     collection_name: str | None = None,
     project_id: str | None = None,
 ) -> list[dict]:

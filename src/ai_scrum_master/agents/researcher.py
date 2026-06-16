@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import time
 
-from ai_scrum_master.agents.crewai_contract import build_crewai_agent
-from ai_scrum_master.core.agent_schemas import ResearchContextOutput, build_planning_brief, dump_model
-from ai_scrum_master.core.config import AgentProfileConfig, TaskProfileConfig, get_settings
-from ai_scrum_master.core.domain_profiles import SOURCE_MATCH_TERMS
-from ai_scrum_master.core.logging import get_logger
-from ai_scrum_master.core.quality_gate import evaluate_research_output, expected_relevance_for_requirement, normalize_source_name
+from ai_scrum_master.core.schemas.agent_schemas import ResearchContextOutput, build_planning_brief, dump_model
+from ai_scrum_master.core.config.settings import AgentProfileConfig, TaskProfileConfig, get_settings
+from ai_scrum_master.core.config.domain_profiles import SOURCE_MATCH_TERMS
+from ai_scrum_master.core.utils.logging import get_logger
+from ai_scrum_master.core.validation.quality_gate import evaluate_research_output, expected_relevance_for_requirement, normalize_source_name
 from ai_scrum_master.retrieval.vector_store import get_chunks_by_filenames, search_context
 from ai_scrum_master.tools.rag_tool import ProjectContextRagTool
 
@@ -21,21 +20,7 @@ class ResearcherAgent:
         self.task_profile = task_profile
         self.llm = None
 
-    def create_agent(self):
-        from ai_scrum_master.core.llm_setup import build_llm
-        if not self.llm:
-            # Researcher cần phân tích tài liệu chuẩn xác (temperature = 0.2)
-            self.llm = build_llm(temperature=0.2)
-            
-        role = self.profile.role if self.profile else "Research Context Specialist"
-        goal = self.profile.goal if self.profile else "Retrieve relevant project context and confidence signals for planning."
-        backstory = self.profile.backstory if self.profile else (
-            "You analyze local vector-store evidence, keep only documentation-grounded context, "
-            "and return a planning brief with confidence warnings."
-        )
-        return build_crewai_agent(role=role, goal=goal, backstory=backstory, tools=[ProjectContextRagTool()], verbose=True, llm=self.llm)
-
-    def run(self, requirement: str, n_results: int = 5, route: dict | None = None, forced_context_docs: list[str] | None = None, project_id: str | None = None) -> dict:
+    def run(self, requirement: str, n_results: int = 5, route: dict | None = None, forced_context_docs: list[str] | None = None, project_id: str | None = None, feedback: str | None = None) -> dict:
         started_at = time.perf_counter()
         route = route or {}
         retrieval_query = self._build_retrieval_query(requirement, route)
@@ -136,13 +121,16 @@ class ResearcherAgent:
         retrieved_sources = self._build_retrieved_sources(relevant_matches)
         
         # Method 4: Map-Reduce Context Summarization if context is too large
+        # Limit based on model context window (num_ctx). 1 token ~ 3.5 chars.
+        # We leave 4000 tokens for the prompt and output buffer.
         total_chars = sum(len(source["excerpt"]) for source in retrieved_sources)
-        if total_chars > 3000:
-            logger.info("Context length (%s) exceeds 3000 chars, triggering LLM summarization...", total_chars)
+        max_context_chars = max(3000, (self.settings.ollama_num_ctx - 4000) * 3)
+        if total_chars > max_context_chars:
+            logger.info("Context length (%s) exceeds %s chars, triggering LLM summarization...", total_chars, max_context_chars)
             try:
-                from ai_scrum_master.core.llm_setup import build_llm
+                from ai_scrum_master.core.llm.setup import build_llm
                 if not self.llm:
-                    self.llm = build_llm()
+                    self.llm = build_llm(model=f"ollama/{self.settings.researcher_model}", temperature=0.2)
                 combined_text = "\n\n".join(f"[{s['source']}]: {s['excerpt']}" for s in retrieved_sources)
                 summary_prompt = (
                     "Summarize the following project context specifically for the requirement. "
@@ -169,6 +157,21 @@ class ResearcherAgent:
         )
         if not quality_gate["passed"]:
             warnings.extend([f"Research quality gate failed: {failure}" for failure in quality_gate["failures"]])
+
+        if route and route.get("evaluate_metrics"):
+            logger.info("Evaluating RAG metrics for researcher output...")
+            try:
+                from ai_scrum_master.evaluation.metrics import evaluate_faithfulness, evaluate_answer_relevancy
+                answer_text = planning_brief.get("brief", "") if isinstance(planning_brief, dict) else str(planning_brief)
+                docs = [s.get("excerpt", "") for s in retrieved_sources]
+                faithfulness = evaluate_faithfulness(requirement, answer_text, docs, self.llm)
+                relevancy = evaluate_answer_relevancy(requirement, answer_text, self.llm)
+                quality_gate["rag_metrics"] = {
+                    "faithfulness": faithfulness,
+                    "answer_relevancy": relevancy
+                }
+            except Exception as e:
+                logger.warning(f"Failed to evaluate RAG metrics: {e}")
         for source in retrieved_sources:
             logger.info(
                 "Research evidence source=%s chunk=%s score=%s excerpt=%s",
@@ -295,29 +298,19 @@ class ResearcherAgent:
                 return True
         return False
 
+
     def _build_retrieval_query(self, requirement: str, route: dict | None = None) -> str:
+        route = route or {}
         query = " ".join(requirement.replace(",", " ").split())
-        lower = query.lower()
-        replacements = [
-            ("as a returning user", "returning user"),
-            ("as an existing user", "existing user"),
-            ("as a user", "user"),
-            ("i want to", ""),
-            ("i want", ""),
-            ("so that", ""),
-        ]
-        for old, new in replacements:
-            lower = lower.replace(old, new)
-        expanded = " ".join(lower.split())
-        if any(term in expanded for term in ("login", "log in", "sign in", "signin", "logout", "password", "token", "jwt", "oauth", "authentication")):
-            expanded = f"{expanded} authentication login logout oauth callback jwt token account session"
-        if "google" in expanded and any(term in expanded for term in ("sign in", "signin", "login", "log in")):
-            expanded = f"{expanded} google oauth authentication login callback jwt"
+        expanded_parts = [query]
+        
         if route:
             required_concepts = " ".join(str(item).replace("_", " ") for item in route.get("required_concepts", []))
             template_name = str(route.get("template_name", "")).replace("_", " ")
-            expanded = " ".join(part for part in (expanded, template_name, required_concepts) if part)
-        return expanded or requirement
+            if template_name: expanded_parts.append(template_name)
+            if required_concepts: expanded_parts.append(required_concepts)
+            
+        return " ".join(str(part) for part in expanded_parts if part).strip()
 
     def _top_matches(self, matches: list[dict], limit: int) -> list[dict]:
         deduped = []

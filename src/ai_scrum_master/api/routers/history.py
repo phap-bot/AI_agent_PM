@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from typing import Any
 
-from ai_scrum_master.core.database import DatabaseManager
+from ai_scrum_master.core.utils.database import DatabaseManager
 
 router = APIRouter()
 

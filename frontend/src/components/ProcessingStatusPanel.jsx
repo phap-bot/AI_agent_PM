@@ -24,11 +24,35 @@ export default function ProcessingStatusPanel({ isLoading, context, storyDraft, 
             <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
           )}
         </div>
-        <p className="font-body-md text-on-surface font-semibold">
-          {isResearcherDone 
-            ? (isResearcherEmpty ? 'Không tìm thấy context' : 'Đã nạp context (ReactJS, FastAPI)')
-            : (isLoading ? 'Đang tìm kiếm context...' : 'Chờ bắt đầu...')}
-        </p>
+        {isResearcherDone ? (
+          isResearcherEmpty ? (
+            <p className="font-body-md text-on-surface font-semibold">Không tìm thấy context</p>
+          ) : (
+            <div className="font-body-sm text-on-surface">
+              <div className="font-semibold mb-1">Retrieved Context:</div>
+              <ul className="list-decimal pl-4 mb-2 space-y-1">
+                {context?.retrieved_sources?.map((src, idx) => (
+                  <li key={idx} className="text-xs text-gray-700">
+                    <span className="font-medium">{src.source} <span className="text-gray-400 font-normal">(Chunk {src.chunk_index !== undefined ? src.chunk_index : '?'})</span></span>
+                    <span className="text-gray-500">
+                      {' '}– score: {src.score != null ? Number(src.score).toFixed(2) : 'N/A'} 
+                      {' '}– {src.score < 0.5 ? 'low relevance' : 'high relevance'}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              {context?.warnings?.length > 0 && (
+                <div className="text-orange-600 text-xs mt-2 bg-orange-50 p-2 rounded border border-orange-100">
+                  <span className="font-bold">Warning:</span> {context.warnings.join(' ')}
+                </div>
+              )}
+            </div>
+          )
+        ) : (
+          <p className="font-body-md text-on-surface font-semibold">
+            {isLoading ? 'Đang tìm kiếm context...' : 'Chờ bắt đầu...'}
+          </p>
+        )}
         <div className={`mt-2 text-[10px] font-bold ${isResearcherDone ? 'text-blue-400' : 'text-gray-400'}`}>
           {isResearcherDone ? 'COMPLETED' : 'PENDING'}
         </div>

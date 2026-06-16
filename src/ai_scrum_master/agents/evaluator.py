@@ -4,14 +4,13 @@ import json
 import re
 from typing import Any
 
-from ai_scrum_master.agents.crewai_contract import build_crewai_agent
-from ai_scrum_master.core.agent_schemas import EvaluationOutput, dump_model
-from ai_scrum_master.core.config import AgentProfileConfig, TaskProfileConfig
-from ai_scrum_master.core.llm_json import normalize_llm_json_output
-from ai_scrum_master.core.llm_setup import build_llm
-from ai_scrum_master.core.logging import get_logger
-from ai_scrum_master.core.prompts import render_prompt
-from ai_scrum_master.core.quality import (
+from ai_scrum_master.core.schemas.agent_schemas import EvaluationOutput, dump_model
+from ai_scrum_master.core.config.settings import AgentProfileConfig, TaskProfileConfig
+from ai_scrum_master.core.llm.json_utils import normalize_llm_json_output
+from ai_scrum_master.core.llm.setup import build_llm
+from ai_scrum_master.core.utils.logging import get_logger
+from ai_scrum_master.core.llm.prompts import render_prompt
+from ai_scrum_master.core.validation.quality import (
     FIBONACCI_POINTS,
     domain_contamination_issues,
     is_generic_acceptance_criterion,
@@ -41,20 +40,6 @@ class EvaluatorAgent:
         self.use_llm = use_llm
         self.profile = profile
         self.task_profile = task_profile
-
-    def create_agent(self) -> Any:
-        from ai_scrum_master.core.llm_setup import build_llm
-        if not self.llm:
-            # Evaluator cần sự ổn định và khắt khe nhất để chấm điểm (temperature = 0.0)
-            self.llm = build_llm(temperature=0.0)
-            
-        role = self.profile.role if self.profile else "Story Quality Evaluator"
-        goal = self.profile.goal if self.profile else "Validate story readiness and return APPROVED or REVISION with concrete issues."
-        backstory = self.profile.backstory if self.profile else (
-            "You enforce local rule checks, Scrum quality gates, domain isolation, and traceability "
-            "before Jira or Slack action previews are prepared."
-        )
-        return build_crewai_agent(role=role, goal=goal, backstory=backstory, tools=[], verbose=True, llm=self.llm)
 
     def run(self, story: dict) -> dict:
         logger.info("Evaluator started planning_status=%s", story.get("planning_status", READY))
@@ -145,7 +130,8 @@ class EvaluatorAgent:
 
         issues = self._string_list(result.get("issues", []))
         revision_instructions = self._string_list(result.get("revision_instructions", []))
-        warnings = list(dict.fromkeys(rule_result.get("warnings", []) + list(result.get("warnings", []))))
+        warnings_from_llm = self._string_list(result.get("warnings", []))
+        warnings = list(dict.fromkeys(rule_result.get("warnings", []) + warnings_from_llm))
         dod_score = rule_result.get("dod_score", {})
 
         if rule_result["status"] == "REVISION":
@@ -188,6 +174,7 @@ class EvaluatorAgent:
 
     def _rule_evaluate(self, story: dict) -> dict:
         issues: list[str] = []
+        warnings: list[str] = []
         dod_score: dict[str, Any] = {}
         issues.extend(validate_story_against_requirement(story.get("requirement", story.get("title", "")), story))
 
@@ -243,15 +230,18 @@ class EvaluatorAgent:
                 issues.append("Clarification-needed stories must include at least 3 clarification questions.")
             if self._has_ready_story_fields(story):
                 issues.append("Clarification-needed stories must not include story points, acceptance criteria, tasks, or Definition of Done.")
-            issues.append("Requirement needs clarification before Jira-ready planning.")
+            warnings = ["Requirement needs clarification before Jira-ready planning."]
         elif planning_status in {NEEDS_SPLIT, SPLIT_RECOMMENDED}:
             if not story.get("story_splits"):
                 issues.append("Oversized requests must include story_splits.")
             if not story.get("sprint_allocation"):
                 issues.append("Oversized requests must include sprint_allocation.")
-            issues.append("Oversized requests must be split into sprint-ready stories before Jira creation.")
+            warnings = ["Oversized requests must be split into sprint-ready stories before Jira creation."]
         elif planning_status != READY:
             issues.append("planning_status must be READY, NEEDS_CLARIFICATION, NEEDS_SPLIT, or SPLIT_RECOMMENDED.")
+            warnings = []
+        else:
+            warnings = []
 
         status = "REVISION" if issues else "APPROVED"
         return self._validate_output({
@@ -259,7 +249,7 @@ class EvaluatorAgent:
             "issues": issues,
             "revision_instructions": issues,
             "dod_score": dod_score,
-            "warnings": [],
+            "warnings": warnings,
         })
 
     def _has_ready_story_fields(self, story: dict) -> bool:

@@ -3,9 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from ai_scrum_master.core.config import get_settings
-from ai_scrum_master.core.http_client import HttpClient, HttpResponse, UrllibHttpClient
-from ai_scrum_master.core.logging import get_logger
+from ai_scrum_master.core.config.settings import get_settings
+from ai_scrum_master.core.utils.http_client import HttpClient, HttpResponse, UrllibHttpClient
+from ai_scrum_master.core.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -38,7 +38,7 @@ class SlackTool:
         if not project_id:
             return cls(http_client=http_client)
             
-        from ai_scrum_master.core.database import DatabaseManager
+        from ai_scrum_master.core.utils.database import DatabaseManager
         project = DatabaseManager.get_project(project_id)
         if not project or not project.get("slack_config"):
             return cls(http_client=http_client)
@@ -92,6 +92,16 @@ class SlackTool:
                     mentions.append(f"<@{uid}>")
             mention_text = " ".join(mentions) + " "
 
+        priority_val = story.get("priority") or "Medium"
+        if "high" in priority_val.lower():
+            priority_str = f"{priority_val} 🔴"
+        elif "medium" in priority_val.lower():
+            priority_str = f"{priority_val} 🟠"
+        elif "low" in priority_val.lower():
+            priority_str = f"{priority_val} 🟢"
+        else:
+            priority_str = f"{priority_val} ⚪"
+
         blocks = [
             {
                 "type": "header",
@@ -105,7 +115,7 @@ class SlackTool:
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"{mention_text}*Story:* {story.get('title')}\n*Jira:* {jira_text}"
+                    "text": f"<!channel> {mention_text}*Story:* {story.get('title')}\n*Jira:* {jira_text}"
                 }
             },
             {
@@ -113,7 +123,7 @@ class SlackTool:
                 "fields": [
                     {
                         "type": "mrkdwn",
-                        "text": "*Priority:*\nHigh 🔴"
+                        "text": f"*Priority:*\n{priority_str}"
                     },
                     {
                         "type": "mrkdwn",

@@ -6,9 +6,9 @@ from importlib import import_module
 from pathlib import Path
 from typing import Any
 
-from ai_scrum_master.core.config import get_settings
-from ai_scrum_master.core.logging import get_logger
-from ai_scrum_master.core.prompts import render_prompt
+from ai_scrum_master.core.config.settings import get_settings
+from ai_scrum_master.core.utils.logging import get_logger
+from ai_scrum_master.core.llm.prompts import render_prompt
 from ai_scrum_master.retrieval.vector_store import canonical_collection_name
 
 logger = get_logger(__name__)
@@ -58,9 +58,10 @@ def _load_attr(module_name: str, attr_name: str) -> Any:
     return getattr(module, attr_name)
 
 
-def build_ollama_embeddings() -> Any:
-    OllamaEmbeddings = _load_attr("langchain_ollama", "OllamaEmbeddings")
+def build_embeddings() -> Any:
     settings = get_settings()
+    OllamaEmbeddings = _load_attr("langchain_ollama", "OllamaEmbeddings")
+    logger.info(f"Using OllamaEmbeddings with model: {settings.embedding_model}")
     return OllamaEmbeddings(
         model=settings.embedding_model,
         base_url=settings.ollama_base_url,
@@ -94,7 +95,7 @@ def build_qdrant_vector_store(collection_name: str | None = None) -> Any:
     return QdrantVectorStore(
         client=client,
         collection_name=canonical_collection_name(collection_name),
-        embedding=build_ollama_embeddings()
+        embedding=build_embeddings()
     )
 
 
