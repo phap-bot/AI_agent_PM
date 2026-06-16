@@ -5,8 +5,8 @@ from typing import Any, Sequence
 from qdrant_client import QdrantClient
 from qdrant_client.http import models as rest
 
-from ai_scrum_master.core.config import get_settings
-from ai_scrum_master.core.logging import get_logger
+from ai_scrum_master.core.config.settings import get_settings
+from ai_scrum_master.core.utils.logging import get_logger
 
 logger = get_logger(__name__)
 

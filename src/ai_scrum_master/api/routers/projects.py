@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 from typing import Any, Optional
 from bson import ObjectId
 
-from ai_scrum_master.core.database import DatabaseManager
+from ai_scrum_master.core.utils.database import DatabaseManager
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 

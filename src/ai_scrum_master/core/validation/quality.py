@@ -4,7 +4,7 @@ import json
 import re
 from typing import Any
 
-from ai_scrum_master.core.domain_profiles import (
+from ai_scrum_master.core.config.domain_profiles import (
     AMBIGUOUS_REQUEST,
     DOMAIN_KEYWORDS,
     DOMAIN_SOURCE_TERMS,

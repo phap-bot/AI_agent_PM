@@ -4,13 +4,13 @@ import json
 import re
 from typing import Any
 
-from ai_scrum_master.core.agent_schemas import EvaluationOutput, dump_model
-from ai_scrum_master.core.config import AgentProfileConfig, TaskProfileConfig
-from ai_scrum_master.core.llm_json import normalize_llm_json_output
-from ai_scrum_master.core.llm_setup import build_llm
-from ai_scrum_master.core.logging import get_logger
-from ai_scrum_master.core.prompts import render_prompt
-from ai_scrum_master.core.quality import (
+from ai_scrum_master.core.schemas.agent_schemas import EvaluationOutput, dump_model
+from ai_scrum_master.core.config.settings import AgentProfileConfig, TaskProfileConfig
+from ai_scrum_master.core.llm.json_utils import normalize_llm_json_output
+from ai_scrum_master.core.llm.setup import build_llm
+from ai_scrum_master.core.utils.logging import get_logger
+from ai_scrum_master.core.llm.prompts import render_prompt
+from ai_scrum_master.core.validation.quality import (
     FIBONACCI_POINTS,
     domain_contamination_issues,
     is_generic_acceptance_criterion,

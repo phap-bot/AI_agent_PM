@@ -7,7 +7,7 @@ from pymongo import MongoClient
 from pymongo.collection import Collection
 from pymongo.database import Database
 
-from ai_scrum_master.core.config import get_settings
+from ai_scrum_master.core.config.settings import get_settings
 
 logger = logging.getLogger(__name__)
 

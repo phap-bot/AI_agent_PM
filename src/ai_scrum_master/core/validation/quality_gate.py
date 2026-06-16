@@ -4,9 +4,9 @@ import math
 from collections import defaultdict
 from typing import Any, Callable
 
-from ai_scrum_master.core.domain_profiles import DOMAIN_PROFILES
-from ai_scrum_master.core.quality import OVERSIZED_REQUEST, classify_requirement
-from ai_scrum_master.core.requirement_router import route_requirement
+from ai_scrum_master.core.config.domain_profiles import DOMAIN_PROFILES
+from ai_scrum_master.core.validation.quality import OVERSIZED_REQUEST, classify_requirement
+from ai_scrum_master.core.pipeline.requirement_router import route_requirement
 from ai_scrum_master.retrieval.vector_store import search_context
 
 GUIDANCE_EXPECTED_SOURCES = {

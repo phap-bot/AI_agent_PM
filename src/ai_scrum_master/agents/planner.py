@@ -5,18 +5,18 @@ import re
 import time
 from typing import Any
 
-from ai_scrum_master.core.agent_schemas import PlannerStoryOutput, build_planning_brief, dump_model
-from ai_scrum_master.core.config import AgentProfileConfig, TaskProfileConfig, get_settings
-from ai_scrum_master.core.domain_profiles import (
+from ai_scrum_master.core.schemas.agent_schemas import PlannerStoryOutput, build_planning_brief, dump_model
+from ai_scrum_master.core.config.settings import AgentProfileConfig, TaskProfileConfig, get_settings
+from ai_scrum_master.core.config.domain_profiles import (
     PLANNER_CLARIFICATION_QUESTIONS,
     PLANNER_EVIDENCE_TEMPLATES,
     SPLIT_CAPABILITIES,
 )
-from ai_scrum_master.core.llm_setup import build_llm
-from ai_scrum_master.core.llm_json import normalize_llm_json_output
-from ai_scrum_master.core.logging import get_logger
-from ai_scrum_master.core.prompts import render_prompt
-from ai_scrum_master.core.quality import (
+from ai_scrum_master.core.llm.setup import build_llm
+from ai_scrum_master.core.llm.json_utils import normalize_llm_json_output
+from ai_scrum_master.core.utils.logging import get_logger
+from ai_scrum_master.core.llm.prompts import render_prompt
+from ai_scrum_master.core.validation.quality import (
     FIBONACCI_POINTS,
     classify_requirement,
     filter_context_sources_for_requirement,
@@ -27,7 +27,7 @@ from ai_scrum_master.core.quality import (
     is_placeholder_task,
     requirement_domain,
 )
-from ai_scrum_master.core.story_validator import item_similarity, is_task_actionable_for_group, similar_item_pairs
+from ai_scrum_master.core.validation.story_validator import item_similarity, is_task_actionable_for_group, similar_item_pairs
 
 READY = "READY"
 NEEDS_CLARIFICATION = "NEEDS_CLARIFICATION"
@@ -56,7 +56,7 @@ class PlannerAgent:
         self.task_profile = task_profile
         self.settings = get_settings()
 
-    def run(self, requirement: str, context: dict, requirement_type: str | None = None, route: dict | None = None) -> dict:
+    def run(self, requirement: str, context: dict, requirement_type: str | None = None, route: dict | None = None, tech_classification: dict | None = None) -> dict:
         started_at = time.perf_counter()
         llm_latencies_ms: list[int] = []
         repair_attempts_used = 0
@@ -80,7 +80,7 @@ class PlannerAgent:
 
         try:
             llm = self.llm or build_llm()
-            messages = self._build_messages(requirement, filtered_context, planning_status)
+            messages = self._build_messages(requirement, filtered_context, planning_status, tech_classification)
             logger.info(
                 "LLM trace planner request stage=initial messages=%s prompt_chars=%s context_sources=%s retrieval_status=%s",
                 len(messages),
@@ -108,15 +108,18 @@ class PlannerAgent:
             unavailable["warnings"].append(f"{failure_type}: Planner LLM unavailable or returned invalid output. Reason: {exc}")
             return self._attach_latency_metadata(unavailable, started_at, llm_latencies_ms, repair_attempts_used)
 
-    def _build_messages(self, requirement: str, context: dict, planning_status: str) -> list[dict[str, str]]:
+    def _build_messages(self, requirement: str, context: dict, planning_status: str, tech_classification: dict | None = None) -> list[dict[str, str]]:
         return [
-            {"role": "user", "content": self._build_prompt(requirement, context, planning_status)},
+            {"role": "user", "content": self._build_prompt(requirement, context, planning_status, tech_classification)},
         ]
 
 
 
-    def _build_prompt(self, requirement: str, context: dict, planning_status: str) -> str:
+    def _build_prompt(self, requirement: str, context: dict, planning_status: str, tech_classification: dict | None = None) -> str:
         context_block = self._build_context_block(context)
+        if tech_classification and tech_classification.get("tech_stack"):
+            context_block += f"\n\n[Identified Tech Stack from requirement]: {tech_classification.get('tech_stack')}"
+            
         role = self.profile.role if self.profile else "Planner Agent"
         goal = self.profile.goal if self.profile else "Convert the requirement into sprint-ready user stories."
         backstory = self.profile.backstory if self.profile else "You support an AI Scrum Master system."
@@ -131,7 +134,7 @@ class PlannerAgent:
             else "JSON story with title, user_story, acceptance_criteria, story_points, tasks, definition_of_done, assumptions, context_sources, and planning_status."
         )
         try:
-            from ai_scrum_master.core.prompts import render_prompt as load_prompt
+            from ai_scrum_master.core.llm.prompts import render_prompt as load_prompt
             few_shot = load_prompt("planner_few_shot.md")
         except Exception:
             few_shot = ""
@@ -538,7 +541,7 @@ class PlannerAgent:
 
     def _estimate_story_points_with_llm(self, requirement: str, evidence_text: str) -> int | None:
         try:
-            from ai_scrum_master.core.llm_setup import build_llm
+            from ai_scrum_master.core.llm.setup import build_llm
             import json
             llm = getattr(self, "llm", None) or build_llm()
             messages = [
@@ -546,7 +549,7 @@ class PlannerAgent:
                 {"role": "user", "content": f"Requirement: {requirement}\nContext: {evidence_text}"}
             ]
             raw_output = llm.call(messages)
-            from ai_scrum_master.core.llm_json import normalize_llm_json_output
+            from ai_scrum_master.core.llm.json_utils import normalize_llm_json_output
             json_text = normalize_llm_json_output(raw_output)
             data = json.loads(json_text)
             points = data.get("story_points")

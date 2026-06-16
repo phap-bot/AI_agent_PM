@@ -2,7 +2,7 @@ from fastapi import APIRouter, Query
 from typing import Any, Optional
 
 from ai_scrum_master.actions.jira import JiraTool
-from ai_scrum_master.core.config import get_settings
+from ai_scrum_master.core.config.settings import get_settings
 
 router = APIRouter()
 

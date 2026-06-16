@@ -4,8 +4,8 @@ import copy
 import re
 from typing import Any
 
-from ai_scrum_master.core.domain_profiles import CONCEPT_TERMS, SPLIT_CAPABILITIES, STRONG_DOMAIN_TERMS
-from ai_scrum_master.core.quality import (
+from ai_scrum_master.core.config.domain_profiles import CONCEPT_TERMS, SPLIT_CAPABILITIES, STRONG_DOMAIN_TERMS
+from ai_scrum_master.core.validation.quality import (
     AMBIGUOUS_REQUEST,
     FIBONACCI_POINTS,
     OVERSIZED_REQUEST,
@@ -16,7 +16,7 @@ from ai_scrum_master.core.quality import (
     is_user_story_task,
     validate_story_against_requirement,
 )
-from ai_scrum_master.core.quality_gate import expected_relevance_for_requirement, normalize_source_name
+from ai_scrum_master.core.validation.quality_gate import expected_relevance_for_requirement, normalize_source_name
 
 READY = "READY"
 REVISION = "REVISION"

@@ -2,7 +2,7 @@ import shutil
 from pathlib import Path
 
 from ai_scrum_master.worker.celery_app import celery_app
-from ai_scrum_master.core.pipeline import generate_story_pipeline
+from ai_scrum_master.core.pipeline.orchestrator import generate_story_pipeline
 from ai_scrum_master.ingestion.ingest import ingest_raw_docs
 
 

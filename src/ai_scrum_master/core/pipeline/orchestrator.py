@@ -4,11 +4,11 @@ from typing import Any, Callable
 
 from ai_scrum_master.actions.jira import JiraTool
 from ai_scrum_master.actions.slack import SlackTool
-from ai_scrum_master.core.agent_schemas import EvaluationOutput, PlannerStoryOutput, ResearchContextOutput, dump_model
-from ai_scrum_master.core.finalizer import blocked_actions, finalize_generation
-from ai_scrum_master.core.logging import get_logger
-from ai_scrum_master.core.requirement_router import route_requirement
-from ai_scrum_master.core.story_validator import validate_post_generation
+from ai_scrum_master.core.schemas.agent_schemas import EvaluationOutput, PlannerStoryOutput, ResearchContextOutput, dump_model
+from ai_scrum_master.core.pipeline.finalizer import blocked_actions, finalize_generation
+from ai_scrum_master.core.utils.logging import get_logger
+from ai_scrum_master.core.pipeline.requirement_router import route_requirement
+from ai_scrum_master.core.validation.story_validator import validate_post_generation
 
 logger = get_logger(__name__)
 
@@ -35,7 +35,7 @@ def generate_story_pipeline(
         project_id=project_id,
     )
 
-    from ai_scrum_master.core.database import DatabaseManager
+    from ai_scrum_master.core.utils.database import DatabaseManager
     DatabaseManager.save_history(requirement, result, project_id=project_id)
 
     return result

@@ -6,9 +6,9 @@ from importlib import import_module
 from pathlib import Path
 from typing import Any
 
-from ai_scrum_master.core.config import get_settings
-from ai_scrum_master.core.logging import get_logger
-from ai_scrum_master.core.prompts import render_prompt
+from ai_scrum_master.core.config.settings import get_settings
+from ai_scrum_master.core.utils.logging import get_logger
+from ai_scrum_master.core.llm.prompts import render_prompt
 from ai_scrum_master.retrieval.vector_store import canonical_collection_name
 
 logger = get_logger(__name__)

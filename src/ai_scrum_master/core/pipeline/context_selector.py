@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from ai_scrum_master.core.agent_schemas import build_planning_brief
-from ai_scrum_master.core.quality_gate import normalize_source_name
+from ai_scrum_master.core.schemas.agent_schemas import build_planning_brief
+from ai_scrum_master.core.validation.quality_gate import normalize_source_name
 
 
 def select_context_for_route(requirement: str, context: dict[str, Any], route: dict[str, Any]) -> dict[str, Any]:

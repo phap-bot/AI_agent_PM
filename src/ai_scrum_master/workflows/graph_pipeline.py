@@ -24,14 +24,15 @@ from ai_scrum_master.actions.slack import SlackTool
 from ai_scrum_master.agents.evaluator import EvaluatorAgent
 from ai_scrum_master.agents.planner import PlannerAgent
 from ai_scrum_master.agents.researcher import ResearcherAgent
-from ai_scrum_master.core.config import get_runtime_profiles
-from ai_scrum_master.core.context_selector import select_context_for_route
-from ai_scrum_master.core.finalizer import blocked_actions, finalize_generation, should_block_planning
+from ai_scrum_master.agents.tech_classifier import TechClassifierAgent
+from ai_scrum_master.core.config.settings import get_runtime_profiles
+from ai_scrum_master.core.pipeline.context_selector import select_context_for_route
+from ai_scrum_master.core.pipeline.finalizer import blocked_actions, finalize_generation, should_block_planning
 from ai_scrum_master.workflows.graph_state import PipelineState
-from ai_scrum_master.core.logging import get_logger
-from ai_scrum_master.core.quality import AMBIGUOUS_REQUEST, OVERSIZED_REQUEST, classify_requirement, validate_story_against_requirement
-from ai_scrum_master.core.requirement_router import route_requirement
-from ai_scrum_master.core.story_validator import evaluate_planner_output, validate_post_generation
+from ai_scrum_master.core.utils.logging import get_logger
+from ai_scrum_master.core.validation.quality import AMBIGUOUS_REQUEST, OVERSIZED_REQUEST, classify_requirement, validate_story_against_requirement
+from ai_scrum_master.core.pipeline.requirement_router import route_requirement
+from ai_scrum_master.core.validation.story_validator import evaluate_planner_output, validate_post_generation
 
 logger = get_logger(__name__)
 
@@ -46,6 +47,14 @@ def route_requirement_node(state: PipelineState) -> dict[str, Any]:
     requirement_type = route.get("story_type") or classify_requirement(state["requirement"])
     logger.info("Graph node [route_requirement] domain=%s type=%s", route.get("domain"), requirement_type)
     return {"route": route, "requirement_type": requirement_type}
+
+
+def tech_classifier_node(state: PipelineState) -> dict[str, Any]:
+    """Run TechClassifierAgent to extract tech_stack and domain."""
+    classifier = TechClassifierAgent()
+    logger.info("Graph node [tech_classifier] starting")
+    classification = classifier.run(state["requirement"], state.get("route", {}))
+    return {"tech_classification": classification}
 
 
 def researcher_node(state: PipelineState) -> dict[str, Any]:
@@ -115,6 +124,7 @@ def planner_node(state: PipelineState) -> dict[str, Any]:
         context=dict(state["context"]),
         requirement_type=state.get("requirement_type"),
         route=state["route"],
+        tech_classification=state.get("tech_classification"),
     )
     story["requirement"] = state["requirement"]
     story["story_type"] = state.get("requirement_type", "software_feature")
@@ -322,6 +332,7 @@ def build_pipeline_graph() -> StateGraph:
 
     # Register nodes
     graph.add_node("route_requirement", route_requirement_node)
+    graph.add_node("tech_classifier", tech_classifier_node)
     graph.add_node("researcher", researcher_node)
     graph.add_node("merge_context", merge_context_node)
     graph.add_node("planner", planner_node)
@@ -333,12 +344,14 @@ def build_pipeline_graph() -> StateGraph:
     # Parallel Entry
     graph.add_edge(START, "route_requirement")
     graph.add_edge(START, "researcher")
+    graph.add_edge(START, "tech_classifier")
 
     # Fan-in
     # Note: route_requirement has no explicit outgoing edge, meaning its branch terminates after it runs.
     # However, since researcher runs in parallel and points to merge_context, the next super-step (merge_context)
-    # will only run after BOTH finish, and will only be scheduled ONCE.
+    # will only run after ALL parallel branches finish, and will only be scheduled ONCE.
     graph.add_edge("researcher", "merge_context")
+    graph.add_edge("tech_classifier", "merge_context")
 
     # Conditional: after merge_context
     graph.add_conditional_edges("merge_context", after_researcher, {
@@ -409,6 +422,7 @@ def run_graph_pipeline(
         "research_feedback": None,
         "route": {},
         "requirement_type": "software_feature",
+        "tech_classification": {},
         "raw_context": {},
         "context": {},
         "story": None,

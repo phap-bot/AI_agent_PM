@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ai_scrum_master.core.logging import get_logger
+from ai_scrum_master.core.utils.logging import get_logger
 
 logger = get_logger(__name__)
 

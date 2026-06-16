@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import time
 
-from ai_scrum_master.core.agent_schemas import ResearchContextOutput, build_planning_brief, dump_model
-from ai_scrum_master.core.config import AgentProfileConfig, TaskProfileConfig, get_settings
-from ai_scrum_master.core.domain_profiles import SOURCE_MATCH_TERMS
-from ai_scrum_master.core.logging import get_logger
-from ai_scrum_master.core.quality_gate import evaluate_research_output, expected_relevance_for_requirement, normalize_source_name
+from ai_scrum_master.core.schemas.agent_schemas import ResearchContextOutput, build_planning_brief, dump_model
+from ai_scrum_master.core.config.settings import AgentProfileConfig, TaskProfileConfig, get_settings
+from ai_scrum_master.core.config.domain_profiles import SOURCE_MATCH_TERMS
+from ai_scrum_master.core.utils.logging import get_logger
+from ai_scrum_master.core.validation.quality_gate import evaluate_research_output, expected_relevance_for_requirement, normalize_source_name
 from ai_scrum_master.retrieval.vector_store import get_chunks_by_filenames, search_context
 from ai_scrum_master.tools.rag_tool import ProjectContextRagTool
 
@@ -128,7 +128,7 @@ class ResearcherAgent:
         if total_chars > max_context_chars:
             logger.info("Context length (%s) exceeds %s chars, triggering LLM summarization...", total_chars, max_context_chars)
             try:
-                from ai_scrum_master.core.llm_setup import build_llm
+                from ai_scrum_master.core.llm.setup import build_llm
                 if not self.llm:
                     self.llm = build_llm(model=f"ollama/{self.settings.researcher_model}", temperature=0.2)
                 combined_text = "\n\n".join(f"[{s['source']}]: {s['excerpt']}" for s in retrieved_sources)
@@ -298,63 +298,12 @@ class ResearcherAgent:
                 return True
         return False
 
-    def _classify_requirement(self, requirement: str, route: dict) -> dict:
-        from ai_scrum_master.core.llm_setup import build_llm
-        if not self.llm:
-            self.llm = build_llm(model=f"ollama/{self.settings.researcher_model}", temperature=0.2)
-            
-        prompt = f"""You are an expert technical product manager. Analyze the following requirement to extract key information for vector database retrieval.
-Requirement: {requirement}
-
-Output in strict JSON format with the following keys:
-- "domain": The core domain or feature area (e.g., "auth", "payment", "user_profile").
-- "tech_stack": Likely technologies involved (e.g., "react", "fastapi", "postgres").
-- "search_keywords": A list of highly relevant, specific keywords for vector search.
-
-Do not output anything other than JSON.
-"""
-        import json
-        import re
-        try:
-            response = self.llm.call([{"role": "user", "content": prompt}])
-            text = str(response)
-            text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
-            match = re.search(r"\{.*\}", text, flags=re.DOTALL)
-            if match:
-                text = match.group(0)
-            logger.info("LLM trace researcher classification: %s", text)
-            return json.loads(text)
-        except Exception as e:
-            logger.warning("Requirement classification failed: %s", e)
-            return {"domain": "", "tech_stack": "", "search_keywords": []}
 
     def _build_retrieval_query(self, requirement: str, route: dict | None = None) -> str:
         route = route or {}
-        # Perform LLM classification to enrich search keywords
-        classification = self._classify_requirement(requirement, route)
-        
-        keywords = classification.get("search_keywords", [])
-        domain = classification.get("domain", "")
-        tech_stack = classification.get("tech_stack", "")
-        
         query = " ".join(requirement.replace(",", " ").split())
         expanded_parts = [query]
         
-        if isinstance(keywords, list):
-            expanded_parts.extend(keywords)
-        elif keywords:
-            expanded_parts.append(str(keywords))
-
-        if isinstance(domain, list):
-            expanded_parts.extend(domain)
-        elif domain:
-            expanded_parts.append(str(domain))
-
-        if isinstance(tech_stack, list):
-            expanded_parts.extend(tech_stack)
-        elif tech_stack:
-            expanded_parts.append(str(tech_stack))
-            
         if route:
             required_concepts = " ".join(str(item).replace("_", " ") for item in route.get("required_concepts", []))
             template_name = str(route.get("template_name", "")).replace("_", " ")

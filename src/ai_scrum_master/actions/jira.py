@@ -3,9 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from ai_scrum_master.core.config import get_settings
-from ai_scrum_master.core.http_client import HttpClient, HttpResponse, UrllibHttpClient
-from ai_scrum_master.core.logging import get_logger
+from ai_scrum_master.core.config.settings import get_settings
+from ai_scrum_master.core.utils.http_client import HttpClient, HttpResponse, UrllibHttpClient
+from ai_scrum_master.core.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -44,7 +44,7 @@ class JiraTool:
         if not project_id:
             return cls(http_client=http_client)
             
-        from ai_scrum_master.core.database import DatabaseManager
+        from ai_scrum_master.core.utils.database import DatabaseManager
         project = DatabaseManager.get_project(project_id)
         if not project or not project.get("jira_config"):
             return cls(http_client=http_client)

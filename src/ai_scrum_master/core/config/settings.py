@@ -9,7 +9,7 @@ import yaml
 from dotenv import dotenv_values, load_dotenv
 
 
-BASE_DIR = Path(__file__).resolve().parents[1]
+BASE_DIR = Path(__file__).resolve().parents[2]
 PROFILE_ENV_VAR = "AI_SCRUM_PROFILE"
 
 

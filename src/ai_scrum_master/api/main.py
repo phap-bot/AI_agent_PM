@@ -23,10 +23,10 @@ from ai_scrum_master.api.schemas import (
     IngestResponse,
     IngestStatusResponse,
 )
-from ai_scrum_master.core.config import get_settings
-from ai_scrum_master.core.exceptions import BaseAppException
-from ai_scrum_master.core.finalizer import ACTION_BLOCK_WARNING, actions_are_ready
-from ai_scrum_master.core.logging import get_logger
+from ai_scrum_master.core.config.settings import get_settings
+from ai_scrum_master.core.utils.exceptions import BaseAppException
+from ai_scrum_master.core.pipeline.finalizer import ACTION_BLOCK_WARNING, actions_are_ready
+from ai_scrum_master.core.utils.logging import get_logger
 from ai_scrum_master.ingestion.ingest import ingest_raw_docs
 
 settings = get_settings()

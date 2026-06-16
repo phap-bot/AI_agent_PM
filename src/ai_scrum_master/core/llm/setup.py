@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from ai_scrum_master.core.config import get_settings
+from ai_scrum_master.core.config.settings import get_settings
 
 
 def build_llm(**overrides: Any) -> Any:

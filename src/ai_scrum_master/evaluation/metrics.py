@@ -3,7 +3,7 @@ import re
 import json
 from typing import Any
 
-from ai_scrum_master.core.logging import get_logger
+from ai_scrum_master.core.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -72,7 +72,7 @@ def evaluate_faithfulness(question: str, answer: str, contexts: list[str], llm=N
         return {"score": 0.0, "reasoning": "Missing answer or context."}
 
     if not llm:
-        from ai_scrum_master.core.llm_setup import build_llm
+        from ai_scrum_master.core.llm.setup import build_llm
         llm = build_llm(temperature=0.0)
 
     combined_context = "\n\n".join(f"[Context {i+1}]: {c}" for i, c in enumerate(contexts))
@@ -112,7 +112,7 @@ def evaluate_answer_relevancy(question: str, answer: str, llm=None) -> dict[str,
         return {"score": 0.0, "reasoning": "Missing question or answer."}
 
     if not llm:
-        from ai_scrum_master.core.llm_setup import build_llm
+        from ai_scrum_master.core.llm.setup import build_llm
         llm = build_llm(temperature=0.0)
 
     prompt = f"""You are an objective evaluator. Given a question and an answer, evaluate how RELEVANT the answer is to the question.
