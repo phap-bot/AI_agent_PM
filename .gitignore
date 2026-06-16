@@ -85,3 +85,4 @@ evaluator_diff.txt
 src/ai_scrum_master/data/chromadb/
 src/ai_scrum_master.egg-info/
 models/
+.claude/*
