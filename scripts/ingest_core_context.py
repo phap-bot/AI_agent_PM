@@ -33,9 +33,9 @@ CORE_CONTEXT_FILES = [
     "checkout_context.md",
     "notification_context.md",
     "sprint_policy.md",
-    "scrum_guide_2020.pdf",
-    "acceptance_criteria.pdf",
-    "user_stories.pdf",
+    "scrum_guide_2020.md",
+    "acceptance_criteria.md",
+    "user_stories.md",
 ]
 
 

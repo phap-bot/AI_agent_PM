@@ -4,13 +4,18 @@
   "aggregate": {
     "queries": 30,
     "top_k": 3,
-    "hit_rate_at_k": 0.9333,
-    "recall_at_k": 0.9333,
-    "precision_at_k": 0.5111,
-    "mrr": 0.9333,
-    "ndcg_at_k": 0.9333
+    "hit_rate_at_k": 1.0,
+    "recall_at_k": 0.9667,
+    "precision_at_k": 0.5889,
+    "mrr": 1.0,
+    "ndcg_at_k": 0.9715
   },
   "per_source": {
+    "acceptance_criteria": {
+      "expected_queries": 1,
+      "hit_queries": 1,
+      "recall_at_k": 1.0
+    },
     "auth_context": {
       "expected_queries": 10,
       "hit_queries": 10,
@@ -30,6 +35,11 @@
       "expected_queries": 7,
       "hit_queries": 5,
       "recall_at_k": 0.7143
+    },
+    "user_stories": {
+      "expected_queries": 1,
+      "hit_queries": 1,
+      "recall_at_k": 1.0
     }
   },
   "query_results": [
@@ -248,13 +258,16 @@
       "domain": "scrum",
       "query": "Write user story with acceptance criteria Given When Then",
       "expected_sources": [
-        "sprint_policy.md"
+        "sprint_policy.md",
+        "acceptance_criteria.md"
       ],
-      "hit_rate": 0.0,
-      "recall": 0.0,
-      "mrr": 0.0,
-      "ndcg": 0.0,
-      "found_sources": []
+      "hit_rate": 1.0,
+      "recall": 0.5,
+      "mrr": 1.0,
+      "ndcg": 0.6131,
+      "found_sources": [
+        "acceptance_criteria"
+      ]
     },
     {
       "id": "Q16",
@@ -276,13 +289,16 @@
       "domain": "scrum",
       "query": "Split oversized requirement into multiple user stories across sprints",
       "expected_sources": [
-        "sprint_policy.md"
+        "sprint_policy.md",
+        "user_stories.md"
       ],
-      "hit_rate": 0.0,
-      "recall": 0.0,
-      "mrr": 0.0,
-      "ndcg": 0.0,
-      "found_sources": []
+      "hit_rate": 1.0,
+      "recall": 0.5,
+      "mrr": 1.0,
+      "ndcg": 0.6131,
+      "found_sources": [
+        "user_stories"
+      ]
     },
     {
       "id": "Q18",
@@ -310,7 +326,7 @@
       "hit_rate": 1.0,
       "recall": 1.0,
       "mrr": 1.0,
-      "ndcg": 1.0,
+      "ndcg": 0.9197,
       "found_sources": [
         "auth_context",
         "checkout_context"

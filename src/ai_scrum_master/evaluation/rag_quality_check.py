@@ -122,7 +122,7 @@ QUERY_CASES: list[dict[str, Any]] = [
         "id": "Q15",
         "domain": "scrum",
         "query": "Write user story with acceptance criteria Given When Then",
-        "expected_sources": ["sprint_policy.md"],
+        "expected_sources": ["sprint_policy.md", "acceptance_criteria.md"],
     },
     {
         "id": "Q16",
@@ -134,7 +134,7 @@ QUERY_CASES: list[dict[str, Any]] = [
         "id": "Q17",
         "domain": "scrum",
         "query": "Split oversized requirement into multiple user stories across sprints",
-        "expected_sources": ["sprint_policy.md"],
+        "expected_sources": ["sprint_policy.md", "user_stories.md"],
     },
     {
         "id": "Q18",
