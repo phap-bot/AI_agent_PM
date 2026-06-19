@@ -131,6 +131,31 @@ export default function StorySplitManagerModal({
     }
   };
 
+  const handleClarificationSubmit = async (clarificationText) => {
+    if (!clarificationText.trim() || !activeSplitId) return;
+
+    const enrichedRequirement = `Tập trung phân tích và viết Story cho tính năng này: ${activeSplitId}\n\n[Clarification from user]: ${clarificationText}`;
+    
+    setIsLoading(true);
+    setGenerationMessage('AI đang phân tích lại với thông tin bổ sung...');
+    setError(null);
+
+    try {
+      const response = await generateStoriesAsync({
+        requirement: enrichedRequirement,
+        n_results: 5,
+        allow_fallback_without_context: true,
+        forced_context_docs: forcedContextDocs,
+        project_id: projectId || undefined,
+      });
+      setGenerateJobId(response.job_id);
+    } catch (err) {
+      setError(err.message);
+      setIsLoading(false);
+      setGenerationMessage('');
+    }
+  };
+
   // Simplistic quick push fallback if needed in future, but for now we focus on AI Generate (Option 2)
   const handleQuickPushSplit = async (split) => {
     // This is optional if user requested Option 1 features mixed in, 
@@ -271,6 +296,7 @@ export default function StorySplitManagerModal({
                         onChange={setStoryDraft}
                         onPreviewJira={handlePreviewJira}
                         onPushToJira={handlePushToJira}
+                        onProvideClarification={handleClarificationSubmit}
                         projectId={projectId}
                         onSelectSplit={() => {}} // Disable inner splitting
                       />

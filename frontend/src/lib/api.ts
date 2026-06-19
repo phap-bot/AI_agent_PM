@@ -149,12 +149,33 @@ export async function fetchHistory(projectId?: string) {
   return handleResponse(response);
 }
 
+export async function deleteHistory(historyId: string) {
+  const response = await fetch(`${API_BASE_URL}/history/${historyId}`, {
+    method: 'DELETE'
+  });
+  return handleResponse(response);
+}
+
 export async function fetchSprintBoard(projectId?: string) {
   let url = `${API_BASE_URL}/sprint`;
   if (projectId) {
     url += `?project_id=${projectId}`;
   }
   const response = await fetch(url);
+  return handleResponse(response);
+}
+
+export async function createSprint(projectId?: string) {
+  let url = `${API_BASE_URL}/sprint`;
+  if (projectId) {
+    url += `?project_id=${projectId}`;
+  }
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    }
+  });
   return handleResponse(response);
 }
 
@@ -202,5 +223,33 @@ export async function deleteProject(projectId: string): Promise<any> {
   });
   // 204 No Content won't have JSON body to parse, so just return true if ok
   if (response.status === 204) return true;
+  return handleResponse(response);
+}
+
+// Real endpoints for dashboard features
+export async function fetchManagementDashboard(projectId?: string): Promise<any> {
+  let url = `${API_BASE_URL}/dashboard/management`;
+  if (projectId) {
+    url += `?project_id=${projectId}`;
+  }
+  const response = await fetch(url);
+  return handleResponse(response);
+}
+
+export async function fetchAnalyticsOverview(projectId?: string): Promise<any> {
+  let url = `${API_BASE_URL}/dashboard/analytics`;
+  if (projectId) {
+    url += `?project_id=${projectId}`;
+  }
+  const response = await fetch(url);
+  return handleResponse(response);
+}
+
+export async function fetchTeamMembers(projectId?: string): Promise<any> {
+  let url = `${API_BASE_URL}/dashboard/team`;
+  if (projectId) {
+    url += `?project_id=${projectId}`;
+  }
+  const response = await fetch(url);
   return handleResponse(response);
 }

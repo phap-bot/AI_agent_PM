@@ -5,8 +5,8 @@ from collections import defaultdict
 from typing import Any, Callable
 
 from ai_scrum_master.core.config.domain_profiles import DOMAIN_PROFILES
-from ai_scrum_master.core.validation.quality import OVERSIZED_REQUEST, classify_requirement
-from ai_scrum_master.core.pipeline.requirement_router import route_requirement
+from ai_scrum_master.core.validation.quality import OVERSIZED_REQUEST
+
 from ai_scrum_master.retrieval.vector_store import search_context
 
 GUIDANCE_EXPECTED_SOURCES = {
@@ -41,7 +41,6 @@ def expected_relevance_for_case(case: dict[str, Any]) -> dict[str, float]:
 
 
 def expected_relevance_for_requirement(requirement: str, route: dict[str, Any] | None = None) -> dict[str, float]:
-    route = route or route_requirement(requirement)
     if route:
         profile = route.get("profile", route)
         relevance = {normalize_source_name(str(source)): 1.0 for source in profile.get("required_sources", [])}
@@ -52,7 +51,7 @@ def expected_relevance_for_requirement(requirement: str, route: dict[str, Any] |
     for phrase, sources in GUIDANCE_EXPECTED_SOURCES.items():
         if phrase in text:
             return sources
-    if classify_requirement(requirement) == OVERSIZED_REQUEST:
+    if route and route.get("story_type") == OVERSIZED_REQUEST:
         profile = DOMAIN_PROFILES["oversized_request"]
         return {
             normalize_source_name(str(source)): 0.5

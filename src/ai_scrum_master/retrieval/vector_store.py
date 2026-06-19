@@ -59,7 +59,7 @@ def upsert_documents(
         return
         
     # Process in batches to avoid Ollama memory crash
-    BATCH_SIZE = 10
+    BATCH_SIZE = 128
     documents_list = list(documents)
     ids_list = list(ids)
     metadatas_list = list(metadatas) if metadatas else [{}] * len(documents_list)
@@ -96,7 +96,7 @@ def upsert_documents(
                 payload=payload
             ))
         
-        client.upsert(collection_name=collection, points=points)
+        client.upsert(collection_name=collection, points=points, wait=False)
 
 
 def clear_collection(collection_name: str | None = None) -> None:
@@ -259,7 +259,6 @@ def get_chunks_by_filenames(
         must_conditions.append(rest.FieldCondition(key="project_id", match=rest.MatchValue(value=project_id)))
         
     query_filter = rest.Filter(should=should_conditions, must=must_conditions)
-
     all_matches: list[dict] = []
 
     if query:

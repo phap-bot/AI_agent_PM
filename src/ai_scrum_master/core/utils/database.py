@@ -138,8 +138,23 @@ class DatabaseManager:
             query = {}
             if project_id:
                 query["project_id"] = project_id
-            cursor = cls.get_history_collection().find(query, {"_id": 0}).sort("created_at", -1).limit(limit)
-            return list(cursor)
+            cursor = cls.get_history_collection().find(query).sort("created_at", -1).limit(limit)
+            results = []
+            for doc in cursor:
+                doc["id"] = str(doc.pop("_id"))
+                results.append(doc)
+            return results
         except Exception as e:
             logger.error("Failed to fetch history from MongoDB: %s", e)
             return []
+
+    @classmethod
+    def delete_history(cls, history_id: str) -> bool:
+        """Delete a history record by ID."""
+        from bson.objectid import ObjectId
+        try:
+            res = cls.get_history_collection().delete_one({"_id": ObjectId(history_id)})
+            return res.deleted_count > 0
+        except Exception as e:
+            logger.error("Failed to delete history from MongoDB: %s", e)
+            return False

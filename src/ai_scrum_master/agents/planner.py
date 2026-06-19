@@ -18,14 +18,12 @@ from ai_scrum_master.core.utils.logging import get_logger
 from ai_scrum_master.core.llm.prompts import render_prompt
 from ai_scrum_master.core.validation.quality import (
     FIBONACCI_POINTS,
-    classify_requirement,
     filter_context_sources_for_requirement,
     filter_domain_contaminated_items,
     has_domain_contamination,
     is_generic_acceptance_criterion,
     is_given_when_then_ordered,
     is_placeholder_task,
-    requirement_domain,
 )
 from ai_scrum_master.core.validation.story_validator import item_similarity, is_task_actionable_for_group, similar_item_pairs
 
@@ -61,10 +59,12 @@ class PlannerAgent:
         llm_latencies_ms: list[int] = []
         repair_attempts_used = 0
         route = route or context.get("route", {})
-        filtered_context = self._filter_context_for_requirement(requirement, context)
+        requirement_type = requirement_type or route.get("story_type") or "software_feature"
+        domain = route.get("domain", "general")
+        filtered_context = self._filter_context_for_requirement(requirement, requirement_type, domain, context)
         warnings = self._build_warnings(filtered_context)
+        # Pre-generation: Route requirements to appropriate handler
         planning_status = self._classify_requirement(requirement, route)
-        requirement_type = requirement_type or route.get("story_type") or classify_requirement(requirement)
         context_sources = filtered_context.get("retrieved_sources", [])
         logger.info(
             "Planner started planning_status=%s context_documents=%s context_confidence=%s",
@@ -100,7 +100,7 @@ class PlannerAgent:
             normalized = self._normalize_story(story, requirement, warnings, planning_status, context_sources, requirement_type, route)
             return self._attach_latency_metadata(normalized, started_at, llm_latencies_ms, repair_attempts_used)
         except Exception as exc:
-            logger.exception("Planner failed to use LLM output")
+            logger.warning("Planner failed to use LLM output. Reason: %s", exc)
             unavailable = self._llm_unavailable_story(requirement, warnings, planning_status, context_sources, requirement_type, route)
             failure_type = "planner_timeout" if "timeout" in str(exc).lower() or "timed out" in str(exc).lower() else "planner_exception"
             unavailable["failure_type"] = failure_type
@@ -189,7 +189,7 @@ class PlannerAgent:
             return f"{prompt_base}_{version}.md"
         return f"{prompt_base}.md"
 
-    def _filter_context_for_requirement(self, requirement: str, context: dict) -> dict:
+    def _filter_context_for_requirement(self, requirement: str, requirement_type: str, domain: str, context: dict) -> dict:
         if "selected_context_sources" in context or "ignored_context_sources" in context:
             filtered = dict(context)
             selected_sources = filtered.get("selected_context_sources") or filtered.get("retrieved_sources", [])
@@ -205,7 +205,7 @@ class PlannerAgent:
             )
             return filtered
         filtered = dict(context)
-        selected_sources, ignored_sources = filter_context_sources_for_requirement(requirement, context.get("retrieved_sources", []))
+        selected_sources, ignored_sources = filter_context_sources_for_requirement(requirement, requirement_type, domain, context.get("retrieved_sources", []))
         if selected_sources or ignored_sources:
             selected_ids = {source.get("id") for source in selected_sources if source.get("id")}
             selected_excerpts = {source.get("excerpt") for source in selected_sources if source.get("excerpt")}
@@ -328,26 +328,27 @@ class PlannerAgent:
         requirement_type: str | None = None,
         route: dict | None = None,
     ) -> dict:
-        requirement_type = requirement_type or classify_requirement(requirement)
+        requirement_type = requirement_type or "software_feature"
         warnings_out = [w for w in story.get("warnings", []) if isinstance(w, str) and not w.startswith("Planner ")]
+        domain = route.get("domain", "general") if route else "general"
         normalized = {
             "requirement": requirement,
-            "title": self._clean_text_field(requirement, story.get("title") or requirement.strip(), requirement.strip(), "title", warnings_out),
+            "title": self._clean_text_field(domain, requirement, story.get("title") or requirement.strip(), requirement.strip(), "title", warnings_out),
             "story_type": requirement_type,
             "jira_issue_type": story.get("jira_issue_type") or ("Epic" if requirement_type == "oversized_request" else "Task" if requirement_type == "process_improvement" else "Story"),
             "user_story": self._normalize_user_story(
-                self._clean_text_field(requirement, story.get("user_story") or "", "", "user_story", warnings_out),
+                self._clean_text_field(domain, requirement, story.get("user_story") or "", "", "user_story", warnings_out),
             ),
-            "acceptance_criteria": self._clean_list(requirement, story.get("acceptance_criteria"), "acceptance_criteria", warnings_out),
+            "acceptance_criteria": self._clean_list(domain, requirement, story.get("acceptance_criteria"), "acceptance_criteria", warnings_out),
             "story_points": story.get("story_points"),
-            "tasks": self._clean_tasks(requirement, story.get("tasks"), warnings_out),
-            "definition_of_done": self._clean_list(requirement, story.get("definition_of_done"), "definition_of_done", warnings_out),
+            "tasks": self._clean_tasks(domain, requirement, story.get("tasks"), warnings_out),
+            "definition_of_done": self._clean_list(domain, requirement, story.get("definition_of_done"), "definition_of_done", warnings_out),
             "planning_status": story.get("planning_status") or planning_status,
-            "clarification_questions": self._clean_list(requirement, story.get("clarification_questions"), "clarification_questions", warnings_out),
-            "assumptions": self._clean_list(requirement, story.get("assumptions"), "assumptions", warnings_out),
-            "story_splits": self._clean_story_splits(requirement, story.get("story_splits"), warnings_out),
+            "clarification_questions": self._clean_list(domain, requirement, story.get("clarification_questions"), "clarification_questions", warnings_out),
+            "assumptions": self._clean_list(domain, requirement, story.get("assumptions"), "assumptions", warnings_out),
+            "story_splits": self._clean_story_splits(domain, requirement, story.get("story_splits"), warnings_out),
             "sprint_allocation": self._clean_sprint_allocation(story.get("sprint_allocation"), warnings_out),
-            "context_sources": self._normalize_context_sources(story.get("context_sources"), context_sources or [], requirement),
+            "context_sources": self._normalize_context_sources(story.get("context_sources"), context_sources or [], requirement, requirement_type, route.get("domain", "general") if route else "general"),
             "route": route or {},
             "warnings": warnings_out,
         }
@@ -367,11 +368,9 @@ class PlannerAgent:
                 normalized["clarification_questions"] = []
                 normalized["warnings"].append("Planner returned clarification questions for READY story; removed inconsistent questions.")
             normalized["story_splits"] = []
-            normalized["sprint_allocation"] = []
         elif normalized["planning_status"] == NEEDS_CLARIFICATION:
             self._clear_ready_fields_for_clarification(normalized, requirement)
             normalized["story_splits"] = []
-            normalized["sprint_allocation"] = []
         elif normalized["planning_status"] in {NEEDS_SPLIT, SPLIT_RECOMMENDED}:
             normalized["clarification_questions"] = []
             self._complete_split_fields(normalized, requirement)
@@ -383,11 +382,11 @@ class PlannerAgent:
         )
         return self._validate_story_output(normalized)
 
-    def _clean_text_field(self, requirement: str, value: Any, fallback: str, field_name: str, warnings: list[str]) -> str:
+    def _clean_text_field(self, domain: str, requirement: str, value: Any, fallback: str, field_name: str, warnings: list[str]) -> str:
         if isinstance(value, str) and self._is_sample_placeholder(value):
             warnings.append(f"Planner returned sample placeholder text for {field_name}; replaced from requirement.")
             return fallback
-        if has_domain_contamination(requirement, value):
+        if has_domain_contamination(domain, requirement, value):
             warnings.append(f"Planner removed unrelated-domain content from {field_name} using local requirement rules.")
             return fallback
         if not isinstance(value, str):
@@ -395,7 +394,7 @@ class PlannerAgent:
             return fallback
         return value.strip()
 
-    def _clean_list(self, requirement: str, values: Any, field_name: str, warnings: list[str]) -> list[Any]:
+    def _clean_list(self, domain: str, requirement: str, values: Any, field_name: str, warnings: list[str]) -> list[Any]:
         if not isinstance(values, list):
             if values not in (None, ""):
                 warnings.append(f"Planner returned invalid {field_name}; expected a list.")
@@ -418,7 +417,7 @@ class PlannerAgent:
             else:
                 normalized_values.append(item)
                 
-        kept, removed = filter_domain_contaminated_items(requirement, normalized_values)
+        kept, removed = filter_domain_contaminated_items(domain, requirement, normalized_values)
         sample_removed = [item for item in kept if isinstance(item, str) and self._is_sample_placeholder(item)]
         kept = [item for item in kept if not (isinstance(item, str) and self._is_sample_placeholder(item))]
         if removed:
@@ -427,13 +426,13 @@ class PlannerAgent:
             warnings.append(f"Planner removed sample placeholder content from {field_name}.")
         return [item for item in kept if isinstance(item, str) and item.strip()]
 
-    def _clean_tasks(self, requirement: str, tasks: Any, warnings: list[str]) -> dict[str, list[str]]:
+    def _clean_tasks(self, domain: str, requirement: str, tasks: Any, warnings: list[str]) -> dict[str, list[str]]:
         source = tasks if isinstance(tasks, dict) else {}
         cleaned: dict[str, list[str]] = {}
         removed_any = False
         for key in ("be", "fe", "qa"):
             values = source.get(key, []) if isinstance(source.get(key, []), list) else []
-            kept, removed = filter_domain_contaminated_items(requirement, values)
+            kept, removed = filter_domain_contaminated_items(domain, requirement, values)
             sample_removed = [item for item in kept if isinstance(item, str) and self._is_sample_placeholder(item)]
             kept = [item for item in kept if not (isinstance(item, str) and self._is_sample_placeholder(item))]
             removed_any = removed_any or bool(removed)
@@ -603,7 +602,7 @@ class PlannerAgent:
             return False
         return ("As a" in value or "As an" in value) and "I want" in value and "so that" in value.lower()
 
-    def _normalize_context_sources(self, sources: Any, fallback: list[dict], requirement: str) -> list[dict]:
+    def _normalize_context_sources(self, sources: Any, fallback: list[dict], requirement: str, requirement_type: str, domain: str) -> list[dict]:
         if not isinstance(sources, list):
             return fallback
         normalized = []
@@ -618,10 +617,10 @@ class PlannerAgent:
             if "chunk_index" not in normalized_source and "chunk" in normalized_source:
                 normalized_source["chunk_index"] = normalized_source["chunk"]
             normalized.append(normalized_source)
-        selected, _ignored = filter_context_sources_for_requirement(requirement, normalized)
+        selected, _ignored = filter_context_sources_for_requirement(requirement, requirement_type, domain, normalized)
         return selected or fallback
 
-    def _clean_story_splits(self, requirement: str, story_splits: Any, warnings: list[str]) -> list[dict]:
+    def _clean_story_splits(self, domain: str, requirement: str, story_splits: Any, warnings: list[str]) -> list[dict]:
         if not isinstance(story_splits, list):
             return []
         normalized = []
@@ -630,14 +629,14 @@ class PlannerAgent:
                 continue
             normalized.append(
                 {
-                    "title": self._clean_text_field(requirement, split.get("title") or "", "", "story_splits.title", warnings),
+                    "title": self._clean_text_field(domain, requirement, split.get("title") or "", "", "story_splits.title", warnings),
                     "user_story": self._normalize_user_story(
-                        self._clean_text_field(requirement, split.get("user_story") or "", "", "story_splits.user_story", warnings)
+                        self._clean_text_field(domain, requirement, split.get("user_story") or "", "", "story_splits.user_story", warnings)
                     ),
-                    "acceptance_criteria": self._clean_list(requirement, split.get("acceptance_criteria"), "story_splits.acceptance_criteria", warnings),
+                    "acceptance_criteria": self._clean_list(domain, requirement, split.get("acceptance_criteria"), "story_splits.acceptance_criteria", warnings),
                     "story_points": split.get("story_points") if split.get("story_points") in FIBONACCI_POINTS else None,
-                    "tasks": self._clean_tasks(requirement, split.get("tasks"), warnings),
-                    "definition_of_done": self._clean_list(requirement, split.get("definition_of_done"), "story_splits.definition_of_done", warnings),
+                    "tasks": self._clean_tasks(domain, requirement, split.get("tasks"), warnings),
+                    "definition_of_done": self._clean_list(domain, requirement, split.get("definition_of_done"), "story_splits.definition_of_done", warnings),
                 }
             )
         return normalized
@@ -727,10 +726,7 @@ class PlannerAgent:
             story["warnings"].append("Planner completed missing clarification questions for NEEDS_CLARIFICATION.")
 
     def _clarification_questions_for_requirement(self, requirement: str) -> list[str]:
-        domain = requirement_domain(requirement)
-        return list(PLANNER_CLARIFICATION_QUESTIONS.get(domain, PLANNER_CLARIFICATION_QUESTIONS["general"]))
-
-
+        return list(PLANNER_CLARIFICATION_QUESTIONS.get("general", []))
 
     def _build_warnings(self, context: dict) -> list[str]:
         warnings = list(context.get("warnings", []))
@@ -741,11 +737,9 @@ class PlannerAgent:
         return warnings
 
     def _classify_requirement(self, requirement: str, route: dict | None = None) -> str:
+        """Route to appropriate planning flow based on LLM classification (or heuristic)."""
         route = route or {}
-        if route.get("domain") == "benchmark_case":
-            return READY
-
-        requirement_type = classify_requirement(requirement)
+        requirement_type = route.get("story_type", "software_feature")
         if requirement_type == "ambiguous_request":
             return NEEDS_CLARIFICATION
         if requirement_type == "oversized_request":
@@ -762,7 +756,9 @@ class PlannerAgent:
         requirement_type: str | None = None,
         route: dict | None = None,
     ) -> dict:
-        selected_context_sources, _ignored = filter_context_sources_for_requirement(requirement, context_sources or [])
+        req_type = requirement_type or "software_feature"
+        domain = route.get("domain", "general") if route else "general"
+        selected_context_sources, _ignored = filter_context_sources_for_requirement(requirement, req_type, domain, context_sources or [])
         clarification_questions = (
             self._clarification_questions_for_requirement(requirement)
             if planning_status == NEEDS_CLARIFICATION
@@ -773,7 +769,7 @@ class PlannerAgent:
             "user_story": "",
             "acceptance_criteria": [],
             "story_points": None,
-            "story_type": requirement_type or classify_requirement(requirement),
+            "story_type": requirement_type or "software_feature",
             "tasks": {"be": [], "fe": [], "qa": []},
             "definition_of_done": [],
             "planning_status": "REVISION" if planning_status == READY else planning_status,

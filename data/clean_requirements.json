@@ -1,0 +1,272 @@
+[
+  {
+    "requirement": "Address collaborative document presence change detection and debounce Two latent bugs in the collaborative-document presence controller (`live-events.controller.ts`), which renders connected-user avatars from the Yjs awareness protocol. The change-detector keyed its presence map by array index instead of `state.clientId`, so it only noticed when the user *count* changed and missed same-count membership swaps (one peer leaving as another joins) — leaving stale avatars; and the refresh debounce named a non-existent method (`triggerUpdateUI` vs the real `triggerUpdateUsersUI`), so every awareness frame fetched immediately instead of throttling to 1s. Both fixed by keying on the real client id and pointing the debounce at the correct method.",
+    "type": "bug",
+    "domain": "collaboration",
+    "complexity": "medium"
+  },
+  {
+    "requirement": "Adds upsell template and behaviour. Update tests to reflect changes. Related Work Package: [OP#XWI-81](https://community.openproject.org/projects/XWI/work_packages/XWI-81)",
+    "type": "feature",
+    "domain": "general",
+    "complexity": "low"
+  },
+  {
+    "requirement": "Update op-blocknote-extensions to 0.1.3 This includes: - [BNE-93] Semantic ID and markdown support for copy-paste - [BNE-108] Dragging a work package link reloads the data via the network - [#74978] split surrounding sentence when promoting inline chip to block - New translations - [BNE-84] Remove getSideMenuExtension workaround # Ticket https://community.openproject.org/projects/STC/work_packages/BNE-93 amongst others",
+    "type": "feature",
+    "domain": "general",
+    "complexity": "medium"
+  },
+  {
+    "requirement": "[OP-19205] Build User Card View for Resource Management # Ticket https://community.openproject.org/wp/OP-19205 # What are you trying to accomplish? ## Screenshots # What approach did you choose and why?",
+    "type": "maintenance",
+    "domain": "ui/ux",
+    "complexity": "low"
+  },
+  {
+    "requirement": "Code maintenance/STC-834: Bump Hocuspocus client & server to v4.2.0 (lockstep) # Ticket https://community.openproject.org/wp/STC-834 Server-side follow-up to the `@hocuspocus/provider` v4 client bump in #23570. # What are you trying to accomplish? #23570 moves the frontend client `@hocuspocus/provider` to v4. The collaboration server in `op-blocknote-hocuspocus` was still on v3. The two talk over a versioned wire protocol and ship as independent artifacts — the server is the separately built `openproject/hocuspocus` image — so a one-major skew is tolerated, but the goal is to bring the server up to v4 as well so both halves run the current major. This PR bumps `@hocuspocus/server` and `@hocuspocus/extension-logger` to v4 and applies the API changes the major introduces. ## What v4 changes, and how it's applied here v4 is a cross-runtime release that standardizes the server hook payloads on web-standard primitives and restructures a couple of hook shapes ([v4.0.0 release notes](https://github.com/ueberdosis/hocuspocus/releases/tag/v4.0.0), [full diff](https://github.com/ueberdosis/hocuspocus/compare/v3.4.4...v4.0.0)). Three of those touch our `OpenProjectApi` extension: - **Request headers are now a web-standard `Headers` object** — upgrade guide §2 *Request and Headers (Breaking)*. `onAuthenticate` previously read the request origin off a plain object (`data.request.headers.origin`). v4 exposes it as `Headers`, accessed with `.get()`: ```ts // before (v3) const requestOrigin = data.request?.headers?.origin; // after (v4) const requestOrigin = data.requestHeaders?.get(\"origin\") ?? undefined; ``` This matters beyond a rename: against v4 the old plain-object access would silently return `undefined`, quietly weakening the origin check passed to `decryptAndValidateToken`. - **The store hook's context is renamed `context` → `lastContext`** — upgrade guide §3 *`onStoreDocument` Payload (Breaking)*. `onStoreDocument` reads the resource URL, readonly flag, and token from the snapshot of the last connection context: ```ts // before (v3): data.context // after (v4): data.lastContext const { resourceUrl, readonly } = data.lastContext; ``` - **Broadcasting to connected clients goes through `Document#broadcastStateless`.** In v4 `Document.connections` is a `Map`, so the old `connections.forEach(({ connection }) => connection.sendStateless(...))` no longer typechecks. `broadcastStateless` is the supported helper for this ([CHANGELOG, client-initiated broadcastStateless #1103](https://github.com/ueberdosis/hocuspocus/blob/main/CHANGELOG.md)): ```ts // before (v3) data.document.connections.forEach(({ connection }) => connection.sendStateless(\"storeEvent\")); // after (v4) data.document.broadcastStateless(\"storeEvent\"); ``` The rest of the extension is unchanged: `onTokenSync`, `connection.close({ code, reason })`, `connectionConfig.readOnly`, and the ad-hoc `context` writes all compile and behave the same under v4. `@hocuspocus/common` resolves to v4 transitively; `closeEvents.ts` already uses the v4-narrowed `{ code, reason }` CloseEvent shape (upgrade guide §11 *`CloseEvent` Shape*), so no change was needed there. ### References - v4.0.0 release notes & v3→v4 upgrade guide: https://github.com/ueberdosis/hocuspocus/releases/tag/v4.0.0 - Full changelog: https://github.com/ueberdosis/hocuspocus/blob/main/CHANGELOG.md - v3.4.4 → v4.0.0 diff: https://github.com/ueberdosis/hocuspocus/compare/v3.4.4...v4.0.0 A standing assertion of the client/server compatibility, plus a CI guard against future major drift, lands in the follow-up #23755.",
+    "type": "bug",
+    "domain": "collaboration",
+    "complexity": "high"
+  },
+  {
+    "requirement": "Add development and test log rotation Noticed this after my laptop cried about no remaining disk space and there were 350+ gigs of logs somehow",
+    "type": "feature",
+    "domain": "general",
+    "complexity": "low"
+  },
+  {
+    "requirement": "Bug/op 19472 custom actions rejected for conflicting change if clicked after changing something # Ticket https://community.openproject.org/wp/OP-19472 # What are you trying to accomplish? Fix clicking a custom action after modifications on the work package page have already been done (e.g., clicking another custom action or any other attribute change). The action before would sent the patch to the backend updating the work package and its lockVersion. That response is correctly returned to the frontend. But the change is not correctly listened to by the subscription in WorkPackageSingleViewBase. The subscription will always be registered using the semantic identifier (if it is active) but the api's response will update the cache using the canonical id. The fact that `this.workPackageId` gets the canonical id assigned does not change the subscription being with the semantic identifier. This problem then propagates down to components having `workPackage` as their input like WpCustomActionComponent. The fix is to only take the first value (possibly listening to the semantic identifiers there) and only then subscribing after the id listened to (`this.workPackageId`) has been set to the canonical id.",
+    "type": "bug",
+    "domain": "ui/ux",
+    "complexity": "high"
+  },
+  {
+    "requirement": "feat: Add numeric ID into work package show UI # Ticket # What are you trying to accomplish? ## Screenshots New menu item: # What approach did you choose and why?",
+    "type": "feature",
+    "domain": "ui/ux",
+    "complexity": "low"
+  },
+  {
+    "requirement": "[OP-19553] Type `ElementRef` generics > [!NOTE] > This should not result in changes to production (transpiled) code. Typing improvements are for Dx. # Ticket https://community.openproject.org/wp/OP-19553 # What are you trying to accomplish? Parameterizes `inject(ElementRef)`, `@ViewChild` refs, and related declarations across the Angular views with concrete element types (`ElementRef` and specific subtypes such as `HTMLInputElement`/`HTMLCanvasElement`), so `nativeElement` is no longer `any`. # What approach did you choose and why? Narrowing the generics lets redundant `as HTMLElement` casts drop out and surfaces several previously `any`-hidden holes where `querySelector` results were used without a null check or as the wrong element type. Pure typing change, no runtime behaviour change.",
+    "type": "maintenance",
+    "domain": "ui/ux",
+    "complexity": "medium"
+  },
+  {
+    "requirement": "[OP-19549] Remove Webpack remnants from docs and code # Ticket https://community.openproject.org/wp/OP-19549 # What are you trying to accomplish? Cleanup of Webpack remnants missed in [OP-17301](https://community.openproject.org/work_packages/OP-17301): stale references in docs and code comments (now naming Vite/esbuild), unsupported magic comments on dynamic imports, and dead webpack-only files (the Karma test bootstrap, the `webpack-watch` Docker script, and an obsolete ESLint override). Also replaces the Webpack-only `__webpack_public_path__` global — still read by the image/video path helpers — with an own `publicAssetPath` declaration, which fixes a typecheck break left by dropping `@types/webpack-env`.",
+    "type": "bug",
+    "domain": "ui/ux",
+    "complexity": "low"
+  },
+  {
+    "requirement": "Fix Rubocop offenses in backlogs module # Ticket n/a # What are you trying to accomplish? Fixes autocorrectable Rubocop offenses via `rubocop -A modules/backlogs` ## Screenshots no visual changes # What approach did you choose and why? Same reasons as #23717",
+    "type": "bug",
+    "domain": "general",
+    "complexity": "medium"
+  },
+  {
+    "requirement": "Sortable Lists controller restructure with outlets > [!NOTE] > This PR is based on #23218. Please review that PR first. # Ticket # What are you trying to accomplish? ## Screenshots # What approach did you choose and why?",
+    "type": "maintenance",
+    "domain": "ui/ux",
+    "complexity": "high"
+  },
+  {
+    "requirement": "Drop deprecated @stylistic overrides.arrow option # Ticket # What are you trying to accomplish? `@stylistic/type-annotation-spacing` deprecated its `overrides.arrow` option, so every ESLint run printed a deprecation warning. # What approach did you choose and why? The deprecation message suggests `arrow-spacing`, but that rule only covers arrow *expressions* (`(x) => x`), not type-level `() => void`. The config needs tight colons (`x:any`) combined with spaced type arrows, which previously relied on `overrides.arrow`. Moving the tight-colon rule into the non-deprecated `overrides.colon` and letting the base options carry the spaced `=>` style preserves the exact existing formatting while removing the deprecated option.",
+    "type": "maintenance",
+    "domain": "general",
+    "complexity": "medium"
+  },
+  {
+    "requirement": "[STC-820/STC-828] Update Hocuspocus to TypeScript 6.0 # Ticket https://community.openproject.org/wp/STC-820 https://community.openproject.org/wp/STC-828 # What are you trying to accomplish? Update the Hocuspocus extension to the same Node baseline as OpenProject core and make the OpenProject API extension compile cleanly with TypeScript 6. Related core upgrade: https://github.com/opf/openproject/pull/23588 ## Screenshots No visible changes. # What approach did you choose and why? The runtime metadata, Docker base images, and Hocuspocus test workflow now use the core Node range/version. TypeScript is an explicit dev dependency, the extension tsconfig keeps bundler-style imports while satisfying TypeScript 6, and the stale BlockNote suppression in openProjectApi.ts was removed.",
+    "type": "maintenance",
+    "domain": "collaboration",
+    "complexity": "medium"
+  },
+  {
+    "requirement": "[OP-19547] Remove lodash global and dependency > [!WARNING] > **Merge last.** This PR removes the global `_` and the `lodash` dependency, so every other bucket must be merged first: > #23728, #23729, #23730, #23731, #23732, #23733. Rebase onto `dev` after they land — until then CI is expected to fail (the branch is cut from `dev`, which still contains the `_.` usages this PR's prerequisites remove). # Ticket https://community.openproject.org/wp/OP-19547 # What are you trying to accomplish? Final step of removing lodash from the frontend (parent: OP-17486 / WP 65621). Once every helper bucket has dropped its global `_.` usage (in both `frontend/src` **and** the linked-plugin module frontends), this removes the global itself and the `lodash` package. - Removes `window._ = lodash` from `init-vendors.ts` and the mirrored assignment in `test-setup.ts`. - Removes the ambient `_` type declarations (`init-vendors.ts` `Window` augmentation, `shims.d.ts` global). - Drops `lodash` and `@types/lodash` from `package.json`. `lodash-es` (and `@types/lodash-es`) remain — they back the handful of helpers with no native equivalent (`isEqual`, `merge`, `debounce`, …). ## Screenshots No visual changes. # What approach did you choose and why? Cleanup only — no behavioural change. Draft until the prerequisite PRs merge and this is rebased onto a `dev` with no remaining `_.` usage.",
+    "type": "maintenance",
+    "domain": "ui/ux",
+    "complexity": "high"
+  },
+  {
+    "requirement": "[STC-222] Update text on Notification settings for clarity # Ticket https://community.openproject.org/work_packages/STC-222 # What are you trying to accomplish? Users reported that the helper text under each section header in **Account settings → Notifications** was unclear and had not been updated since the Date alerts feature was introduced. This PR updates the five affected strings in the English locale file to be more accurate and user-friendly: ## Screenshots Before: After: # What approach did you choose and why? All five changes are confined to a single place: `config/locales/en.yml` under `my_account.notifications`. Because all components (`participating_form.rb`, `date_alerts_form.rb`, `non_participating_form.rb`, and the show-page template) reference these keys dynamically, no Ruby, ERB, or TypeScript files required modification.",
+    "type": "feature",
+    "domain": "ui/ux",
+    "complexity": "medium"
+  },
+  {
+    "requirement": "[STC-645] Properly handle unsupported upload file types in CKEditor ### Merge pre-requirement: https://github.com/opf/commonmark-ckeditor-build/pull/120 # Ticket https://community.openproject.org/work_packages/STC-645 # What are you trying to accomplish? When a user drags or pastes an image of an unsupported type (e.g. WebP) into the CKEditor description field on an instance where WebP is not on the attachment allowlist, the backend already returns a clear 422 error: > \"The file was rejected by an automatic filter. 'image/webp' is not allowed for upload.\" However, that message was silently discarded by the frontend. The upload progress toast dismissed itself on failure without ever surfacing the error text, and a generic CKEditor indicator was shown instead — leaving the user with no actionable explanation. This PR ensures the specific backend error message is shown to the user in an OpenProject error toast whenever an attachment upload is rejected (by file-type filter or any other server-side validation). ## Screenshots N/A # What approach did you choose and why? **Root cause:** `toast.component.html` bound the `(uploadError)` output of `UploadProgressComponent` to `remove()`. The `HttpErrorResponse` carrying the backend message was emitted but never passed to `ToastService.addError()`, so the only thing that happened on failure was that the upload toast silently disappeared. **Fix — two-part:** 1. **`ToastComponent` (`toast.component.ts` + `toast.component.html`):** Added an `onUploadError(error: HttpErrorResponse)` method that calls `this.toastService.addError(error)` — which already knows how to extract HAL error messages — and then removes the upload toast. The template binding was changed from `(uploadError)=\"remove()\"` to `(uploadError)=\"onUploadError($event)\"`. 2. **`AttachmentsResourceService` (`attachments.service.ts`):** Added a `catchError` pipe in `uploadAttachments()` that converts the opaque `HttpErrorResponse` into a plain `Error` with the human-readable message before re-throwing. This ensures that callers further up the chain (such as the CKEditor upload plugin) receive a meaningful string rather than an unreadable object when calling `loader.reject()`. **Why not only fix the service layer?** The `ToastService.addUpload()` and the `UploadProgressComponent` are the natural point where per-file upload errors are observed; fixing the component handler is the minimal, targeted change that guarantees the message is shown exactly once without interfering with other callers. The service-layer `catchError` is a complementary improvement for CKEditor's own error path and does not duplicate the toast display. No backend changes are required — the error message (`not_allowlisted`) already exists and is translated in all supported locales.",
+    "type": "bug",
+    "domain": "ui/ux",
+    "complexity": "high"
+  },
+  {
+    "requirement": "[OP-19545] Replace lodash equality/clone helpers > [!NOTE] > Please review and merge #23732 before this PR (lodash-removal series, parent #65621). Also merge #23729 first — both add `lodash-es`. # Ticket https://community.openproject.org/wp/OP-19545 # What are you trying to accomplish? Continues removing lodash from the frontend (parent: OP-17486 / WP 65621). This is the **equality / clone** bucket: `clone`, `cloneDeep`, `isEqual`, `isEqualWith` (~27 call sites) move off the global `_`. The global `_` deliberately stays — `lodash` is still required by the remaining buckets and is removed only in the final cleanup ticket. ## Screenshots No visual changes. # What approach did you choose and why? - **`clone`** → native shallow copy chosen per type: `{ ...obj }`, `[...arr]`, and a no-op for the one `clone(string)` case. - **`cloneDeep`** → `lodash-es` `cloneDeep` (**not** `structuredClone`). The three sites deep-clone a HAL `$source`. It is usually plain JSON, but a query filter's `$source` can hold live `HalLink` instances (set via the UI when filtering by project/user), and those carry a `requestMethod` **function** — so `structuredClone` throws `DataCloneError` when a query is saved (`cloneFilters()` → `$copy()` → `$plain()`). `lodash-es` `cloneDeep` reproduces the original `_.cloneDeep` behaviour exactly while still dropping the global `_`. - **`isEqual` / `isEqualWith`** → `lodash-es` named imports. There is no safe native deep-equality, and reimplementing one is riskier than keeping the exact lodash implementation; this matches the lodash-es bucket's approach for helpers with no native equivalent. Adds `lodash-es` + `@types/lodash-es` (the same dependency that PR introduces — trivial rebase if it merges first). - Three `expect(_.isEqual(a, b)).toBeTruthy()` spec assertions become idiomatic `expect(a).toEqual(b)`. `tsc --noEmit` passes; the full vitest suite passes (including `hal-resource.spec`, which covers the `cloneDeep` path, and `url-params-helper.spec`, whose assertions were upgraded here).",
+    "type": "bug",
+    "domain": "ui/ux",
+    "complexity": "high"
+  },
+  {
+    "requirement": "[OP-19544] Replace lodash set/dedup helpers with native > [!NOTE] > Please review and merge #23731 before this PR (lodash-removal series, parent #65621). # Ticket https://community.openproject.org/wp/OP-19544 # What are you trying to accomplish? Continues removing lodash from the frontend (parent: OP-17486 / WP 65621). This is the **set / dedup / difference** bucket: `flatten`, `uniq`, `without`, `uniqBy`, `difference`, `differenceBy` (~33 call sites) move from the global `_` to native operations. The global `_` deliberately stays — `lodash` is still required by the remaining buckets and is removed only in the final cleanup ticket. ## Screenshots No visual changes. # What approach did you choose and why? - `flatten(a)` → `a.flat()` (lodash `flatten` is one-level, matching `flat()`). - `uniq(a)` → `Array.from(new Set(a))`. - `without(a, ...vals)` → `a.filter(x => x !== val)` / `!… .includes(x)`. - `difference(a, b)` → `a.filter(x => !b.includes(x))`. - `uniqBy(a, key)` → `a.filter((x, i, self) => i === self.findIndex(y => key(y) === key(x)))`. - `differenceBy(a, b, key)` → `a.filter(x => !b.some(y => key(y) === key(x)))`. The one behavioural subtlety: `uniqBy` keeps the **first** occurrence of each key, which the `findIndex` form preserves — a `Map`-based dedup would keep the last. `tsc --noEmit` passes; the full vitest suite passes (including `wp-view-hierarchy-indentation.service.spec`, which covers one of the `difference` conversions). No dedicated spec added — these conversions live in DI-heavy services/HAL resources with no clean pure seam, and are exercised by the existing suite.",
+    "type": "feature",
+    "domain": "ui/ux",
+    "complexity": "high"
+  },
+  {
+    "requirement": "[OP-19543] Replace lodash null/empty helpers with native > [!NOTE] > Please review and merge #23730 before this PR (lodash-removal series, parent #65621). # Ticket https://community.openproject.org/wp/OP-19543 # What are you trying to accomplish? Continues removing lodash from the frontend (parent: OP-17486 / WP 65621). This is the **null / empty / type-predicate** bucket: `isNil`, `isNaN`, `defaultTo`, `compact`, `isEmpty`, `castArray`, `isObject`, `reject` (~72 call sites) move from the global `_` to native expressions. The global `_` deliberately stays — `lodash` is still required by the remaining buckets and is removed only in the final cleanup ticket. ## Screenshots No visual changes. # What approach did you choose and why? The bulk are exact 1:1 swaps: `isNil(x)` → `x == null`, `isNaN` → `Number.isNaN` (same NaN-only semantics, unlike the global `isNaN`), `defaultTo(x, d)` → `x ?? d` (call sites only default on `null`/`undefined`), `compact(a)` → `a.filter(Boolean)`. The type-aware predicates are handled per call site against the concrete collection type: - `isEmpty` → `.length === 0` / `Object.keys(...).length === 0` for known arrays/objects; for the few `any`/HAL-typed values the faithful general form `x == null || (Array.isArray(x) ? x.length === 0 : Object.keys(x).length === 0)`. - `castArray(x)` → `Array.isArray(x) ? x : [x]`. - `isObject(x)` → `typeof x === 'object' && x !== null`. - `reject(c, p)` → `c.filter((…) => !p(…))`. `compact` results that feed a non-nullable type use a narrowing `(x): x is NonNullable` predicate, because `filter(Boolean)` does not narrow in TypeScript. `tsc --noEmit` drove these; the full vitest suite passes. No dedicated spec was added: unlike the lodash-es bucket (which had the pure `ApiV3FilterBuilder` to lock down), these conversions live in DI-heavy services with no clean pure seam, and are already exercised by the existing suite (`current-user`, `edit-form`, `op-autocompleter`, `url-params`, …).",
+    "type": "feature",
+    "domain": "ui/ux",
+    "complexity": "high"
+  },
+  {
+    "requirement": "[OP-19542] Migrate lodash iteration helpers to native ES6 > [!NOTE] > Please review and merge #23729 before this PR (lodash-removal series, parent #65621 — shared files). # Ticket https://community.openproject.org/wp/OP-19542 # What are you trying to accomplish? Continues removing lodash from the frontend (parent: OP-17486 / WP 65621). This is the **iteration / collection** bucket: `each`/`forEach`, `map`, `find`, `filter`, `some`, `every`, `findIndex`, `keys`, `values`, `assign`, `extend`, `isArray`, `size`, `last`, `has`, `max` all move from the global `_` to native Array / Object methods (~130 call sites). The global `_` deliberately stays — `lodash` is still required by the remaining buckets and is removed only in the final cleanup ticket. ## Screenshots No visual changes. # What approach did you choose and why? Most call sites map 1:1 to native methods. The non-trivial cases — and where reviewer attention is worthwhile — are: - **Object-keyed collections.** `_.each`/`_.map`/`_.filter`/`_.find` iterate object *values* (and pass the key as the 2nd argument). Those sites become `Object.entries(...)` / `Object.values(...)` so value/key iteration is preserved exactly. - **Null-safety.** lodash silently treats `null`/`undefined` collections as empty; native methods throw. Nullable receivers gained explicit `?? {}` / `?? []` / `?.` guards (verified against the types — `tsc` flags any that were missed). - **Shorthand iteratees.** A few `_.find(coll, { id })` matchers were rewritten as predicate functions. `tsc --noEmit` drove the object-vs-array and nullability classification; the full vitest suite passes. A vitest spec was added for `ApiV3FilterBuilder` to lock in the migrated object iteration (the codebase is thin on coverage here). > Note for the reviewer: this branch is cut from `dev` independently of the other lodash buckets; ~9 files overlap the lodash-es bucket (#23729) and will need a trivial rebase if that merges first.",
+    "type": "feature",
+    "domain": "ui/ux",
+    "complexity": "high"
+  },
+  {
+    "requirement": "[OP-19546] Migrate lodash helpers to lodash-es > [!NOTE] > First in the lodash-removal series (parent #65621 / OP-17486). Suggested merge order: > **#23729 → #23730 → #23731 → #23732 → #23733 → #23728 → #23736 (last)**. > Merge this before #23730 (shared files) and #23733 (both add `lodash-es`). # Ticket https://community.openproject.org/wp/OP-19546 # What are you trying to accomplish? Continues removing lodash from the frontend (parent: OP-17486 / WP 65621), following on from the `_.get` migration. This bucket covers the helpers that have **no clean native ES6 equivalent**: `merge`, `sortBy`, `keyBy`, `groupBy`, `pickBy`, `omitBy`, `set`, `debounce`, `escape`, `escapeRegExp`, `truncate`, `range`, `take`, `chunk`, `defaults`, `camelCase`, `upperFirst`. These move from the global `_` to tree-shakeable `lodash-es` named imports, and the existing named `lodash` imports of the same helpers (`debounce`, `DebouncedFunc`, `omit`, `uniqueId`) are repointed to `lodash-es`. Adds `lodash-es` + `@types/lodash-es`. The global `_` deliberately stays — `lodash` is still required by the remaining buckets and is removed only in the final cleanup ticket. ## Screenshots No visual changes. # What approach did you choose and why? `lodash-es` is the ES-module build of the same lodash implementation, so runtime behaviour is identical while enabling tree-shaking. Helpers with straightforward native equivalents (iteration, null/empty, set/dedup, equality/clone) are intentionally **out of scope** here and tracked under sibling tickets, keeping each PR's review focused on a single substitution rule.",
+    "type": "feature",
+    "domain": "ui/ux",
+    "complexity": "high"
+  },
+  {
+    "requirement": "[OP-19541] Replace `_.get` with optional chaining > [!NOTE] > Please review and merge #23733 before this PR (lodash-removal series, parent #65621). # Ticket https://community.openproject.org/wp/OP-19541 # What are you trying to accomplish? First step towards removing lodash from the frontend, starting with `_.get`. All 24 `_.get` call sites are replaced by native optional chaining / nullish coalescing, preserving the lodash default-on-`undefined` semantics. The global `_` stays for now as other lodash helpers (`filter`, `debounce`, ...) remain in use. While migrating, `ConfigurationService` and `ConfigurationResource` are properly typed (declared attributes verified against the live `/api/v3/configuration` response, including nullable fields), removing the `any` access that `_.get` was masking. The configuration loader also switches off the deprecated `Observable.toPromise()` to `firstValueFrom`. ## Screenshots no visual changes # What approach did you choose and why? Removing the `[attribute:string]:any` index signature from `HalResource` wholesale is out of scope (it underpins runtime-attached HAL properties across the app); `ConfigurationResource` is typed here as a contained proof of the per-resource pattern. A couple of dead helpers surfaced during the migration (`trackByTrackingIdentifier`, `hoursPerWeek`) and were removed.",
+    "type": "maintenance",
+    "domain": "ui/ux",
+    "complexity": "high"
+  },
+  {
+    "requirement": "Remove @types/uuid@11.0.0 stub Fixes warning on `npm ci`: \"This is a stub types definition. uuid provides its own type definitions, so you do not need this installed.\" # Ticket # What are you trying to accomplish? ## Screenshots # What approach did you choose and why?",
+    "type": "bug",
+    "domain": "ui/ux",
+    "complexity": "medium"
+  },
+  {
+    "requirement": "Fix frontend spec warnings # Ticket n/a # What are you trying to accomplish? Running `npm run test` (Vitest) from `frontend/` printed a wall of expected console noise — `NG0953` destroyed-`OutputRef` warnings, the jquery-migrate banner, `Unknown icon`, `InvalidStateError`, and \"Failed to activate all erroneous fields.\" The suite passed, but the output buried any genuine failure. This silences the expected noise without hiding real errors. Sample of the noise before this change ``` stderr | op-autocompleter.spec.ts > should display classic formattedId in selected value label NG0953: Unexpected emit for destroyed `OutputRef`. The owning directive/component is destroyed. stderr | dynamic-icon.directive.spec.ts > should warn when rendering unknown icon Unknown icon: unknown-icon stdout | unknown test JQMIGRATE: Migrate is installed with logging active, version 4.0.2 stderr | attribute-help-text-modal.service.spec.ts > should handle Turbo Stream dialog response and update dialog [InvalidStateError: Failed to execute 'showModal' on 'HTMLDialogElement': The element is not in a Document.] stderr | edit-form.spec.ts > does not require visibility twice for newly erroneous inactive fields Failed to activate all erroneous fields. ``` # What approach did you choose and why? - Filter the jquery-migrate banner at the reporter level via Vitest `onConsoleLog` in a new `vitest-base.config.ts` (wired through the builder's `runnerConfig`), rather than monkeypatching the global `console.log`. - Scope expected warnings/errors with `vi.spyOn` per spec, only where the call is part of the assertion, so unrelated output still surfaces. - In the autocompleter spec, drop redundant manual `ngAfterViewInit()` calls (already run by `detectChanges()`) and select items programmatically; in the edit-form spec, await activation with `vi.waitFor` instead of a fixed number of microtask ticks.",
+    "type": "bug",
+    "domain": "ui/ux",
+    "complexity": "high"
+  },
+  {
+    "requirement": "[#SSI-466] remove unescaping logic from nextcloud rename command # Ticket [OP#SSI-466](https://community.openproject.org/wp/SSI-466) # What are you trying to accomplish? - AMPF sync must succeed # What approach did you choose and why? - remove breaking unescaping calls from the rename file command",
+    "type": "maintenance",
+    "domain": "backend",
+    "complexity": "medium"
+  },
+  {
+    "requirement": "Keep CKEditor floating UI inside open dialogs so autocomplete is usable Fixes https://community.openproject.org/work_packages/76021 ## Context CKEditor renders its floating UI (the small list that appears near the cursor after typing `#` or `@`) into a single `.ck-body-wrapper` appended to `document.body`. When an editor is inside a native `` opened with `showModal()` (for example after clicking `Create new child` in the `Relations` tab of a work package), the dialog is in the top layer, so anything in `document.body` is painted behind it and can't be interacted with (whatwg/html#9936). `watchTopLayer` (from #15277) already moved the wrapper into an open dialog, but only when the wrapper was added while a dialog was open. On a work-package page the wrapper already exists, created by the page editors, so opening a dialog reused it and nothing moved it. It also never moved the wrapper back. ## Changes `watchTopLayer` now keeps `.ck-body-wrapper` inside the front-most open dialog, and returns it to `document.body` when none is open. Two observers on `document.body`: a `childList` one (no subtree) for the wrapper and dialogs being added or removed, and an attribute one scoped to the dialog `open` attribute. Restore-on-close uses the `open` attribute mutation, which fires on a microtask, before the close-event task where Turbo removes the dialog. The dialog `close` event does not reach `document` listeners, so a close handler is not an option. Same idea as the existing hover-card and date-picker top-layer handling. No CSS or z-index change. ## Before / after `#` typed in the Description field of the create child dialog. Before: ![before](https://community.openproject.org/api/v3/attachments/921980/content) After: ![after](https://community.openproject.org/api/v3/attachments/921981/content) ## Verifications - Manual: `#` and `@` work above the dialog, and the page editors still work after closing it (Cancel and Escape).",
+    "type": "bug",
+    "domain": "ui/ux",
+    "complexity": "high"
+  },
+  {
+    "requirement": "[STC-356] Disallow setting journal aggregation period to >2 hours # Ticket https://community.openproject.org/projects/STC/work_packages/65108/activity # What are you trying to accomplish? Administrators could enter an arbitrarily large value in the \"User actions aggregated within\" field under Administration → Emails and notifications → Aggregation. When a value large enough to overflow PostgreSQL's `timestamp` range was stored (e.g. `9999999999`), every subsequent call to `Notifications::WorkflowJob` crashed with: ``` PG::DatetimeFieldOverflow: ERROR: timestamp out of range: \"677347521-07-22 12:03:56\" ``` This blocked notification delivery for all users on the affected instance. Let's cap this to a reasonable value -- I'm going with 2 hours, but open to further suggestions. # What approach did you choose and why? * **UI constraint** (`AggregationSettingsForm`): Added `max: 3600` (and `min: 0`) to the number input so the browser enforces the allowed range before a form submission is even made. * **Server-side contract validation** (`Settings::UpdateContract`): Added a `journal_aggregation_time_minutes_range` validation that rejects any value outside `0..3600`. This is the authoritative guard — it runs regardless of how the setting is written (UI, API, console). # Screenshots Before: After:",
+    "type": "bug",
+    "domain": "ui/ux",
+    "complexity": "high"
+  },
+  {
+    "requirement": "[STC-550] Prevent accidental creation of multiple Documents by rapid clicking # Ticket https://community.openproject.org/work_packages/69319 # What are you trying to accomplish? Rapidly clicking the \"+ Document\" button on the Documents index page (both in the sub-header and in the blank-slate view) created multiple documents named \"New document\" before the browser could navigate away. Each click fired an independent Turbo POST to `documents#create`, and without any guard the server happily fulfilled each request. ## Screenshots Before: [Kapture 2026-06-15 at 17.55.24.webm](https://github.com/user-attachments/assets/94bcc6d2-84ee-4ad7-9879-b14658d6750d) After: [Kapture 2026-06-15 at 17.58.17.webm](https://github.com/user-attachments/assets/012287ca-33c9-457d-a93c-9221c7c3ba8e) # What approach did you choose and why? The root cause is that both \"+ Document\" buttons are rendered as `` tags with `data-turbo-method=\"post\"`. The existing `disable-when-clicked` Stimulus controller was written for ``/`` elements and guards them by setting the native `disabled` property after the first click — but `disabled` is not a valid attribute on anchors (it only applies to form elements), so the controller offered no protection here. **Fix — guard repeat clicks, and disable elements semantically:** - An `alreadyClicked` flag was added to `DisableWhenClickedController`. The click handler now receives the `Event`: on the first click it sets the flag and defers disabling; on any subsequent click it calls `event.preventDefault()` and `event.stopImmediatePropagation()` before Turbo's document-level listener sees the event, then returns. This guard is what actually prevents the duplicate Turbo POST, and it works regardless of element type. - The controller's generic was broadened from `HTMLInputElement` to `HTMLElement`, and disabling was split into a `disable()` step that picks the correct mechanism per element: native `disabled` for ``/``, and `aria-disabled=\"true\"` for everything else (e.g. anchors). `aria-disabled` is the correct semantic for non-form elements and keeps them focusable for assistive tech. The `setTimeout` defer is retained so the first click's navigation/POST is not cancelled. - The flag resets automatically when the controller disconnects (i.e. on navigation), so if the server returns an error and the user lands back on the index page the button works again — no extra reset logic needed. **Wire it up on both buttons:** `data: { controller: \"disable-when-clicked\" }` was added to: - The sub-header `+ Document` button via `new_document_path_options` in `SubHeaderComponent` (both the collaborative-documents branch that uses `turbo_method: :post` and the classic branch that navigates to a GET form). - The blank-slate primary action button in `ListComponent`. **Alternatives considered:** - *Convert to a `` + ``* — Turbo natively locks form submission, which would solve this without touching the Stimulus controller. However it would require restructuring the ViewComponent slots and is a larger, higher-risk change for a low-priority bug.",
+    "type": "bug",
+    "domain": "collaboration",
+    "complexity": "high"
+  },
+  {
+    "requirement": "[STC-563] Fix label of new document type button in admin # Ticket https://community.openproject.org/projects/STC/work_packages/69498/activity # What are you trying to accomplish? The \"+Add\" button on the Documents admin Types page (`admin/settings/document_types`) displayed the generic \"Add\" label instead of the context-specific \"Type\" label. The button renders a leading `+` icon automatically, so the full visible label should be \"+Type\" — not \"+Add\". ## Screenshots Before: After:",
+    "type": "bug",
+    "domain": "ui/ux",
+    "complexity": "medium"
+  },
+  {
+    "requirement": "[STC-564] Fix rendering on double separator in enumeration component # Ticket https://community.openproject.org/work_packages/69518 # What are you trying to accomplish? When the Documents administration \"Types\" page has only a single document type, the three-dot more menu displays a double separator line between the \"Edit\" and \"Delete\" items. This is caused by two unconditional `menu.with_divider` calls in `Admin::Enumerations::ItemComponent#build_enumeration_menu` that were intended to bracket the \"move\" actions (Move to top / Move up / Move down / Move to bottom). When only one type exists, `first_item?` and `last_item?` are both true, so no move actions are rendered — but both dividers still appear, producing two consecutive horizontal separator lines. ## What approach did you choose and why? Tweak the conditional that dictates when separators get rendered. The fix lives in the base class `Admin::Enumerations::ItemComponent`, which is shared by all enumeration admin pages (document types, issue priorities, time entry activities, etc.), so all of them benefit from the correction without any additional changes. ## Screenshots N/A",
+    "type": "bug",
+    "domain": "ui/ux",
+    "complexity": "high"
+  },
+  {
+    "requirement": "[#72986] add wiki page link via editor toolbar macro # Ticket - [OP#XWI-35](https://community.openproject.org/wp/XWI-35) # What are you trying to accomplish? - add new macro to inline existing wiki pages as wiki page links # What approach did you choose and why? - add new controller actions and dialog to handle data from ckeditor - enable macro in work package editor context - use forms input for wiki page search - disable wiki macros if no wikis are available - use default provider, if only a single provider is available - update locale keys ### Related ckeditor PR https://github.com/opf/commonmark-ckeditor-build/pull/119",
+    "type": "feature",
+    "domain": "ui/ux",
+    "complexity": "medium"
+  },
+  {
+    "requirement": "Fix rubocop offenses in wikis module Those sneaked in most likely due to a Rubocop update. Fixing them all at once, bringing the wikis module back to formall no offenses. # Ticket none",
+    "type": "bug",
+    "domain": "general",
+    "complexity": "low"
+  },
+  {
+    "requirement": "[DREAM-720] Show project attributes in separate tab in the WP view # Ticket https://community.openproject.org/wp/DREAM-720 # What are you trying to accomplish? Add a tab for project attributes within the WP view **ToDo** - Create new tab called \"Project attributes\" - Render the project attribute of that project in the tab - activate inline editing - Limit to those active for that type - Add tests - Permission checks ## Screenshots",
+    "type": "feature",
+    "domain": "ui/ux",
+    "complexity": "medium"
+  },
+  {
+    "requirement": "Restore accepting X-Requested-With for non-GET requests This is necessary to support HTTP (read: not HTTPS) deployments of OpenProject. # Ticket https://community.openproject.org/wp/OP-19499 # References * https://w3c.github.io/webappsec-fetch-metadata/#sec-fetch-site-header * https://www.w3.org/TR/secure-contexts/#potentially-trustworthy-url * Problem originally introduced via https://github.com/opf/openproject/pull/22549",
+    "type": "feature",
+    "domain": "general",
+    "complexity": "medium"
+  },
+  {
+    "requirement": "[STC-162] Open attachment links from activity tab in a new tab # Ticket https://community.openproject.org/projects/STC/work_packages/59942/activity # What are you trying to accomplish? Attachment links and storage file links shown in the Activity tab now open in a new browser tab, matching the behaviour of the Files tab. Previously, clicking an attachment link in the Activity/Journal tab navigated the current tab away from the work package, requiring a browser back action to return. The Files tab already rendered those same links with `target=\"_blank\"`. This inconsistency was reported and confirmed as a bug; the team decision is that any link to an external resource (file content, storage file) should open in a new tab throughout the application. ## Screenshots Before: After: # What approach did you choose and why? The journal formatters for attachments (`OpenProject::JournalFormatter::Attachment`) and storage file links (`OpenProject::JournalFormatter::FileLink`) each call a `link_to`-based helper — `link_to_attachment` and `link_to_file_link` respectively — to produce the anchor tag. Both helpers already forward arbitrary HTML options to Rails' `link_to`, so adding `target: \"_blank\"` at the two call sites is sufficient.",
+    "type": "bug",
+    "domain": "ui/ux",
+    "complexity": "high"
+  },
+  {
+    "requirement": "Implementation/STC-783: Adapt PDF export of timesheets for semantic identifiers # Ticket https://community.openproject.org/wp/STC-783 # What are you trying to accomplish? On instances configured with project-based work package identifiers, the timesheet PDF export still showed the numeric database id in the work package column. The column now renders the configured identifier, so an entry exports as `PROD-42 Improve onboarding flow` rather than `#65 Improve onboarding flow`. ## Screenshots **Before (classic identifiers)** [stc783-timesheet-classic-before.pdf](https://github.com/user-attachments/files/28877090/stc783-timesheet-classic-before.pdf) **After (semantic identifiers)** [stc783-timesheet-semantic-after.pdf](https://github.com/user-attachments/files/28877088/stc783-timesheet-semantic-after.pdf) # What approach did you choose and why? Same approach as the meeting PDF exports (#23708): the work package cell built its label from the raw numeric id, while the rest of the application renders identifiers through `formatted_id`, which returns the hash-prefixed numeric id in classic mode and the project-based identifier in semantic mode. The cell label now goes through that method; classic-mode output is unchanged, and the link URL already resolved to the configured identifier through the URL helpers.",
+    "type": "bug",
+    "domain": "ui/ux",
+    "complexity": "high"
+  },
+  {
+    "requirement": "[#69801] Real-time collaboration admin page: save button visible on read-only non-editable form # Ticket https://community.openproject.org/work_packages/STC-588 # What are you trying to accomplish? On the real-time collaboration admin settings page, the **Save** button was unconditionally rendered even when all settings (`hocuspocus_url` and `hocuspocus_secret`) are locked via environment variables, making the form fully read-only. The button was non-functional in that state (no editable fields exist) and misleading to administrators. This fix hides the Save button when `none_writable_settings?` is `true` — i.e., when every tracked setting is overridden by an environment variable — and adds a feature spec asserting this behaviour. ## Screenshots Before: After:",
+    "type": "bug",
+    "domain": "collaboration",
+    "complexity": "medium"
+  },
+  {
+    "requirement": "[STC-549] Correct label in new document type form # Ticket https://community.openproject.org/work_packages/69304 # What are you trying to accomplish? The \"Default\" checkbox caption on the admin document types edit form incorrectly reads \"Making this priority default will override the previous default priority.\" — wording copied from the issue priorities form — instead of document-type-specific text. # What approach did you choose and why? Migrate to a shared parametrized translation string. ## Screenshots Before: After:",
+    "type": "bug",
+    "domain": "general",
+    "complexity": "medium"
+  },
+  {
+    "requirement": "Feature/STC-746: Adapt meeting PDF exports for semantic identifiers # Ticket https://community.openproject.org/wp/STC-746 # What are you trying to accomplish? On instances configured with project-based work package identifiers, meeting PDF exports still showed the numeric database id. This PR makes the agenda and minutes templates render the configured identifier instead, so a work package agenda item exports as `Task PROD-42 Improve onboarding flow` rather than `Task #39 Improve onboarding flow`. The same applies to work package outcomes. Work package mentions inside agenda item notes already resolved to the configured identifier through the shared markdown-to-PDF pipeline, and the meeting exporter specs now cover that path too. ## Screenshots **Before (classic identifiers)** [stc746-minutes-classic-before.pdf](https://github.com/user-attachments/files/28876688/stc746-minutes-classic-before.pdf) **After (semantic identifiers)** [stc746-minutes-semantic-after.pdf](https://github.com/user-attachments/files/28876689/stc746-minutes-semantic-after.pdf) # What approach did you choose and why? The agenda title and outcome lines built their label with the raw numeric id, while the rest of the application (the meeting page itself, the work package PDF exports, mention expansion) renders identifiers through `formatted_id`, which returns the hash-prefixed numeric id in classic mode and the project-based identifier in semantic mode. The fix is to build the meeting PDF labels the same way, through a single helper shared by the agenda item title and the outcome line. Link URLs needed no change since URL helpers already resolve to the configured identifier. Undisclosed work package references (where the viewer lacks permission) keep showing the numeric id, consistent with how the meeting page renders them.",
+    "type": "bug",
+    "domain": "ui/ux",
+    "complexity": "high"
+  },
+  {
+    "requirement": "Work Package Card: normalize priority label width # Ticket https://community.openproject.org/wp/AGILE-281 # What are you trying to accomplish? Cuts off after a certain threshold. Using a fixed width leads to a more structured and calm visual design. The price is that a bit of space is wasted for priorities with shorter names. As fixed width, I chose 90 px as it could hold \"Immediate\", which is the longest predefined priority in English - and then add 10 pixels of additional buffer space. It might not work as well for other languages (or different font settings and sizes), but we have to choose _some_ width if we want to go with this general approach. I briefly considered using the `ch` unit instead of `px`, but it does not seem like we use it anywhere else in OP. Hence, I stuck to `px`. ## Screenshots ### Before ### After",
+    "type": "bug",
+    "domain": "general",
+    "complexity": "medium"
+  },
+  {
+    "requirement": "Implement scope to get all `ResourceAllocation` objects for a given project # Ticket Preparation for https://community.openproject.org/projects/OP/work_packages/OP-19444/activity This adds a scope to get all `ResourceAllocation` models that are connected to a given project. In the implementation we can then use `ResourceAllication.for_project(@project).needs_principal_assignment`",
+    "type": "feature",
+    "domain": "backend",
+    "complexity": "medium"
+  },
+  {
+    "requirement": "[OP-19489] Update docs after adding multiple variants # Ticket https://community.openproject.org/wp/OP-19489",
+    "type": "feature",
+    "domain": "general",
+    "complexity": "low"
+  },
+  {
+    "requirement": "Code-maintenance: remove unreachable WorkPackageCostlogController Dead code cleanup: `WorkPackageCostlogController` has no route in the application and is referenced nowhere, so it can never be dispatched. The similarly-named cost-report redirect flow is served elsewhere.",
+    "type": "maintenance",
+    "domain": "general",
+    "complexity": "low"
+  },
+  {
+    "requirement": "test: cover blank work-package journal values in meeting activity formatter Regression coverage for an `UnsupportedLookup` on the activity stream: a meeting agenda-item journal holds a blank value for the absent side of a work-package link, and rendering it must show the undisclosed label rather than trip the `find_by` semantic-id guard. Test-only — the predicate-level fix already landed in #23213.",
+    "type": "bug",
+    "domain": "general",
+    "complexity": "medium"
+  }
+]

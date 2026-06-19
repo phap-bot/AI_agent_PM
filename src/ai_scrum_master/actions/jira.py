@@ -208,19 +208,53 @@ class JiraTool:
         )
         
         if self.config.board_id and (story_key or created_splits):
-            logger.info("Attempting to move stories to active sprint on board %s", self.config.board_id)
+            logger.info("Attempting to move stories to sprint on board %s", self.config.board_id)
             try:
-                sprint_id = self._get_active_sprint(self.config.board_id)
-                if sprint_id:
-                    keys_to_move = []
-                    if story_key:
-                        keys_to_move.append(story_key)
-                    keys_to_move.extend(created_splits)
-                    for key in keys_to_move:
-                        self._move_issue_to_sprint(sprint_id, key)
-                    logger.info("Stories successfully moved to sprint %s", sprint_id)
+                sprints = story.get("sprint_allocation", [])
+                target_sprint_name = None
+                if sprints and len(sprints) > 0:
+                    if isinstance(sprints[0], dict):
+                        target_sprint_name = sprints[0].get("name") or str(sprints[0])
+                    else:
+                        target_sprint_name = str(sprints[0])
+                        
+                if target_sprint_name:
+                    logger.info("AI suggested sprint allocation: %s", target_sprint_name)
+                    sprint_id = self._get_or_create_sprint_by_name(self.config.board_id, target_sprint_name)
+                    if sprint_id:
+                        keys_to_move = []
+                        if story_key:
+                            keys_to_move.append(story_key)
+                        keys_to_move.extend(created_splits)
+                        for key in keys_to_move:
+                            self._move_issue_to_sprint(sprint_id, key)
+                        logger.info("Stories successfully moved to sprint %s (%s)", target_sprint_name, sprint_id)
+                    else:
+                        logger.warning("Failed to resolve sprint %s. Attempting fallback to active sprint.", target_sprint_name)
+                        sprint_id = self._get_active_sprint(self.config.board_id)
+                        if sprint_id:
+                            keys_to_move = []
+                            if story_key:
+                                keys_to_move.append(story_key)
+                            keys_to_move.extend(created_splits)
+                            for key in keys_to_move:
+                                self._move_issue_to_sprint(sprint_id, key)
+                            logger.info("Stories successfully moved to active sprint %s", sprint_id)
+                        else:
+                            logger.info("No active sprint found. Stories remain in backlog.")
                 else:
-                    logger.info("No active sprint found on board %s. Stories remain in backlog.", self.config.board_id)
+                    logger.info("No sprint_allocation provided by AI. Attempting fallback to active sprint.")
+                    sprint_id = self._get_active_sprint(self.config.board_id)
+                    if sprint_id:
+                        keys_to_move = []
+                        if story_key:
+                            keys_to_move.append(story_key)
+                        keys_to_move.extend(created_splits)
+                        for key in keys_to_move:
+                            self._move_issue_to_sprint(sprint_id, key)
+                        logger.info("Stories successfully moved to active sprint %s", sprint_id)
+                    else:
+                        logger.info("No active sprint found. Stories remain in backlog.")
             except Exception as e:
                 msg = f"Failed to move stories to sprint: {e}"
                 logger.warning(msg)
@@ -314,6 +348,37 @@ class JiraTool:
             values = response.json_body.get("values", [])
             if values:
                 return values[0].get("id")
+        return None
+
+    def _get_or_create_sprint_by_name(self, board_id: str, sprint_name: str) -> int | None:
+        url = f"{self.config.base_url.rstrip('/')}/rest/agile/1.0/board/{board_id}/sprint"
+        response = self.http_client.get_json(
+            url=url,
+            basic_auth=(self.config.email, self.config.api_token),
+            headers={"Accept": "application/json"}
+        )
+        if response.status_code == 200 and response.json_body:
+            values = response.json_body.get("values", [])
+            for sprint in values:
+                if sprint.get("name", "").lower() == sprint_name.lower():
+                    return sprint.get("id")
+                    
+        # If not found, create it
+        from datetime import datetime, timedelta, timezone
+        now = datetime.now(timezone.utc)
+        end = now + timedelta(days=14)
+        payload = {
+            "name": sprint_name,
+            "startDate": now.isoformat(timespec='milliseconds').replace("+00:00", "+0000"),
+            "endDate": end.isoformat(timespec='milliseconds').replace("+00:00", "+0000"),
+            "originBoardId": int(board_id)
+        }
+        create_url = f"{self.config.base_url.rstrip('/')}/rest/agile/1.0/sprint"
+        create_resp = self._post_with_retry(create_url, payload)
+        if create_resp.status_code in [200, 201] and create_resp.json_body:
+            return create_resp.json_body.get("id")
+            
+        logger.warning("Failed to auto-create sprint '%s': status=%s body=%s", sprint_name, create_resp.status_code, create_resp.text)
         return None
 
     def _move_issue_to_sprint(self, sprint_id: int, issue_key: str) -> None:

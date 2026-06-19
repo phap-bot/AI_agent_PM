@@ -139,7 +139,7 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
 
       <div className="p-container-padding space-y-stack-lg">
         {/* Error/Warning Issues from Evaluator */}
-        {evaluation && evaluation.issues && evaluation.issues.length > 0 && (
+        {evaluation && evaluation.issues && evaluation.issues.length > 0 && !(draft.story_type === 'oversized_request' || draft.planning_status === 'SPLIT_RECOMMENDED') && (
           <div className="bg-red-50 border border-red-200 p-4 rounded-xl text-red-800 text-body-md">
             <strong>Issues Identified:</strong>
             <ul className="list-disc ml-5 mt-2">
@@ -438,6 +438,22 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
             {actionExecution.slack.warnings?.length > 0 && (
               <ul className="list-disc ml-5 mt-2">
                 {actionExecution.slack.warnings.map((warning, i) => <li key={i}>{warning}</li>)}
+              </ul>
+            )}
+          </div>
+        )}
+
+        {actionExecution?.github && (
+          <div className={`p-4 rounded-xl border text-body-md mt-2 ${actionExecution.github.executed ? 'bg-purple-50 border-purple-200 text-purple-800' : 'bg-red-50 border-red-200 text-red-800'}`}>
+            <strong>{actionExecution.github.executed ? 'GitHub feature branch created.' : 'GitHub action failed.'}</strong>
+            {actionExecution.github.created?.branch_url && (
+              <p className="mt-1">
+                Branch: <a className="underline font-bold" href={actionExecution.github.created.branch_url} target="_blank" rel="noreferrer">{actionExecution.github.payload?.branch_name || 'View Branch'}</a>
+              </p>
+            )}
+            {actionExecution.github.warnings?.length > 0 && (
+              <ul className="list-disc ml-5 mt-2">
+                {actionExecution.github.warnings.map((warning, i) => <li key={i}>{warning}</li>)}
               </ul>
             )}
           </div>

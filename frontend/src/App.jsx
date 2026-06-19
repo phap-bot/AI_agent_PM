@@ -9,11 +9,15 @@ import HistoryPanel from './components/HistoryPanel';
 import SprintBoardPanel from './components/SprintBoardPanel';
 import JiraConfigPanel from './components/JiraConfigPanel';
 import SlackConfigPanel from './components/SlackConfigPanel';
+import GithubConfigPanel from './components/GithubConfigPanel';
 import ProjectDropdown from './components/ProjectDropdown';
 import { getProjects, createProject, updateProject, deleteProject } from './lib/api';
+import DashboardPanel from './components/DashboardPanel';
+import AnalyticsPanel from './components/AnalyticsPanel';
+import TeamPanel from './components/TeamPanel';
 
 function App() {
-  const [currentView, setCurrentView] = useState(() => localStorage.getItem('currentView') || 'project');
+  const [currentView, setCurrentView] = useState(() => localStorage.getItem('currentView') || 'dashboard');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   
@@ -285,9 +289,26 @@ function App() {
         <div className="flex items-center gap-gutter">
           <span className="text-headline-md font-headline-md font-bold text-primary">AI Scrum Master</span>
           <nav className="hidden md:flex items-center gap-stack-lg ml-stack-lg">
-            <a className="text-primary border-b-2 border-primary pb-1 font-label-md text-label-md">Dashboard</a>
-            <a className="text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md">Analytics</a>
-            <a className="text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md">Team</a>
+            <a 
+              onClick={() => setCurrentView('dashboard')}
+              className={`cursor-pointer font-label-md text-label-md transition-colors ${currentView === 'dashboard' ? 'text-primary border-b-2 border-primary pb-1' : 'text-on-surface-variant hover:text-primary'}`}>
+              Dashboard
+            </a>
+            <a 
+              onClick={() => setCurrentView('analytics')}
+              className={`cursor-pointer font-label-md text-label-md transition-colors ${currentView === 'analytics' ? 'text-primary border-b-2 border-primary pb-1' : 'text-on-surface-variant hover:text-primary'}`}>
+              Analytics
+            </a>
+            <a 
+              onClick={() => setCurrentView('team')}
+              className={`cursor-pointer font-label-md text-label-md transition-colors ${currentView === 'team' ? 'text-primary border-b-2 border-primary pb-1' : 'text-on-surface-variant hover:text-primary'}`}>
+              Team
+            </a>
+            <a 
+              onClick={() => setCurrentView('project')}
+              className={`cursor-pointer font-label-md text-label-md transition-colors ${currentView === 'project' ? 'text-primary border-b-2 border-primary pb-1' : 'text-on-surface-variant hover:text-primary'}`}>
+              SmartLib
+            </a>
           </nav>
         </div>
         <div className="flex items-center gap-stack-md">
@@ -310,7 +331,22 @@ function App() {
             />
           </div>
 
-          <button className="bg-primary text-on-primary px-container-padding py-unit rounded-lg font-label-md text-label-md hover:opacity-80 transition-all active:scale-95">Create Sprint</button>
+          <button 
+            onClick={async () => {
+              try {
+                const api = await import('./lib/api');
+                const res = await api.createSprint(activeProjectId);
+                alert(`Sprint created successfully: ${res.sprint?.name || 'Success'}`);
+                localStorage.setItem('currentView', 'sprint');
+                window.location.reload();
+              } catch (err) {
+                alert(`Failed to create sprint: ${err.message}`);
+              }
+            }}
+            className="bg-primary text-on-primary px-container-padding py-unit rounded-lg font-label-md text-label-md hover:opacity-80 transition-all active:scale-95"
+          >
+            Create Sprint
+          </button>
           <span className="material-symbols-outlined text-on-surface-variant cursor-pointer">notifications</span>
           <span className="material-symbols-outlined text-on-surface-variant cursor-pointer">help</span>
           <div className="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant">
@@ -424,7 +460,7 @@ function App() {
             className={`flex items-center gap-stack-sm p-stack-sm rounded-lg font-label-md text-label-md cursor-pointer transition-colors ${currentView === 'project' ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container-high'}`}
             onClick={() => setCurrentView('project')}
           >
-            <span className="material-symbols-outlined">folder_open</span> Dự án
+            <span className="material-symbols-outlined">folder_open</span> Dự Án
           </a>
           <a 
             className={`flex items-center gap-stack-sm p-stack-sm rounded-lg font-label-md text-label-md cursor-pointer transition-colors ${currentView === 'sprint' ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container-high'}`}
@@ -449,24 +485,21 @@ function App() {
               <span className="material-symbols-outlined">hub</span> Cấu hình Slack
             </div>
           </div>
-          <div className="flex justify-between items-center px-stack-sm mt-stack-md mb-unit">
-            <p className="text-[10px] uppercase tracking-wider font-bold text-outline">History</p>
-            <button 
-              onClick={() => setCurrentView('history')}
-              className={`text-[10px] uppercase font-bold hover:underline ${currentView === 'history' ? 'text-primary' : 'text-outline hover:text-primary'}`}
-            >
-              Xem tất cả
-            </button>
-          </div>
-          <div className="px-stack-sm space-y-stack-sm">
-            <div 
-              onClick={() => setCurrentView('history')}
-              className="p-stack-sm bg-surface rounded border border-outline-variant cursor-pointer hover:border-primary transition-colors"
-            >
-              <p className="text-label-md font-label-md truncate">Nhấn để xem kho lưu trữ</p>
-              <p className="text-[10px] text-outline">Tất cả lịch sử yêu cầu</p>
+          <div 
+            className={`flex items-center justify-between p-stack-sm rounded-lg font-label-md text-label-md cursor-pointer transition-colors ${currentView === 'config_github' ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container-high'}`}
+            onClick={() => setCurrentView('config_github')}
+          >
+            <div className="flex items-center gap-stack-sm">
+              <span className="material-symbols-outlined">code</span> Cấu hình GitHub
             </div>
           </div>
+          <p className="text-[10px] uppercase tracking-wider font-bold text-outline px-stack-sm mt-stack-md mb-unit">History</p>
+          <a 
+            className={`flex items-center gap-stack-sm p-stack-sm rounded-lg font-label-md text-label-md cursor-pointer transition-colors ${currentView === 'history' ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container-high'}`}
+            onClick={() => setCurrentView('history')}
+          >
+            <span className="material-symbols-outlined">history</span> Lịch sử truy vấn
+          </a>
         </nav>
         <div className="mt-auto border-t border-outline-variant pt-stack-md">
           <a className="flex items-center gap-stack-sm p-stack-sm text-on-surface-variant hover:bg-surface-container-high rounded-lg font-label-md text-label-md">
@@ -541,7 +574,11 @@ function App() {
             </div>
         </div>
 
-        <div style={{ display: currentView === 'history' ? 'block' : 'none' }}>
+        <div style={{ display: currentView === 'dashboard' ? 'block' : 'none' }}>
+          <DashboardPanel projectId={activeProjectId} />
+        </div>
+
+        <div style={{ display: currentView === 'history' ? 'block' : 'none' }} className="h-full">
           <HistoryPanel 
             isActive={currentView === 'history'} 
             projectId={activeProjectId}
@@ -562,6 +599,18 @@ function App() {
 
         <div style={{ display: currentView === 'config_slack' ? 'block' : 'none' }}>
           <SlackConfigPanel projectId={activeProjectId} />
+        </div>
+
+        <div style={{ display: currentView === 'config_github' ? 'block' : 'none' }}>
+          <GithubConfigPanel projectId={activeProjectId} />
+        </div>
+
+        <div style={{ display: currentView === 'analytics' ? 'block' : 'none' }}>
+          <AnalyticsPanel projectId={activeProjectId} />
+        </div>
+
+        <div style={{ display: currentView === 'team' ? 'block' : 'none' }}>
+          <TeamPanel projectId={activeProjectId} />
         </div>
       </main>
 

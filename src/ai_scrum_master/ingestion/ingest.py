@@ -10,11 +10,7 @@ from typing import Any, Iterable, Sequence
 
 from ai_scrum_master.core.config.settings import BASE_DIR, get_settings
 from ai_scrum_master.core.utils.logging import get_logger
-from ai_scrum_master.ingestion.pdf_processing import (
-    chunk_pdf_document,
-    extract_pdf_document,
-    normalize_pdf_document,
-)
+
 from ai_scrum_master.retrieval.rag import LANGCHAIN_INSTALL_HINT, add_langchain_documents
 from ai_scrum_master.retrieval.vector_store import canonical_collection_name
 
@@ -76,6 +72,25 @@ def build_text_splitter(
         chunk_overlap=chunk_overlap,
         separators=list(separators),
     )
+
+
+def build_markdown_splitter() -> Any | None:
+    try:
+        MarkdownHeaderTextSplitter = _load_langchain_attr(
+            "langchain_text_splitters",
+            "MarkdownHeaderTextSplitter",
+        )
+    except IngestionDependencyError:
+        return None
+        
+    headers_to_split_on = [
+        ("#", "Header 1"),
+        ("##", "Header 2"),
+        ("###", "Header 3"),
+        ("####", "Header 4"),
+        ("#####", "Header 5"),
+    ]
+    return MarkdownHeaderTextSplitter(headers_to_split_on=headers_to_split_on, strip_headers=False)
 
 
 def _load_langchain_attr(module_name: str, attr_name: str) -> Any:
@@ -194,13 +209,8 @@ def read_source_text(path: Path) -> str:
 
 
 def read_pdf_text(path: Path) -> str:
-    from pypdf import PdfReader
-
-    reader = PdfReader(str(path))
-    pages = []
-    for page in reader.pages:
-        pages.append(page.extract_text() or "")
-    return "\n\n".join(page.strip() for page in pages if page.strip())
+    import pymupdf4llm
+    return pymupdf4llm.to_markdown(str(path))
 
 
 def document_hash(path: Path, text: str) -> str:
@@ -218,32 +228,18 @@ def load_source_documents(source_dir: Path) -> list[Any]:
         chunk_overlap=settings.rag_chunk_overlap,
         separators=DEFAULT_CHUNK_SEPARATORS,
     )
+    md_splitter = build_markdown_splitter()
 
     for path in iter_source_files(source_dir):
-        if path.suffix.lower() == ".pdf" and settings.pdf_semantic_chunking:
-            extracted = extract_pdf_document(
-                path,
-                extractor=settings.pdf_extractor,
-                fallback_on_error=settings.pdf_fallback_on_error,
-            )
-            normalized = normalize_pdf_document(
-                extracted,
-                remove_headers_footers=settings.pdf_remove_headers_footers,
-            )
-            documents.extend(
-                chunk_pdf_document(
-                    normalized,
-                    document_factory=Document,
-                    text_splitter=splitter,
-                    chunk_size=settings.rag_chunk_size,
-                    chunk_overlap=settings.rag_chunk_overlap,
-                )
-            )
-            continue
-
         text = read_source_text(path)
         if text.strip():
-            documents.append(Document(page_content=text, metadata={"source": str(path)}))
+            if md_splitter:
+                md_docs = md_splitter.split_text(text)
+                for doc in md_docs:
+                    doc.metadata["source"] = str(path)
+                    documents.append(doc)
+            else:
+                documents.append(Document(page_content=text, metadata={"source": str(path)}))
     return documents
 
 
@@ -257,33 +253,19 @@ def load_source_documents_from_paths(paths: list[Path], source_dir: Path) -> lis
         chunk_overlap=settings.rag_chunk_overlap,
         separators=DEFAULT_CHUNK_SEPARATORS,
     )
+    md_splitter = build_markdown_splitter()
 
     for path in paths:
         logger.info("[INGEST] Loading file: %s", path.name)
-        if path.suffix.lower() == ".pdf" and settings.pdf_semantic_chunking:
-            extracted = extract_pdf_document(
-                path,
-                extractor=settings.pdf_extractor,
-                fallback_on_error=settings.pdf_fallback_on_error,
-            )
-            normalized = normalize_pdf_document(
-                extracted,
-                remove_headers_footers=settings.pdf_remove_headers_footers,
-            )
-            documents.extend(
-                chunk_pdf_document(
-                    normalized,
-                    document_factory=Document,
-                    text_splitter=splitter,
-                    chunk_size=settings.rag_chunk_size,
-                    chunk_overlap=settings.rag_chunk_overlap,
-                )
-            )
-            continue
-
         text = read_source_text(path)
         if text.strip():
-            documents.append(Document(page_content=text, metadata={"source": str(path)}))
+            if md_splitter:
+                md_docs = md_splitter.split_text(text)
+                for doc in md_docs:
+                    doc.metadata["source"] = str(path)
+                    documents.append(doc)
+            else:
+                documents.append(Document(page_content=text, metadata={"source": str(path)}))
     return documents
 
 

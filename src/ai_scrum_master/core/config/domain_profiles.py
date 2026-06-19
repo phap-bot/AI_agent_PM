@@ -315,31 +315,6 @@ DOMAIN_PROFILES = {
 }
 
 
-OVERSIZED_CAPABILITIES = (
-    "full",
-    "portal",
-    "platform",
-    "authentication",
-    "billing",
-    "admin dashboard",
-    "notifications",
-    "analytics",
-    "profile management",
-    "reporting",
-    "permissions",
-    "audit logs",
-    "crud",
-    "management",
-    "tracking",
-    "delivery",
-    "assignment",
-    "creation",
-    "lifecycle",
-    "end-to-end",
-    "workflow",
-)
-
-
 SPLIT_CAPABILITIES = (
     "authentication",
     "billing",

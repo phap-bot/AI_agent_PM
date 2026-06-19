@@ -9,7 +9,6 @@ from ai_scrum_master.core.validation.quality import (
     AMBIGUOUS_REQUEST,
     FIBONACCI_POINTS,
     OVERSIZED_REQUEST,
-    classify_requirement,
     domain_contamination_issues,
     is_given_when_then_ordered,
     is_placeholder_task,
@@ -87,7 +86,8 @@ def validate_post_generation(requirement: str, story: dict[str, Any] | None, con
         issues.extend(_oversized_issues(story, requirement))
         return _result(story, issues, warnings, SPLIT_RECOMMENDED)
 
-    issues.extend(domain_contamination_issues(requirement, story))
+    domain_for_validation = route.get("domain", "general") if route else "general"
+    issues.extend(domain_contamination_issues(domain_for_validation, requirement, story))
     issues.extend(_required_context_issues(context))
     issues.extend(_forbidden_domain_issues(story, route))
     warnings.extend(_optional_context_warnings(context))
@@ -101,8 +101,8 @@ def validate_post_generation(requirement: str, story: dict[str, Any] | None, con
     return _result(story, issues, warnings, REVISION if issues else planning_status)
 
 
-def evaluate_planner_output(requirement: str, story: dict[str, Any], context: dict[str, Any]) -> dict[str, Any]:
-    issues = validate_story_against_requirement(requirement, story)
+def evaluate_planner_output(requirement_type: str, requirement: str, story: dict[str, Any], context: dict[str, Any]) -> dict[str, Any]:
+    issues = validate_story_against_requirement(requirement_type, requirement, story)
     criteria = story.get("acceptance_criteria", [])
     tasks = story.get("tasks", {}) if isinstance(story.get("tasks"), dict) else {}
     dod = story.get("definition_of_done", [])

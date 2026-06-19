@@ -1,0 +1,213 @@
+import React, { useEffect, useState } from 'react';
+import { fetchAnalyticsOverview } from '../lib/api';
+
+export default function AnalyticsPanel({ projectId }) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [animate, setAnimate] = useState(false);
+
+  useEffect(() => {
+    async function loadData() {
+      setLoading(true);
+      setAnimate(false);
+      try {
+        const response = await fetchAnalyticsOverview(projectId);
+        setData(response);
+      } catch (err) {
+        console.error("Failed to load analytics data:", err);
+      } finally {
+        setLoading(false);
+        // Trigger animations after a short delay
+        setTimeout(() => setAnimate(true), 100);
+      }
+    }
+    loadData();
+  }, [projectId]);
+
+  return (
+    <div className="p-margin-page max-w-[1600px] w-full mx-auto space-y-stack-lg">
+      <div className="flex justify-between items-end">
+        <div>
+          <h2 className="font-display-lg text-display-lg">Sprint Analytics</h2>
+          <p className="text-on-surface-variant mt-1">Global performance metrics across active projects.</p>
+        </div>
+        <div className="flex gap-stack-sm">
+          <button className="flex items-center gap-unit px-4 py-2 bg-white border border-outline-variant rounded-lg hover:bg-surface-container transition-all">
+            <span className="material-symbols-outlined text-[18px]">calendar_today</span>
+            <span className="font-label-md">Last 30 Days</span>
+          </button>
+          <button className="flex items-center gap-unit px-4 py-2 bg-primary text-on-primary rounded-lg hover:brightness-110 transition-all">
+            <span className="material-symbols-outlined text-[18px]">download</span>
+            <span className="font-label-md">Export Report</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-12 gap-gutter">
+        <div className="col-span-12 lg:col-span-8 bg-white rounded-xl border border-outline-variant p-container-padding shadow-sm" style={{borderLeft: "4px solid #4b41e1"}}>
+          <div className="flex justify-between items-start mb-stack-lg">
+            <div>
+              <span className="px-2 py-0.5 bg-secondary-container text-on-secondary-container text-[10px] rounded uppercase font-bold tracking-wider">AI AGENT INSIGHT</span>
+              <h3 className="font-headline-sm text-headline-sm mt-2">Accuracy Trend: Estimation Precision</h3>
+            </div>
+            <div className="text-right">
+              <span className="text-display-lg font-bold text-primary">{data?.accuracy || 0}%</span>
+              <p className="text-label-md text-on-surface-variant">{data?.accuracyTrend || '--'}</p>
+            </div>
+          </div>
+          <div className="h-64 relative bg-surface-container-lowest rounded-lg border border-dashed border-outline-variant flex items-center justify-center overflow-hidden">
+            <div className="absolute inset-0 opacity-10 pointer-events-none">
+              <svg className="w-full h-full" viewBox="0 0 800 200">
+                <path d="M0,150 Q100,100 200,130 T400,80 T600,110 T800,40" fill="none" stroke="currentColor" strokeWidth="4"></path>
+              </svg>
+            </div>
+            <div className={`z-10 text-center transition-all duration-1000 transform ${animate ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
+              <p className="font-mono-sm text-outline">[ AI INSIGHT ]</p>
+              <p className="text-body-md mt-2 text-on-surface-variant italic max-w-lg mx-auto">
+                "{data?.aiInsightText || 'Loading insights...'}"
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-span-12 lg:col-span-4 bg-white rounded-xl border border-outline-variant p-container-padding shadow-sm flex flex-col">
+          <h3 className="font-label-md text-label-md text-outline uppercase tracking-widest mb-stack-md">Team Velocity</h3>
+          <div className="flex-1 flex flex-col justify-between">
+            <div className="space-y-stack-md">
+              {data?.teamVelocityDetails?.length > 0 ? data.teamVelocityDetails.map((tv, i) => (
+                <div key={i} className="flex justify-between items-end border-b border-outline-variant pb-2">
+                  <span className="font-body-md">{tv.name}</span>
+                  <span className="font-headline-sm text-primary">{tv.pts} <span className="text-label-md text-on-surface-variant font-normal">pts</span></span>
+                </div>
+              )) : (
+                <div className="text-on-surface-variant text-sm py-4">No data available</div>
+              )}
+            </div>
+            <div className="mt-stack-lg pt-stack-md border-t border-outline-variant">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-primary"></div>
+                <span className="text-label-md">Average: {data?.averageVelocity || 0} pts / sprint</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-span-12 md:col-span-6 bg-white rounded-xl border border-outline-variant p-container-padding shadow-sm">
+          <div className="flex justify-between mb-stack-md">
+            <h3 className="font-headline-sm text-headline-sm">Ticket Lead Time</h3>
+            <span className="material-symbols-outlined text-outline">info</span>
+          </div>
+          <div className="grid grid-cols-4 items-end gap-2 h-40">
+            <div 
+              className="bg-primary/20 rounded-t flex flex-col justify-end items-center pb-2 transition-all duration-1000 ease-out" 
+              style={{ height: animate ? `${Math.max(10, data?.leadTimeData?.['1d']?.percentage || 0)}%` : '0%' }}>
+              <span className="text-[10px] font-bold">{data?.leadTimeData?.['1d']?.count || 0}</span>
+            </div>
+            <div 
+              className="bg-primary/40 rounded-t flex flex-col justify-end items-center pb-2 transition-all duration-1000 ease-out delay-100" 
+              style={{ height: animate ? `${Math.max(10, data?.leadTimeData?.['2d']?.percentage || 0)}%` : '0%' }}>
+              <span className="text-[10px] font-bold">{data?.leadTimeData?.['2d']?.count || 0}</span>
+            </div>
+            <div 
+              className="bg-primary rounded-t flex flex-col justify-end items-center pb-2 text-white transition-all duration-1000 ease-out delay-200" 
+              style={{ height: animate ? `${Math.max(10, data?.leadTimeData?.['3d']?.percentage || 0)}%` : '0%' }}>
+              <span className="text-[10px] font-bold">{data?.leadTimeData?.['3d']?.count || 0}</span>
+            </div>
+            <div 
+              className="bg-primary/30 rounded-t flex flex-col justify-end items-center pb-2 transition-all duration-1000 ease-out delay-300" 
+              style={{ height: animate ? `${Math.max(10, data?.leadTimeData?.['5d']?.percentage || 0)}%` : '0%' }}>
+              <span className="text-[10px] font-bold">{data?.leadTimeData?.['5d']?.count || 0}</span>
+            </div>
+          </div>
+          <div className="mt-4 flex justify-between text-label-md text-on-surface-variant">
+            <span>&lt;1d</span>
+            <span>2d</span>
+            <span>3d-4d</span>
+            <span>5d+</span>
+          </div>
+        </div>
+
+        <div className="col-span-12 md:col-span-6 bg-white rounded-xl border border-outline-variant p-container-padding shadow-sm">
+          <div className="flex justify-between mb-stack-md">
+            <h3 className="font-headline-sm text-headline-sm">Active Burndown</h3>
+            <div className="flex gap-2">
+              <span className="flex items-center gap-1 text-label-md">
+                <span className="w-3 h-0.5 bg-outline-variant"></span> Ideal
+              </span>
+              <span className="flex items-center gap-1 text-label-md">
+                <span className="w-3 h-0.5 bg-primary"></span> Actual
+              </span>
+            </div>
+          </div>
+          <div className="h-40 w-full bg-surface-container relative rounded overflow-hidden">
+            <svg className="w-full h-full" preserveAspectRatio="none">
+              <line stroke="#c3c6d7" strokeDasharray="4" strokeWidth="1" x1="0" x2="100%" y1="0" y2="100%"></line>
+              <path 
+                d={data?.activeBurndownPath || "M0,100 L100,100"} 
+                fill="none" 
+                stroke="#004ac6" 
+                strokeWidth="3"
+                style={{
+                  strokeDasharray: 1000,
+                  strokeDashoffset: animate ? 0 : 1000,
+                  transition: "stroke-dashoffset 2s ease-in-out"
+                }}
+              ></path>
+            </svg>
+          </div>
+          <div className="mt-4 flex justify-between text-label-md text-on-surface-variant font-mono-sm">
+            <span>START</span>
+            <span>MID</span>
+            <span>END</span>
+          </div>
+        </div>
+
+        <div className="col-span-12 bg-white rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+          <div className="px-container-padding py-stack-md border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+            <h3 className="font-headline-sm text-headline-sm">Project Resource Efficiency</h3>
+            <div className="flex gap-stack-sm">
+              <span className="px-3 py-1 bg-green-100 text-green-800 text-[11px] rounded-full font-bold">HEALTHY SYSTEM</span>
+            </div>
+          </div>
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-surface text-outline font-label-md border-b border-outline-variant">
+                <th className="p-4 font-semibold">PROJECT NAME</th>
+                <th className="p-4 font-semibold">CYCLE TIME</th>
+                <th className="p-4 font-semibold">BLOCKER RATIO</th>
+                <th className="p-4 font-semibold">AI AUTOMATION</th>
+                <th className="p-4 font-semibold">TREND</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-outline-variant text-body-md">
+              {data?.resourceEfficiency?.length > 0 ? data.resourceEfficiency.map((item, idx) => (
+                <tr key={idx} className="hover:bg-surface-container-low transition-colors">
+                  <td className="p-4 font-semibold">{item.name}</td>
+                  <td className="p-4">{item.cycleTime}</td>
+                  <td className="p-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-24 h-2 bg-surface-variant rounded-full overflow-hidden">
+                        <div className={`h-full transition-all duration-1000 ease-out ${item.blockerRatio > 20 ? 'bg-error' : 'bg-tertiary'}`} style={{ width: animate ? `${item.blockerRatio}%` : '0%' }}></div>
+                      </div>
+                      <span className={`text-label-md ${item.blockerRatio > 20 ? 'text-error' : ''}`}>{item.blockerRatio}%</span>
+                    </div>
+                  </td>
+                  <td className="p-4">
+                    <span className={`px-2 py-1 rounded text-[11px] font-bold ${item.aiAutomation.includes('100%') ? 'bg-primary-fixed text-on-primary-fixed-variant' : 'bg-surface-variant text-on-surface-variant'}`}>{item.aiAutomation}</span>
+                  </td>
+                  <td className={`p-4 ${item.trend === 'up' ? 'text-green-600' : 'text-error'}`}>
+                    <span className="material-symbols-outlined">
+                      {item.trend === 'up' ? 'trending_up' : 'trending_down'}
+                    </span>
+                  </td>
+                </tr>
+              )) : (
+                <tr><td colSpan="5" className="p-4 text-center text-on-surface-variant">No resource data available.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}

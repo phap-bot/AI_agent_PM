@@ -58,3 +58,39 @@ def get_sprint_board(project_id: Optional[str] = Query(None)):
         }
         
     return {"error": f"Failed to fetch sprint issues: {response.text}"}
+
+@router.post("/sprint", response_model=dict[str, Any])
+def create_new_sprint(project_id: Optional[str] = Query(None)):
+    if project_id:
+        jira = JiraTool.from_project(project_id)
+    else:
+        jira = JiraTool()
+        
+    board_id = jira.config.board_id
+    if not board_id:
+        return {"error": "JIRA_BOARD_ID is not configured"}
+        
+    import requests
+    from datetime import datetime, timedelta, timezone
+    
+    now = datetime.now(timezone.utc)
+    end = now + timedelta(days=14) # 2 weeks
+    
+    payload = {
+        "name": f"AI Auto Sprint {now.strftime('%d%m')}",
+        "startDate": now.isoformat(timespec='milliseconds').replace("+00:00", "+0000"),
+        "endDate": end.isoformat(timespec='milliseconds').replace("+00:00", "+0000"),
+        "originBoardId": int(board_id)
+    }
+    
+    url = f"{jira.config.base_url.rstrip('/')}/rest/agile/1.0/sprint"
+    resp = requests.post(
+        url,
+        json=payload,
+        auth=(jira.config.email, jira.config.api_token),
+        headers={"Accept": "application/json"}
+    )
+    
+    if resp.status_code in [200, 201]:
+        return {"message": "Sprint created", "sprint": resp.json()}
+    return {"error": f"Failed to create sprint: {resp.text}"}

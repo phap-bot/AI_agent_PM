@@ -25,7 +25,7 @@ export default function ProjectDropdown({
 
   return (
     <div className="relative flex items-center gap-2" ref={dropdownRef}>
-      <span className="text-sm font-medium text-on-surface-variant">Dự án:</span>
+      <span className="text-sm font-medium text-on-surface-variant"></span>
       
       <div className="flex items-center bg-surface border border-outline-variant rounded-lg hover:border-primary/50 transition-colors shadow-sm">
         <button

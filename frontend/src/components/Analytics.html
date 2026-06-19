@@ -1,0 +1,419 @@
+<!DOCTYPE html><html lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>ScrumAI - Analytics</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@450&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-container": "#645efb",
+                    "surface-variant": "#e1e2ed",
+                    "primary": "#004ac6",
+                    "primary-fixed": "#dbe1ff",
+                    "on-primary": "#ffffff",
+                    "surface-container": "#ededf9",
+                    "surface": "#faf8ff",
+                    "outline-variant": "#c3c6d7",
+                    "on-error": "#ffffff",
+                    "inverse-primary": "#b4c5ff",
+                    "secondary-fixed": "#e2dfff",
+                    "on-secondary-fixed": "#0f0069",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-container": "#fffbff",
+                    "secondary-fixed-dim": "#c3c0ff",
+                    "error-container": "#ffdad6",
+                    "on-primary-container": "#eeefff",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-fixed-variant": "#003ea8",
+                    "tertiary-fixed": "#ffdbcd",
+                    "surface-dim": "#d9d9e5",
+                    "inverse-on-surface": "#f0f0fb",
+                    "surface-container-high": "#e7e7f3",
+                    "surface-bright": "#faf8ff",
+                    "secondary": "#4b41e1",
+                    "surface-container-highest": "#e1e2ed",
+                    "tertiary": "#943700",
+                    "tertiary-container": "#bc4800",
+                    "on-tertiary-container": "#ffede6",
+                    "on-surface-variant": "#434655",
+                    "surface-tint": "#0053db",
+                    "outline": "#737686",
+                    "on-secondary-fixed-variant": "#3323cc",
+                    "tertiary-fixed-dim": "#ffb596",
+                    "background": "#faf8ff",
+                    "on-tertiary-fixed": "#360f00",
+                    "primary-fixed-dim": "#b4c5ff",
+                    "primary-container": "#2563eb",
+                    "on-primary-fixed": "#00174b",
+                    "on-surface": "#191b23",
+                    "on-secondary": "#ffffff",
+                    "surface-container-low": "#f3f3fe",
+                    "on-error-container": "#93000a",
+                    "on-background": "#191b23",
+                    "inverse-surface": "#2e3039",
+                    "on-tertiary-fixed-variant": "#7d2d00",
+                    "error": "#ba1a1a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-lg": "24px",
+                    "unit": "4px",
+                    "stack-sm": "8px",
+                    "margin-page": "32px",
+                    "gutter": "16px",
+                    "container-padding": "24px",
+                    "stack-md": "16px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "headline-sm": ["Inter"],
+                    "mono-sm": ["JetBrains Mono"],
+                    "label-md": ["Inter"],
+                    "body-md": ["Inter"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "mono-sm": ["12px", {"lineHeight": "18px", "fontWeight": "450"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .ai-insight-card {
+            border-left: 4px solid #4b41e1; /* Deep Indigo / Secondary accent */
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #c3c6d7;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen">
+<!-- SideNavBar Anchor -->
+<aside class="flex flex-col h-full p-stack-md fixed left-0 top-0 bg-surface-container-low dark:bg-surface-container-lowest border-r border-outline-variant dark:border-outline w-64 z-50">
+<div class="flex items-center gap-stack-sm mb-stack-lg">
+<div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined" data-icon="cloud_computing">cloud_domains</span>
+</div>
+<div>
+<h1 class="font-headline-sm text-headline-sm text-on-surface dark:text-inverse-on-surface">Enterprise Scrum</h1>
+<p class="font-label-md text-label-md text-primary">AI Agent Active</p>
+</div>
+</div>
+<nav class="flex-1 space-y-unit">
+<a class="flex items-center gap-stack-sm p-stack-sm text-on-surface-variant hover:bg-surface-variant rounded-lg transition-all duration-200 scale-98 active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="folder">folder_open</span>
+<span class="font-label-md text-label-md">Projects</span>
+</a>
+<a class="flex items-center gap-stack-sm p-stack-sm text-on-surface-variant hover:bg-surface-variant rounded-lg transition-all duration-200 scale-98 active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="cycle">skateboarding</span>
+<span class="font-label-md text-label-md">Sprints</span>
+</a>
+<a class="flex items-center gap-stack-sm p-stack-sm text-on-surface-variant hover:bg-surface-variant rounded-lg transition-all duration-200 scale-98 active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="settings_suggest">settings_suggest</span>
+<span class="font-label-md text-label-md">Cấu hình Jira</span>
+</a><a class="flex items-center gap-stack-sm p-stack-sm text-on-surface-variant hover:bg-surface-variant rounded-lg transition-all duration-200 scale-98 active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="hub">hub</span>
+<span class="font-label-md text-label-md">Cấu hình Slack</span>
+</a>
+<a class="flex items-center gap-stack-sm p-stack-sm text-on-surface-variant hover:bg-surface-variant rounded-lg transition-all duration-200 scale-98 active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-label-md text-label-md">History</span>
+</a>
+</nav>
+<button class="bg-primary text-on-primary py-stack-sm rounded-lg font-label-md mb-stack-lg hover:brightness-110 transition-all">
+            New Sprint
+        </button>
+<div class="border-t border-outline-variant pt-stack-md space-y-unit">
+<a class="flex items-center gap-stack-sm p-stack-sm text-on-surface-variant hover:bg-surface-variant rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-label-md text-label-md">Support</span>
+</a>
+<a class="flex items-center gap-stack-sm p-stack-sm text-on-surface-variant hover:bg-surface-variant rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="pl-64 flex flex-col min-h-screen">
+<!-- TopNavBar Anchor -->
+<header class="flex justify-between items-center w-full px-margin-page h-16 bg-surface dark:bg-inverse-surface border-b border-outline-variant dark:border-outline sticky top-0 z-40">
+<div class="flex items-center gap-stack-lg">
+<span class="font-headline-md text-headline-md text-primary dark:text-inverse-primary">ScrumAI</span>
+<nav class="hidden md:flex gap-stack-md">
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors duration-300" href="#">Dashboard</a>
+<a class="font-body-md text-body-md text-primary font-bold border-b-2 border-primary pb-1 transition-colors duration-300" href="#">Analytics</a>
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors duration-300" href="#">Team</a>
+</nav>
+</div>
+<div class="flex items-center gap-stack-md">
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline" data-icon="search">search</span>
+<input class="pl-10 pr-4 py-1.5 rounded-full border border-outline-variant bg-surface-container-low focus:ring-2 focus:ring-primary focus:border-transparent outline-none w-64 text-body-md" placeholder="Search analytics..." type="text">
+</div>
+<div class="flex items-center gap-stack-sm">
+<button class="p-2 text-on-surface-variant hover:bg-surface-variant rounded-full transition-all">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-variant rounded-full transition-all">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant ml-2">
+<img alt="User Profile" data-alt="Close-up professional portrait of a tech professional in a high-key bright office environment. The subject is wearing a clean neutral-colored sweater and smiling confidently. The lighting is soft and natural, emphasizing a modern light-mode enterprise aesthetic with a blurred background of a minimalist architectural office space." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbyjYzEJu-iFJkxp6mcBfuj51SqmWCMDTvoo0MPVmm2SzWDG8EVWUmdJSCvsp06gr0WyZC4pkcBJYEU10ACGlBgucr7-evE0o1vcFUKCN5PdJa8Cstz5hIMkCaT3vrWJKOc29MaoHBhxTHP1_gousg57qTKX0FdJK8aJHfihbR2704u6e6btHHa1ufjFt_z0sDml1vS-7Dcg7x4FP0SHYcnGQ0PXgbhLA0pGeUAUIxJeTNpGSmGyuAkJl4T3LsIUjlnjybxvM-3Hg">
+</div>
+</div>
+</div>
+</header>
+<!-- Dashboard Content -->
+<div class="p-margin-page max-w-[1600px] w-full mx-auto space-y-stack-lg">
+<!-- Page Header -->
+<div class="flex justify-between items-end">
+<div>
+<h2 class="font-display-lg text-display-lg">Sprint Analytics</h2>
+<p class="text-on-surface-variant mt-1">Global performance metrics across 4 active projects.</p>
+</div>
+<div class="flex gap-stack-sm">
+<button class="flex items-center gap-unit px-4 py-2 bg-white border border-outline-variant rounded-lg hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined text-[18px]" data-icon="calendar_today">calendar_today</span>
+<span class="font-label-md">Last 30 Days</span>
+</button>
+<button class="flex items-center gap-unit px-4 py-2 bg-primary text-on-primary rounded-lg hover:brightness-110 transition-all">
+<span class="material-symbols-outlined text-[18px]" data-icon="download">download</span>
+<span class="font-label-md">Export Report</span>
+</button>
+</div>
+</div>
+<!-- Bento Grid Metrics -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- AI Accuracy Insight (Wide Accent Card) -->
+<div class="col-span-12 lg:col-span-8 bg-white rounded-xl border border-outline-variant p-container-padding ai-insight-card shadow-sm">
+<div class="flex justify-between items-start mb-stack-lg">
+<div>
+<span class="px-2 py-0.5 bg-secondary-container text-on-secondary-container text-[10px] rounded uppercase font-bold tracking-wider">AI AGENT INSIGHT</span>
+<h3 class="font-headline-sm text-headline-sm mt-2">Accuracy Trend: Estimation Precision</h3>
+</div>
+<div class="text-right">
+<span class="text-display-lg font-bold text-primary">94.2%</span>
+<p class="text-label-md text-on-surface-variant">+2.4% from last sprint</p>
+</div>
+</div>
+<div class="h-64 relative bg-surface-container-lowest rounded-lg border border-dashed border-outline-variant flex items-center justify-center overflow-hidden">
+<!-- Placeholder for actual chart rendering -->
+<div class="absolute inset-0 opacity-10 pointer-events-none">
+<svg class="w-full h-full" viewBox="0 0 800 200">
+<path d="M0,150 Q100,100 200,130 T400,80 T600,110 T800,40" fill="none" stroke="currentColor" stroke-width="4" style="transition: 2s ease-in-out;"></path>
+</svg>
+</div>
+<div class="z-10 text-center">
+<p class="font-mono-sm text-outline">[ AI MODEL: TRANSFORMER-SCRUM-V4 ]</p>
+<p class="text-body-md mt-2 text-on-surface-variant italic">"Estimation variance has decreased by 12% in Backend tasks."</p>
+</div>
+</div>
+</div>
+<!-- Team Velocity (Vertical Card) -->
+<div class="col-span-12 lg:col-span-4 bg-white rounded-xl border border-outline-variant p-container-padding shadow-sm flex flex-col">
+<h3 class="font-label-md text-label-md text-outline uppercase tracking-widest mb-stack-md">Team Velocity</h3>
+<div class="flex-1 flex flex-col justify-between">
+<div class="space-y-stack-md">
+<div class="flex justify-between items-end border-b border-outline-variant pb-2">
+<span class="font-body-md">Project Alpha</span>
+<span class="font-headline-sm text-primary">42 <span class="text-label-md text-on-surface-variant font-normal">pts</span></span>
+</div>
+<div class="flex justify-between items-end border-b border-outline-variant pb-2">
+<span class="font-body-md">Cloud Migration</span>
+<span class="font-headline-sm text-primary">38 <span class="text-label-md text-on-surface-variant font-normal">pts</span></span>
+</div>
+<div class="flex justify-between items-end border-b border-outline-variant pb-2">
+<span class="font-body-md">Design System</span>
+<span class="font-headline-sm text-primary">55 <span class="text-label-md text-on-surface-variant font-normal">pts</span></span>
+</div>
+</div>
+<div class="mt-stack-lg pt-stack-md border-t border-outline-variant">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+<span class="text-label-md">Average: 45 pts / sprint</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Lead Time Distribution (Half Width) -->
+<div class="col-span-12 md:col-span-6 bg-white rounded-xl border border-outline-variant p-container-padding shadow-sm">
+<div class="flex justify-between mb-stack-md">
+<h3 class="font-headline-sm text-headline-sm">Ticket Lead Time</h3>
+<span class="material-symbols-outlined text-outline" data-icon="info">info</span>
+</div>
+<div class="grid grid-cols-4 items-end gap-2 h-40">
+<div class="bg-primary/20 rounded-t h-[30%] flex flex-col justify-end items-center pb-2">
+<span class="text-[10px] font-bold">1d</span>
+</div>
+<div class="bg-primary/40 rounded-t h-[60%] flex flex-col justify-end items-center pb-2">
+<span class="text-[10px] font-bold">2d</span>
+</div>
+<div class="bg-primary rounded-t h-[95%] flex flex-col justify-end items-center pb-2 text-white">
+<span class="text-[10px] font-bold">3d</span>
+</div>
+<div class="bg-primary/30 rounded-t h-[45%] flex flex-col justify-end items-center pb-2">
+<span class="text-[10px] font-bold">5d+</span>
+</div>
+</div>
+<div class="mt-4 flex justify-between text-label-md text-on-surface-variant">
+<span class="">New</span>
+<span class="">Development</span>
+<span class="">QA</span>
+<span class="">Done</span>
+</div>
+</div>
+<!-- Sprint Burndown (Half Width) -->
+<div class="col-span-12 md:col-span-6 bg-white rounded-xl border border-outline-variant p-container-padding shadow-sm">
+<div class="flex justify-between mb-stack-md">
+<h3 class="font-headline-sm text-headline-sm">Active Burndown</h3>
+<div class="flex gap-2">
+<span class="flex items-center gap-1 text-label-md">
+<span class="w-3 h-0.5 bg-outline-variant"></span> Ideal
+                            </span>
+<span class="flex items-center gap-1 text-label-md">
+<span class="w-3 h-0.5 bg-primary"></span> Actual
+                            </span>
+</div>
+</div>
+<div class="h-40 w-full bg-surface-container relative rounded overflow-hidden">
+<!-- Simple SVG representation for visual depth -->
+<svg class="w-full h-full" preserveAspectRatio="none">
+<line stroke="#c3c6d7" stroke-dasharray="4" stroke-width="1" x1="0" x2="100%" y1="0" y2="100%"></line>
+<path d="M0,0 L10%,10% L25%,15% L40%,40% L60%,45% L75%,80% L90%,85% L100%,100%" fill="none" stroke="#004ac6" stroke-width="3" style="transition: 2s ease-in-out;"></path>
+</svg>
+</div>
+<div class="mt-4 flex justify-between text-label-md text-on-surface-variant font-mono-sm">
+<span class="">DAY 0</span>
+<span class="">DAY 5</span>
+<span class="">DAY 10 (Target)</span>
+</div>
+</div>
+<!-- Efficiency Table (Full Width) -->
+<div class="col-span-12 bg-white rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+<div class="px-container-padding py-stack-md border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+<h3 class="font-headline-sm text-headline-sm">Project Resource Efficiency</h3>
+<div class="flex gap-stack-sm">
+<span class="px-3 py-1 bg-green-100 text-green-800 text-[11px] rounded-full font-bold">HEALTHY SYSTEM</span>
+</div>
+</div>
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface text-outline font-label-md border-b border-outline-variant">
+<th class="p-4 font-semibold">PROJECT NAME</th>
+<th class="p-4 font-semibold">CYCLE TIME</th>
+<th class="p-4 font-semibold">BLOCKER RATIO</th>
+<th class="p-4 font-semibold">AI AUTOMATION</th>
+<th class="p-4 font-semibold">TREND</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant text-body-md">
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="p-4 font-semibold">Core Platform API</td>
+<td class="p-4">3.4 Days</td>
+<td class="p-4">
+<div class="flex items-center gap-2">
+<div class="w-24 h-2 bg-surface-variant rounded-full overflow-hidden">
+<div class="bg-tertiary h-full w-[12%]"></div>
+</div>
+<span class="text-label-md">12%</span>
+</div>
+</td>
+<td class="p-4">
+<span class="px-2 py-1 bg-primary-fixed text-on-primary-fixed-variant rounded text-[11px] font-bold">88% SYNC</span>
+</td>
+<td class="p-4 text-green-600">
+<span class="material-symbols-outlined" data-icon="trending_up">trending_up</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="p-4 font-semibold">Mobile App Redesign</td>
+<td class="p-4">5.1 Days</td>
+<td class="p-4">
+<div class="flex items-center gap-2">
+<div class="w-24 h-2 bg-surface-variant rounded-full overflow-hidden">
+<div class="bg-error h-full w-[28%]"></div>
+</div>
+<span class="text-label-md text-error">28%</span>
+</div>
+</td>
+<td class="p-4">
+<span class="px-2 py-1 bg-surface-variant text-on-surface-variant rounded text-[11px] font-bold">45% SYNC</span>
+</td>
+<td class="p-4 text-error">
+<span class="material-symbols-outlined" data-icon="trending_down">trending_down</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="p-4 font-semibold">Data Warehouse v2</td>
+<td class="p-4">2.8 Days</td>
+<td class="p-4">
+<div class="flex items-center gap-2">
+<div class="w-24 h-2 bg-surface-variant rounded-full overflow-hidden">
+<div class="bg-green-500 h-full w-[5%]"></div>
+</div>
+<span class="text-label-md">5%</span>
+</div>
+</td>
+<td class="p-4">
+<span class="px-2 py-1 bg-primary-fixed text-on-primary-fixed-variant rounded text-[11px] font-bold">92% SYNC</span>
+</td>
+<td class="p-4 text-green-600">
+<span class="material-symbols-outlined" data-icon="trending_up">trending_up</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</main>
+<!-- FAB (Suppressed as per rules for Analytics/Details screen, but including logic check) -->
+<!-- Not rendered because Analytics is a detail/task-focused screen -->
+<script>
+        // Micro-interactions for interactive elements
+        document.querySelectorAll('.active\\:scale-95').forEach(el => {
+            el.addEventListener('mousedown', () => el.style.transform = 'scale(0.95)');
+            el.addEventListener('mouseup', () => el.style.transform = 'scale(1)');
+            el.addEventListener('mouseleave', () => el.style.transform = 'scale(1)');
+        });
+
+        // Simulating some live data movement on the charts
+        const animateCharts = () => {
+            const paths = document.querySelectorAll('svg path');
+            paths.forEach(path => {
+                path.style.transition = 'all 2s ease-in-out';
+            });
+        };
+        window.onload = animateCharts;
+    </script>
+
+
+</body></html>

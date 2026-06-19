@@ -22,6 +22,11 @@ class SlackConfigModel(BaseModel):
     dev_channel_id: str = ""
     qa_channel_id: str = ""
 
+class GithubConfigModel(BaseModel):
+    repository: str = ""
+    base_branch: str = "main"
+    api_token: str = Field(default="", description="Get token at: https://github.com/settings/tokens/new")
+
 class ProjectCreateModel(BaseModel):
     name: str
     description: str = ""
@@ -31,6 +36,7 @@ class ProjectUpdateModel(BaseModel):
     description: Optional[str] = None
     jira_config: Optional[JiraConfigModel] = None
     slack_config: Optional[SlackConfigModel] = None
+    github_config: Optional[GithubConfigModel] = None
 
 def serialize_project(project: dict) -> dict:
     if "_id" in project:
@@ -66,6 +72,7 @@ def create_project(data: ProjectCreateModel):
     project_data = data.model_dump()
     project_data["jira_config"] = {}
     project_data["slack_config"] = {}
+    project_data["github_config"] = {}
     
     # Check for duplicate name
     existing = DatabaseManager.get_projects_collection().find_one({"name": data.name})

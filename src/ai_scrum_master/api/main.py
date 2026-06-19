@@ -13,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from ai_scrum_master.actions.jira import JiraTool
 from ai_scrum_master.actions.slack import SlackTool
 from ai_scrum_master.api.routers.generate import generate_stories, router as generate_router
+from ai_scrum_master.api.routers.history import router as history_router
 from ai_scrum_master.api.schemas import (
     ActionExecutionPlan,
     ActionExecutionResult,
@@ -91,12 +92,14 @@ logging.getLogger("uvicorn.access").addFilter(EndpointFilter("/ingest/status/"))
 from ai_scrum_master.api.routers.history import router as history_router
 from ai_scrum_master.api.routers.projects import router as projects_router
 from ai_scrum_master.api.routers.sprint import router as sprint_router
+from ai_scrum_master.api.routers.dashboard import router as dashboard_router
 
 logger = get_logger(__name__)
 app.include_router(generate_router)
 app.include_router(history_router)
 app.include_router(projects_router)
 app.include_router(sprint_router)
+app.include_router(dashboard_router)
 
 from ai_scrum_master.worker.tasks import ingest_docs_task
 from celery.result import AsyncResult
@@ -295,6 +298,34 @@ def execute_all_actions(
     # Execute Jira first so we can include the Jira link in the Slack message
     jira_result = jira_tool.execute_action(story)
     
+    # Execute GitHub if configured and Jira was successful
+    github_result = None
+    from ai_scrum_master.actions.github import GithubTool
+    github_tool = GithubTool.from_project(payload.project_id)
+    if github_tool.config.is_configured and jira_result.get("executed"):
+        story_key = jira_result.get("created", {}).get("story_key")
+        if story_key:
+            import re
+            title = story.get("title", "")
+            slug = re.sub(r'[^a-z0-9]+', '-', title.lower()).strip('-')
+            
+            req_type = story.get("story_type", "feature")
+            prefix = "bugfix" if req_type == "bug_report" else "feature"
+            
+            branch_name = f"{prefix}/{story_key}-{slug}"
+            if len(branch_name) > 60:
+                branch_name = branch_name[:60].rstrip('-')
+                
+            gh_res = github_tool.create_feature_branch(branch_name)
+            github_result = ActionExecutionResult(
+                ready=True,
+                executed=gh_res.get("ready", False),
+                payload={"branch_name": branch_name},
+                created={"branch_url": gh_res.get("branch_url")} if gh_res.get("ready") else {},
+                failed=[] if gh_res.get("ready") else [{"error": "Failed to create branch"}],
+                warnings=gh_res.get("warnings", [])
+            )
+    
     slack_tool = SlackTool() # If we had SlackTool.from_project, we'd use it. Assuming it uses global or DB config similarly.
     # Pass the Jira 'created' result to Slack execution
     slack_result = slack_tool.execute_action(story, evaluation, jira_created=jira_result.get("created"))
@@ -302,6 +333,7 @@ def execute_all_actions(
     return ActionExecutionPlan(
         jira=jira_result,
         slack=slack_result,
+        github=github_result,
     )
 
 

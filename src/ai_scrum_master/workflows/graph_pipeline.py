@@ -24,14 +24,14 @@ from ai_scrum_master.actions.slack import SlackTool
 from ai_scrum_master.agents.evaluator import EvaluatorAgent
 from ai_scrum_master.agents.planner import PlannerAgent
 from ai_scrum_master.agents.researcher import ResearcherAgent
-from ai_scrum_master.agents.tech_classifier import TechClassifierAgent
+from ai_scrum_master.agents.router import RouterAgent
 from ai_scrum_master.core.config.settings import get_runtime_profiles
 from ai_scrum_master.core.pipeline.context_selector import select_context_for_route
 from ai_scrum_master.core.pipeline.finalizer import blocked_actions, finalize_generation, should_block_planning
 from ai_scrum_master.workflows.graph_state import PipelineState
 from ai_scrum_master.core.utils.logging import get_logger
-from ai_scrum_master.core.validation.quality import AMBIGUOUS_REQUEST, OVERSIZED_REQUEST, classify_requirement, validate_story_against_requirement
-from ai_scrum_master.core.pipeline.requirement_router import route_requirement
+from ai_scrum_master.core.validation.quality import AMBIGUOUS_REQUEST, OVERSIZED_REQUEST, validate_story_against_requirement
+from ai_scrum_master.core.pipeline.requirement_router import build_route_from_classification
 from ai_scrum_master.core.validation.story_validator import evaluate_planner_output, validate_post_generation
 
 logger = get_logger(__name__)
@@ -41,20 +41,31 @@ logger = get_logger(__name__)
 #  NODES — each receives full state, returns only changed keys
 # ═══════════════════════════════════════════════════════════════
 
-def route_requirement_node(state: PipelineState) -> dict[str, Any]:
-    """Classify requirement domain and determine routing profile."""
-    route = route_requirement(state["requirement"])
-    requirement_type = route.get("story_type") or classify_requirement(state["requirement"])
-    logger.info("Graph node [route_requirement] domain=%s type=%s", route.get("domain"), requirement_type)
-    return {"route": route, "requirement_type": requirement_type}
-
-
-def tech_classifier_node(state: PipelineState) -> dict[str, Any]:
-    """Run TechClassifierAgent to extract tech_stack and domain."""
-    classifier = TechClassifierAgent()
-    logger.info("Graph node [tech_classifier] starting")
-    classification = classifier.run(state["requirement"], state.get("route", {}))
-    return {"tech_classification": classification}
+def analyzer_node(state: PipelineState) -> dict[str, Any]:
+    """Run RouterAgent to classify requirement and determine routing profile."""
+    router = RouterAgent()
+    logger.info("Graph node [analyzer] starting")
+    classification = router.run(state["requirement"])
+    
+    # Build full route object from LLM classification
+    route = build_route_from_classification(classification["domain"], classification["story_type"])
+    requirement_type = classification["story_type"]
+    
+    logger.info("Graph node [analyzer] domain=%s type=%s", route.get("domain"), requirement_type)
+    if classification.get("clarity_reasoning"):
+        logger.info("Analyzer Clarity Reasoning: %s", classification["clarity_reasoning"])
+    if classification.get("scope_reasoning"):
+        logger.info("Analyzer Scope Reasoning: %s", classification["scope_reasoning"])
+    
+    return {
+        "route": route, 
+        "requirement_type": requirement_type,
+        "tech_classification": {
+            "domain": classification["domain"],
+            "tech_stack": classification["tech_stack"],
+            "search_keywords": classification["search_keywords"]
+        }
+    }
 
 
 def researcher_node(state: PipelineState) -> dict[str, Any]:
@@ -131,7 +142,7 @@ def planner_node(state: PipelineState) -> dict[str, Any]:
     story["route"] = state["route"]
 
     # Run deterministic planner quality gate
-    planner_quality = evaluate_planner_output(state["requirement"], story, state["context"])
+    planner_quality = evaluate_planner_output(state.get("requirement_type", "software_feature"), state["requirement"], story, state["context"])
     story["planner_quality"] = planner_quality
 
     cb = state.get("progress_callback")
@@ -170,10 +181,10 @@ def evaluator_node(state: PipelineState) -> dict[str, Any]:
         }
 
     # Apply post-generation validation
-    validation_issues = validate_story_against_requirement(state["requirement"], story)
+    req_type = state.get("requirement_type", "software_feature")
+    validation_issues = validate_story_against_requirement(req_type, state["requirement"], story)
     if validation_issues:
         logger.info("Post-generation validation failed issues=%s", len(validation_issues))
-        req_type = state.get("requirement_type", "software_feature")
         if req_type == OVERSIZED_REQUEST:
             story["planning_status"] = "SPLIT_RECOMMENDED"
         elif req_type == AMBIGUOUS_REQUEST:
@@ -279,6 +290,31 @@ def finalize_revision_node(state: PipelineState) -> dict[str, Any]:
     }
 
 
+def finalize_clarification_node(state: PipelineState) -> dict[str, Any]:
+    """Terminal node: requirement is ambiguous — return clarification questions immediately.
+
+    This node short-circuits the pipeline: when the planner determines that a
+    requirement needs clarification (NEEDS_CLARIFICATION), we return directly
+    to the UI with the clarification questions instead of running the evaluator
+    or retrying the researcher/planner loop (which would be pointless since the
+    requirement itself is too vague to generate tasks).
+    """
+    story = state.get("story") or {}
+    logger.info("Graph node [finalize_clarification] returning to UI for clarification")
+    return {
+        "evaluation": {
+            "status": "NEEDS_CLARIFICATION",
+            "issues": [],
+            "revision_instructions": [],
+            "dod_score": {},
+            "warnings": ["Requirement cần được làm rõ trước khi lên kế hoạch Sprint."],
+        },
+        "actions": blocked_actions(),
+        "next_steps": story.get("clarification_questions", []),
+    }
+
+
+
 # ═══════════════════════════════════════════════════════════════
 #  CONDITIONAL EDGES — router functions that pick the next node
 # ═══════════════════════════════════════════════════════════════
@@ -290,8 +326,29 @@ def after_researcher(state: PipelineState) -> Literal["planner", "needs_context"
     return "planner"
 
 
-def after_planner(state: PipelineState) -> Literal["evaluator", "researcher", "finalize_revision"]:
-    """After planner: check deterministic quality gate."""
+def after_planner(state: PipelineState) -> Literal["evaluator", "researcher", "finalize_revision", "finalize_clarification"]:
+    """After planner: check planning_status and deterministic quality gate.
+
+    Short-circuit rules:
+    - NEEDS_CLARIFICATION → finalize_clarification (skip evaluator entirely)
+    - SPLIT_RECOMMENDED/NEEDS_SPLIT → finalize_revision (no retry needed)
+    - READY + quality gate passed → evaluator
+    - READY + quality gate failed → retry researcher or finalize_revision
+    """
+    story = state.get("story") or {}
+    planning_status = story.get("planning_status", "READY")
+
+    # NEEDS_CLARIFICATION → return immediately, no evaluator, no retry
+    if planning_status == "NEEDS_CLARIFICATION":
+        logger.info("Graph router [after_planner] NEEDS_CLARIFICATION, short-circuiting to finalize_clarification")
+        return "finalize_clarification"
+
+    # SPLIT_RECOMMENDED/NEEDS_SPLIT → return immediately for human review
+    if planning_status in {"SPLIT_RECOMMENDED", "NEEDS_SPLIT"}:
+        logger.info("Graph router [after_planner] %s, short-circuiting to finalize_revision", planning_status)
+        return "finalize_revision"
+
+    # Quality gate check (only for READY stories)
     pq = state.get("planner_quality", {})
     if pq.get("passed", True):
         return "evaluator"
@@ -305,21 +362,73 @@ def after_planner(state: PipelineState) -> Literal["evaluator", "researcher", "f
     return "finalize_revision"
 
 
-def after_evaluator(state: PipelineState) -> Literal["finalize_approved", "researcher", "finalize_revision"]:
-    """After evaluator: route based on evaluation status."""
+def after_evaluator(state: PipelineState) -> Literal["finalize_approved", "researcher", "finalize_revision", "finalize_clarification"]:
+    """After evaluator: route based on evaluation status.
+
+    Smart retry: only retry when evaluator found fixable quality issues
+    (missing AC, bad tasks, weak DoD). Do NOT retry for unfixable issues
+    like NEEDS_CLARIFICATION or domain contamination.
+    """
     evaluation = state.get("evaluation") or {}
     status = evaluation.get("status", "REVISION")
+    story = state.get("story") or {}
 
     if status == "APPROVED":
         return "finalize_approved"
 
-    # REVISION or any non-approved status — retry or give up
-    if state.get("iteration", 1) <= state.get("max_retries", 2):
-        logger.info("Graph router [after_evaluator] REVISION, retrying. feedback=%s", str(state.get("research_feedback", ""))[:100])
+    # Post-validation may set NEEDS_CLARIFICATION → return immediately
+    if story.get("planning_status") == "NEEDS_CLARIFICATION":
+        logger.info("Graph router [after_evaluator] NEEDS_CLARIFICATION, short-circuiting")
+        return "finalize_clarification"
+
+    # Only retry when evaluator found fixable quality issues
+    if _has_fixable_quality_issues(evaluation) and state.get("iteration", 1) <= state.get("max_retries", 2):
+        logger.info("Graph router [after_evaluator] REVISION with fixable quality issues, retrying. feedback=%s", str(state.get("research_feedback", ""))[:100])
         return "researcher"
 
-    logger.info("Graph router [after_evaluator] REVISION, no retries left")
+    # No fixable issues or retries exhausted → return to human
+    logger.info("Graph router [after_evaluator] REVISION, no fixable issues or no retries left")
     return "finalize_revision"
+
+
+def _has_fixable_quality_issues(evaluation: dict[str, Any]) -> bool:
+    """Check if evaluation contains quality issues that can be improved by retrying.
+
+    Retry when evaluator found concrete output quality problems:
+    - Missing or insufficient Acceptance Criteria (< 3, no Given/When/Then)
+    - Tasks not actionable (placeholder, user story format, missing group)
+    - Weak Definition of Done (< 4 checks, low score)
+    - Invalid story points (non-Fibonacci)
+
+    Do NOT retry for:
+    - NEEDS_CLARIFICATION (ambiguous requirement — retry won't help)
+    - SPLIT_RECOMMENDED (oversized requirement — retry won't help)
+    - Domain contamination (context issue, not output quality)
+    """
+    issues = evaluation.get("issues", [])
+    if not issues:
+        return False
+
+    fixable_patterns = (
+        "acceptance criteria",
+        "given / when / then",
+        "given/when/then",
+        "actionable",
+        "tasks must",
+        "definition of done",
+        "story points",
+        "fibonacci",
+        "placeholder",
+        "user stories",
+        "concrete actions",
+        "planner quality gate",
+    )
+
+    return any(
+        any(pattern in issue.lower() for pattern in fixable_patterns)
+        for issue in issues
+    )
+
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -331,8 +440,7 @@ def build_pipeline_graph() -> StateGraph:
     graph = StateGraph(PipelineState)
 
     # Register nodes
-    graph.add_node("route_requirement", route_requirement_node)
-    graph.add_node("tech_classifier", tech_classifier_node)
+    graph.add_node("analyzer", analyzer_node)
     graph.add_node("researcher", researcher_node)
     graph.add_node("merge_context", merge_context_node)
     graph.add_node("planner", planner_node)
@@ -340,18 +448,12 @@ def build_pipeline_graph() -> StateGraph:
     graph.add_node("needs_context", needs_context_node)
     graph.add_node("finalize_approved", finalize_approved_node)
     graph.add_node("finalize_revision", finalize_revision_node)
+    graph.add_node("finalize_clarification", finalize_clarification_node)
 
-    # Parallel Entry
-    graph.add_edge(START, "route_requirement")
-    graph.add_edge(START, "researcher")
-    graph.add_edge(START, "tech_classifier")
-
-    # Fan-in
-    # Note: route_requirement has no explicit outgoing edge, meaning its branch terminates after it runs.
-    # However, since researcher runs in parallel and points to merge_context, the next super-step (merge_context)
-    # will only run after ALL parallel branches finish, and will only be scheduled ONCE.
+    # Sequential Entry to avoid local LLM lock contention (Ollama)
+    graph.add_edge(START, "analyzer")
+    graph.add_edge("analyzer", "researcher")
     graph.add_edge("researcher", "merge_context")
-    graph.add_edge("tech_classifier", "merge_context")
 
     # Conditional: after merge_context
     graph.add_conditional_edges("merge_context", after_researcher, {
@@ -364,6 +466,7 @@ def build_pipeline_graph() -> StateGraph:
         "evaluator": "evaluator",
         "researcher": "researcher",
         "finalize_revision": "finalize_revision",
+        "finalize_clarification": "finalize_clarification",
     })
 
     # Conditional: after evaluator
@@ -371,12 +474,14 @@ def build_pipeline_graph() -> StateGraph:
         "finalize_approved": "finalize_approved",
         "researcher": "researcher",
         "finalize_revision": "finalize_revision",
+        "finalize_clarification": "finalize_clarification",
     })
 
     # Terminal edges
     graph.add_edge("needs_context", END)
     graph.add_edge("finalize_approved", END)
     graph.add_edge("finalize_revision", END)
+    graph.add_edge("finalize_clarification", END)
 
     return graph.compile()
 

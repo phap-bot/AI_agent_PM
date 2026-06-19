@@ -59,7 +59,10 @@ export default function SlackConfigPanel({ projectId }) {
       </h2>
       <form onSubmit={handleSave} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Webhook URL</label>
+          <label className="block text-sm font-medium mb-1 flex justify-between">
+            <span>Webhook URL</span>
+            <a href="https://api.slack.com/messaging/webhooks" target="_blank" rel="noreferrer" className="text-primary hover:underline font-normal">Tạo Webhook tại đây &rarr;</a>
+          </label>
           <input type="password" name="webhook_url" value={config.webhook_url} onChange={handleChange} placeholder="https://hooks.slack.com/..." className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
         </div>
         <div>

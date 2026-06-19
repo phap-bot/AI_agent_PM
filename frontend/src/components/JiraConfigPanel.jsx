@@ -9,8 +9,8 @@ export default function JiraConfigPanel({ projectId }) {
     project_key: '',
     email: '',
     api_token: '',
-    issue_type: 'Task',
-    subtask_issue_type: 'Sub-task',
+    issue_type: '',
+    subtask_issue_type: '',
     board_id: ''
   });
 
@@ -25,8 +25,8 @@ export default function JiraConfigPanel({ projectId }) {
               project_key: res.jira_config.project_key || '',
               email: res.jira_config.email || '',
               api_token: res.jira_config.api_token || '',
-              issue_type: res.jira_config.issue_type || 'Task',
-              subtask_issue_type: res.jira_config.subtask_issue_type || 'Sub-task',
+              issue_type: res.jira_config.issue_type === 'Task' ? '' : (res.jira_config.issue_type || ''),
+              subtask_issue_type: res.jira_config.subtask_issue_type === 'Sub-task' ? '' : (res.jira_config.subtask_issue_type || ''),
               board_id: res.jira_config.board_id || ''
             });
           }
@@ -77,17 +77,20 @@ export default function JiraConfigPanel({ projectId }) {
           <input type="email" name="email" value={config.email} onChange={handleChange} placeholder="Email Atlassian" className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">API Token</label>
+          <label className="block text-sm font-medium mb-1 flex justify-between">
+            <span>API Token</span>
+            <a href="https://id.atlassian.com/manage-profile/security/api-tokens" target="_blank" rel="noreferrer" className="text-primary hover:underline font-normal">Lấy mã Token tại đây &rarr;</a>
+          </label>
           <input type="password" name="api_token" value={config.api_token} onChange={handleChange} placeholder="Token" className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium mb-1">Issue Type</label>
-            <input type="text" name="issue_type" value={config.issue_type} onChange={handleChange} className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
+            <input type="text" name="issue_type" value={config.issue_type} onChange={handleChange} placeholder="Mặc định: Task" className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Subtask Type</label>
-            <input type="text" name="subtask_issue_type" value={config.subtask_issue_type} onChange={handleChange} className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
+            <input type="text" name="subtask_issue_type" value={config.subtask_issue_type} onChange={handleChange} placeholder="Mặc định: Sub-task" className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
           </div>
         </div>
         <div>

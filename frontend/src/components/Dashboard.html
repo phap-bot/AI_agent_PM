@@ -1,0 +1,429 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Scrum Master AI Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&amp;family=JetBrains+Mono:wght@450&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary": "#4b41e1",
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed": "#dbe1ff",
+                        "inverse-surface": "#2e3039",
+                        "outline-variant": "#c3c6d7",
+                        "on-error": "#ffffff",
+                        "surface-container-highest": "#e1e2ed",
+                        "on-primary-fixed": "#00174b",
+                        "tertiary": "#943700",
+                        "on-surface-variant": "#434655",
+                        "primary": "#004ac6",
+                        "outline": "#737686",
+                        "tertiary-fixed": "#ffdbcd",
+                        "secondary-fixed": "#e2dfff",
+                        "on-primary-container": "#eeefff",
+                        "primary-container": "#2563eb",
+                        "on-secondary-fixed-variant": "#3323cc",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-on-surface": "#f0f0fb",
+                        "error": "#ba1a1a",
+                        "surface-bright": "#faf8ff",
+                        "background": "#faf8ff",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "surface": "#faf8ff",
+                        "on-primary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "surface-variant": "#e1e2ed",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "on-tertiary-fixed": "#360f00",
+                        "on-error-container": "#93000a",
+                        "on-surface": "#191b23",
+                        "surface-dim": "#d9d9e5",
+                        "secondary-container": "#645efb",
+                        "surface-container": "#ededf9",
+                        "on-secondary-container": "#fffbff",
+                        "on-secondary-fixed": "#0f0069",
+                        "tertiary-fixed-dim": "#ffb596",
+                        "inverse-primary": "#b4c5ff",
+                        "on-tertiary-fixed-variant": "#7d2d00",
+                        "surface-tint": "#0053db",
+                        "on-tertiary-container": "#ffede6",
+                        "secondary-fixed-dim": "#c3c0ff",
+                        "tertiary-container": "#bc4800",
+                        "surface-container-low": "#f3f3fe",
+                        "surface-container-high": "#e7e7f3",
+                        "on-background": "#191b23"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "gutter": "16px",
+                        "stack-sm": "8px",
+                        "stack-md": "16px",
+                        "container-padding": "24px",
+                        "stack-lg": "24px",
+                        "margin-page": "32px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "mono-sm": ["JetBrains Mono"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "mono-sm": ["12px", {"lineHeight": "18px", "fontWeight": "450"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .ai-insight-accent {
+            border-left: 4px solid #4b41e1;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e5e7eb;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-surface-container-low text-on-surface font-body-md overflow-hidden">
+<!-- Side Navigation -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-low dark:bg-inverse-surface border-r border-outline-variant flex flex-col p-4 z-50">
+<div class="mb-stack-lg">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Scrum Master AI</h1>
+<p class="font-body-md text-on-surface-variant opacity-70">Enterprise Hub</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 bg-secondary-container text-on-secondary-container font-semibold rounded-lg transition-transform active:scale-95" href="#"><span class="material-symbols-outlined" data-icon="folder_open">folder_open</span><span class="font-body-md">Dự án</span></a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-highest transition-colors duration-200 rounded-lg" href="#"><span class="material-symbols-outlined" data-icon="skateboarding">skateboarding</span><span class="font-body-md">Sprints</span></a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-highest transition-colors duration-200 rounded-lg" href="#"><span class="material-symbols-outlined" data-icon="settings_suggest">settings_suggest</span><span class="font-body-md">Cấu hình Jira</span></a><a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-highest transition-colors duration-200 rounded-lg" href="#"><span class="material-symbols-outlined" data-icon="hub">hub</span><span class="font-body-md">Cấu hình Slack</span></a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-highest transition-colors duration-200 rounded-lg" href="#"><span class="material-symbols-outlined" data-icon="history">history</span><span class="font-body-md">Lịch sử</span></a>
+</nav>
+<div class="pt-4 border-t border-outline-variant mt-auto space-y-1">
+<button class="w-full mb-4 py-2 px-4 bg-primary text-on-primary rounded-lg font-label-md hover:opacity-90 transition-all">
+                Agent Dashboard
+            </button>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-highest transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-body-md">Support</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-highest transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-body-md">Settings</span>
+</a>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="ml-64 h-screen flex flex-col overflow-hidden">
+<!-- Top Navigation Bar -->
+<header class="h-16 px-gutter flex justify-between items-center bg-surface border-b border-outline-variant shrink-0">
+<div class="flex items-center gap-8">
+<h2 class="font-headline-sm text-headline-sm font-black text-secondary">Scrum Master Agent</h2>
+<nav class="hidden md:flex gap-6 items-center">
+<a class="font-label-md text-label-md text-primary border-b-2 border-primary pb-1" href="#">Dashboard</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-all" href="#">Analytics</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-all" href="#">Team</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<button class="px-4 py-1.5 border border-outline text-primary rounded-lg font-label-md hover:bg-surface-container-low transition-colors">Sync Jira</button>
+<button class="px-4 py-1.5 bg-primary text-on-primary rounded-lg font-label-md hover:shadow-lg transition-all">Create Sprint</button>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined cursor-pointer hover:text-primary" data-icon="notifications">notifications</span>
+<img alt="User avatar" class="w-8 h-8 rounded-full bg-surface-container-highest border border-outline-variant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBikzLpnztMhTi7lCEZDeCPXvkAAr7wIYfIGefWfAfsmeEJ05YmtCxqDlcwLanJsD-8jihulwe-KZYdGsHBFyUVwUamcYprhKWV8YEz-pDSsiircolWuR10SzvnxUJHYB-qKVlGm3pz8bUOi4YCua0rGorzAxn43Om4S9oZt3ewu5JktD9TymIyvzKrppif0Z_4_Q961yxHWVHrVyYJgTJtnhL1ldbJiKO91n3gQN1fFAr9PfsTRiB8eOorywzNNxutSwjrF3lgp-8">
+</div>
+</div>
+</header>
+<!-- Dashboard Content -->
+<div class="flex-1 overflow-y-auto p-container-padding custom-scrollbar">
+<!-- Welcome Header -->
+<section class="mb-stack-lg flex justify-between items-end">
+<div>
+<h3 class="font-display-lg text-display-lg text-on-surface mb-2">Welcome back, Scrum Lead</h3>
+<div class="flex items-center gap-3">
+<span class="px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full font-label-md">Sprint 14</span>
+<div class="flex items-center gap-2">
+<div class="w-48 h-2 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[85%]"></div>
+</div>
+<span class="font-label-md text-on-surface-variant">85% Complete</span>
+</div>
+</div>
+</div>
+<div class="text-right">
+<p class="font-label-md text-on-surface-variant">Estimated Finish</p>
+<p class="font-headline-sm text-headline-sm text-on-surface">Oct 24, 2023</p>
+</div>
+</section>
+<!-- Metrics Row -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-stack-md mb-stack-lg">
+<!-- Metric Card 1 -->
+<div class="bg-surface border border-outline-variant p-4 rounded-xl flex flex-col justify-between">
+<div>
+<p class="font-label-md text-on-surface-variant mb-1">Total Tickets Created</p>
+<p class="font-display-lg text-display-lg text-on-surface">142</p>
+</div>
+<div class="mt-4 flex items-center gap-1 text-tertiary font-label-md">
+<span class="material-symbols-outlined text-sm" data-icon="trending_up">trending_up</span>
+<span class="">+12% vs last sprint</span>
+</div>
+</div>
+<!-- Metric Card 2 -->
+<div class="bg-surface border border-outline-variant p-4 rounded-xl flex flex-col justify-between">
+<div>
+<p class="font-label-md text-on-surface-variant mb-1">AI Confidence Score</p>
+<p class="font-display-lg text-display-lg text-primary">98.4%</p>
+</div>
+<div class="mt-4 flex items-center gap-1 text-on-surface-variant font-label-md">
+<span class="material-symbols-outlined text-sm" data-icon="verified">verified</span>
+<span class="">High Precision Active</span>
+</div>
+</div>
+<!-- Metric Card 3 -->
+<div class="bg-surface border border-outline-variant p-4 rounded-xl flex flex-col justify-between">
+<div>
+<p class="font-label-md text-on-surface-variant mb-1">Team Velocity</p>
+<p class="font-display-lg text-display-lg text-on-surface">42<span class="text-label-md text-on-surface-variant font-normal">pts/s</span></p>
+</div>
+<div class="mt-4 flex items-center gap-1 text-tertiary font-label-md">
+<span class="material-symbols-outlined text-sm" data-icon="bolt">bolt</span>
+<span class="">Optimal Performance</span>
+</div>
+</div>
+<!-- Metric Card 4: Burndown Mini Chart -->
+<div class="bg-surface border border-outline-variant p-4 rounded-xl flex flex-col justify-between overflow-hidden relative">
+<div>
+<p class="font-label-md text-on-surface-variant mb-1">Sprint Burndown</p>
+</div>
+<div class="h-16 w-full flex items-end gap-1 mt-2">
+<div class="bg-outline-variant w-full h-[90%] rounded-t-sm"></div>
+<div class="bg-outline-variant w-full h-[80%] rounded-t-sm"></div>
+<div class="bg-outline-variant w-full h-[75%] rounded-t-sm"></div>
+<div class="bg-outline-variant w-full h-[60%] rounded-t-sm"></div>
+<div class="bg-primary w-full h-[50%] rounded-t-sm"></div>
+<div class="bg-primary w-full h-[35%] rounded-t-sm"></div>
+<div class="bg-primary w-full h-[20%] rounded-t-sm"></div>
+</div>
+</div>
+</div>
+<!-- Bento Layout Content -->
+<div class="grid grid-cols-12 gap-stack-md">
+<!-- Active Tickets Table (8/12) -->
+<div class="col-span-12 lg:col-span-8 bg-surface border border-outline-variant rounded-xl overflow-hidden">
+<div class="px-gutter py-4 border-b border-outline-variant flex justify-between items-center">
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Active Sprint Tickets</h4>
+<button class="text-primary font-label-md flex items-center gap-1">
+                            View All <span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left font-body-md">
+<thead class="bg-surface-container-low text-on-surface-variant">
+<tr>
+<th class="px- gutter py-3 font-label-md">Ticket Title</th>
+<th class="px-gutter py-3 font-label-md">AI Agents</th>
+<th class="px-gutter py-3 font-label-md">Priority</th>
+<th class="px-gutter py-3 font-label-md">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr>
+<td class="px-gutter py-4 font-semibold text-on-surface">Refactor Auth Middleware</td>
+<td class="px-gutter py-4">
+<div class="flex gap-1">
+<span class="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-[10px] text-blue-700 font-bold border border-blue-200" title="Researcher">R</span>
+<span class="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center text-[10px] text-indigo-700 font-bold border border-indigo-200" title="Planner">P</span>
+<span class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-[10px] text-green-700 font-bold border border-green-200" title="Evaluator">E</span>
+</div>
+</td>
+<td class="px-gutter py-4">
+<span class="px-2 py-0.5 bg-error-container text-on-error-container rounded font-label-md">CRITICAL</span>
+</td>
+<td class="px-gutter py-4">
+<span class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+                                            In Progress
+                                        </span>
+</td>
+</tr>
+<tr>
+<td class="px-gutter py-4 font-semibold text-on-surface">Data Migration Script v2</td>
+<td class="px-gutter py-4">
+<div class="flex gap-1">
+<span class="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-[10px] text-blue-700 font-bold border border-blue-200">R</span>
+<span class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-[10px] text-green-700 font-bold border border-green-200">E</span>
+</div>
+</td>
+<td class="px-gutter py-4">
+<span class="px-2 py-0.5 bg-surface-container-highest text-on-surface-variant rounded font-label-md">MEDIUM</span>
+</td>
+<td class="px-gutter py-4">
+<span class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+                                            Review Required
+                                        </span>
+</td>
+</tr>
+<tr>
+<td class="px-gutter py-4 font-semibold text-on-surface">API Documentation Update</td>
+<td class="px-gutter py-4">
+<div class="flex gap-1">
+<span class="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center text-[10px] text-indigo-700 font-bold border border-indigo-200">P</span>
+</div>
+</td>
+<td class="px-gutter py-4">
+<span class="px-2 py-0.5 bg-surface-container-highest text-on-surface-variant rounded font-label-md">LOW</span>
+</td>
+<td class="px-gutter py-4">
+<span class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="w-2 h-2 rounded-full bg-outline"></span>
+                                            To Do
+                                        </span>
+</td>
+</tr>
+<tr>
+<td class="px-gutter py-4 font-semibold text-on-surface">Mobile Push Notifications</td>
+<td class="px-gutter py-4">
+<div class="flex gap-1">
+<span class="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-[10px] text-blue-700 font-bold border border-blue-200">R</span>
+<span class="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center text-[10px] text-indigo-700 font-bold border border-indigo-200">P</span>
+</div>
+</td>
+<td class="px-gutter py-4">
+<span class="px-2 py-0.5 bg-primary-container text-on-primary-container rounded font-label-md">HIGH</span>
+</td>
+<td class="px-gutter py-4">
+<span class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+                                            In Progress
+                                        </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- AI Insights Section (4/12) -->
+<div class="col-span-12 lg:col-span-4 space-y-stack-md">
+<div class="bg-surface border border-outline-variant rounded-xl p-container-padding ai-insight-accent relative overflow-hidden">
+<div class="absolute top-2 right-2 opacity-10">
+<span class="material-symbols-outlined text-6xl" data-icon="smart_toy">smart_toy</span>
+</div>
+<div class="flex items-center gap-2 text-secondary mb-4">
+<span class="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
+<h4 class="font-headline-sm text-headline-sm">AI Agent Insight</h4>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface mb-6">
+                            Sprint 14 is ahead of schedule by <span class="font-bold text-primary">1.2 days</span>. Based on current team velocity, I recommend adding <span class="font-bold">2 more tasks</span> from the backlog to maximize output.
+                        </p>
+<div class="space-y-3">
+<button class="w-full py-2 px-4 bg-secondary text-on-secondary rounded-lg font-label-md flex justify-between items-center group transition-all">
+                                Review Suggested Tasks
+                                <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+</button>
+<button class="w-full py-2 px-4 border border-outline-variant text-on-surface-variant rounded-lg font-label-md hover:bg-surface-container-low">
+                                Dismiss Suggestion
+                            </button>
+</div>
+</div>
+<!-- Additional Card: Team Status -->
+<div class="bg-surface border border-outline-variant rounded-xl p-container-padding">
+<h4 class="font-label-md text-on-surface-variant uppercase tracking-wider mb-4">Agent System Health</h4>
+<div class="space-y-4">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
+<span class="font-body-md">Researcher Agent</span>
+</div>
+<span class="font-mono-sm text-on-surface-variant">Active</span>
+</div>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
+<span class="font-body-md">Planner Agent</span>
+</div>
+<span class="font-mono-sm text-on-surface-variant">Active</span>
+</div>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-amber-500 animate-pulse" style="opacity: 0.819343;"></div>
+<span class="font-body-md">Evaluator Agent</span>
+</div>
+<span class="font-mono-sm text-on-surface-variant">Processing...</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer-style Branding Area -->
+<footer class="mt-stack-lg flex justify-between items-center border-t border-outline-variant pt-stack-md pb-stack-lg">
+<p class="text-on-surface-variant opacity-60 font-label-md">© 2023 Scrum Master AI • Distributed Autonomy Platform</p>
+<div class="flex gap-4">
+<span class="font-label-md text-on-surface-variant px-2 py-1 bg-surface-container-high rounded">v2.4.0-stable</span>
+<span class="font-label-md text-on-surface-variant px-2 py-1 bg-surface-container-high rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-xs" data-icon="cloud_done">cloud_done</span>
+                        All Agents Synced
+                    </span>
+</div>
+</footer>
+</div>
+</main>
+<!-- Micro-interaction Scripts -->
+<script>
+        // Simple active state toggling for demo purposes
+        const navLinks = document.querySelectorAll('aside nav a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                navLinks.forEach(l => {
+                    l.classList.remove('bg-secondary-container', 'text-on-secondary-container', 'font-semibold');
+                    l.classList.add('text-on-surface-variant', 'hover:bg-surface-container-highest');
+                });
+                link.classList.add('bg-secondary-container', 'text-on-secondary-container', 'font-semibold');
+                link.classList.remove('text-on-surface-variant', 'hover:bg-surface-container-highest');
+            });
+        });
+
+        // Simulating Agent activity with random small pulse
+        setInterval(() => {
+            const activeIndicator = document.querySelector('.bg-amber-500');
+            if (activeIndicator) {
+                activeIndicator.style.opacity = (Math.random() * 0.5 + 0.5).toString();
+            }
+        }, 1000);
+    </script>
+
+
+</body></html>

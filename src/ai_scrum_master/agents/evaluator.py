@@ -76,7 +76,7 @@ class EvaluatorAgent:
             logger.info("LLM trace evaluator parsed keys=%s", sorted(result.keys()))
             return self._normalize_result(result, rule_result)
         except Exception as exc:
-            logger.exception("Evaluator failed to use LLM output; using rule fallback")
+            logger.warning("Evaluator failed to use LLM output; using rule fallback. Reason: %s", exc)
             rule_result["warnings"].append(f"Evaluator LLM unavailable; used rule fallback. Reason: {exc}")
             return self._validate_output(rule_result)
 
@@ -176,10 +176,11 @@ class EvaluatorAgent:
         issues: list[str] = []
         warnings: list[str] = []
         dod_score: dict[str, Any] = {}
-        issues.extend(validate_story_against_requirement(story.get("requirement", story.get("title", "")), story))
+        issues.extend(validate_story_against_requirement(story.get("story_type", "software_feature"), story.get("requirement", story.get("title", "")), story))
 
         story_type = story.get("story_type", "software_feature")
-        issues.extend(domain_contamination_issues(story.get("requirement", story.get("title", "")), story))
+        domain = story.get("route", {}).get("domain", "general")
+        issues.extend(domain_contamination_issues(domain, story.get("requirement", story.get("title", "")), story))
         planning_status = story.get("planning_status", READY)
 
         if planning_status == READY:
@@ -301,7 +302,7 @@ class EvaluatorAgent:
                 ("implementation_completion", any(term in text for term in ("implementation", "implemented", "task", "backend", "frontend", "api", "ui", "be", "fe"))),
                 ("qa_testing_evidence", any(term in text for term in ("test", "testing", "qa", "validation", "validated"))),
                 ("story_specific_completion", self._has_story_specific_dod_terms(story, text)),
-                ("no_generic_or_wrong_domain", not domain_contamination_issues(story.get("requirement", story.get("title", "")), {"definition_of_done": checks})),
+                ("no_generic_or_wrong_domain", not domain_contamination_issues(story.get("route", {}).get("domain", "general"), story.get("requirement", story.get("title", "")), {"definition_of_done": checks})),
             ]
         passed = sum(1 for _name, ok in dimensions if ok)
         total = len(dimensions)

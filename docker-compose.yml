@@ -10,6 +10,11 @@ services:
     volumes:
       - qdrant_data:/qdrant/storage
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
 
   mongodb:
     image: mongo:latest
@@ -19,6 +24,11 @@ services:
     volumes:
       - mongodb_data:/data/db
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
 
   redis:
     image: redis:alpine
@@ -26,6 +36,11 @@ services:
     ports:
       - "6379:6379"
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
 
   api:
     build:
@@ -52,6 +67,11 @@ services:
       - qdrant
       - redis
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
 
   worker:
     build:
@@ -76,6 +96,11 @@ services:
       - redis
       - api
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
 
   ui:
     build:
@@ -89,6 +114,8 @@ services:
       - ./frontend/public:/app/public
       - ./frontend/index.html:/app/index.html
       - ./frontend/vite.config.js:/app/vite.config.js
+      - ./frontend/tailwind.config.js:/app/tailwind.config.js
+      - ./frontend/postcss.config.js:/app/postcss.config.js
     environment:
       # Tell Vite to use polling for Hot Reload if needed
       - CHOKIDAR_USEPOLLING=true
@@ -97,6 +124,11 @@ services:
     depends_on:
       - api
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
 
 volumes:
   qdrant_data:

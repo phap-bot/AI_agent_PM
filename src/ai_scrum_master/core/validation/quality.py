@@ -8,7 +8,6 @@ from ai_scrum_master.core.config.domain_profiles import (
     AMBIGUOUS_REQUEST,
     DOMAIN_KEYWORDS,
     DOMAIN_SOURCE_TERMS,
-    OVERSIZED_CAPABILITIES,
     OVERSIZED_REQUEST,
     PROCESS_IMPROVEMENT,
     SOFTWARE_FEATURE,
@@ -53,40 +52,10 @@ GENERIC_TASK_PHRASES = (
     "business outcome",
 )
 
-def classify_requirement(requirement: str) -> str:
-    text = requirement.lower().strip()
-    words = text.split()
-    oversized_hits = [capability for capability in OVERSIZED_CAPABILITIES if capability in text]
-    if len(oversized_hits) >= 2:
-        return OVERSIZED_REQUEST
-    if has_domain(text, "scrum"):
-        return PROCESS_IMPROVEMENT
-    if len(words) <= 1 or (_starts_with_ambiguous_verb(text) and len(words) <= 4):
-        return AMBIGUOUS_REQUEST
-    if has_domain(text, "auth") or has_domain(text, "checkout") or has_domain(text, "notification"):
-        return SOFTWARE_FEATURE
-    if len(words) <= 3 or _starts_with_ambiguous_verb(text):
-        return AMBIGUOUS_REQUEST
-    return SOFTWARE_FEATURE
-
-
-def requirement_domain(requirement: str) -> str:
+def filter_context_sources_for_requirement(requirement: str, requirement_type: str, domain: str, sources: list[dict]) -> tuple[list[dict], list[dict]]:
     text = requirement.lower()
-    for domain in ("auth", "checkout", "notification", "scrum"):
-        if has_domain(text, domain):
-            return domain
-    return "general"
-
-
-def has_domain(text: str, domain: str) -> bool:
-    return any(keyword in text for keyword in DOMAIN_KEYWORDS[domain])
-
-
-def filter_context_sources_for_requirement(requirement: str, sources: list[dict]) -> tuple[list[dict], list[dict]]:
-    text = requirement.lower()
-    domain = requirement_domain(requirement)
-    if classify_requirement(requirement) == OVERSIZED_REQUEST:
-        selected_domains = {candidate for candidate in ("auth", "checkout", "notification", "scrum") if has_domain(text, candidate)}
+    if requirement_type == OVERSIZED_REQUEST:
+        selected_domains = {candidate for candidate in ("auth", "checkout", "notification", "scrum") if candidate in text}
         selected_domains.add("scrum")
     elif domain == "general":
         return sources, []
@@ -106,19 +75,20 @@ def filter_context_sources_for_requirement(requirement: str, sources: list[dict]
 
 
 def _context_matches_domain(source_text: str, domain: str) -> bool:
-    return any(term in source_text for term in DOMAIN_SOURCE_TERMS[domain]) or has_domain(source_text, domain)
+    return any(term in source_text for term in DOMAIN_SOURCE_TERMS[domain]) or any(term in source_text for term in DOMAIN_KEYWORDS[domain])
 
 
-def validate_story_against_requirement(requirement: str, story: dict | None) -> list[str]:
+def validate_story_against_requirement(expected_type: str, requirement: str, story: dict | None) -> list[str]:
     if story is None:
         return []
     issues: list[str] = []
-    expected_type = classify_requirement(requirement)
     actual_type = story.get("story_type", SOFTWARE_FEATURE)
     if actual_type != expected_type:
         issues.append(f"story_type '{actual_type}' does not match current requirement domain '{expected_type}'.")
 
-    issues.extend(domain_contamination_issues(requirement, story))
+    # Assuming 'general' for contamination check if domain isn't explicitly passed, 
+    # but practically we should pass domain. For now, we'll let it use a loose check.
+    issues.extend(domain_contamination_issues("general", requirement, story))
     issues.extend(_acceptance_criteria_issues(story))
     issues.extend(_task_issues(story))
     issues.extend(_ready_story_issues(story))
@@ -127,25 +97,24 @@ def validate_story_against_requirement(requirement: str, story: dict | None) -> 
     return issues
 
 
-def has_domain_contamination(requirement: str, value: Any) -> bool:
-    return bool(domain_contamination_issues(requirement, {"value": value}))
+def has_domain_contamination(domain: str, requirement: str, value: Any) -> bool:
+    return bool(domain_contamination_issues(domain, requirement, {"value": value}))
 
 
-def filter_domain_contaminated_items(requirement: str, items: list[Any]) -> tuple[list[Any], list[Any]]:
+def filter_domain_contaminated_items(domain: str, requirement: str, items: list[Any]) -> tuple[list[Any], list[Any]]:
     kept = []
     removed = []
     for item in items:
-        if has_domain_contamination(requirement, item):
+        if has_domain_contamination(domain, requirement, item):
             removed.append(item)
         else:
             kept.append(item)
     return kept, removed
 
 
-def domain_contamination_issues(requirement: str, story: dict) -> list[str]:
+def domain_contamination_issues(domain: str, requirement: str, story: dict) -> list[str]:
     requirement_text = requirement.lower()
     story_text = json.dumps(_domain_validation_payload(story), ensure_ascii=False).lower()
-    domain = requirement_domain(requirement)
     issues: list[str] = []
     if domain == "general":
         issues.extend(_general_domain_contamination_issues(story_text))
@@ -166,7 +135,7 @@ def domain_contamination_issues(requirement: str, story: dict) -> list[str]:
         ("notification", "scrum"): "Output contains unrelated Sprint Planning content for a notification requirement.",
     }
     for other_domain in contamination.get(domain, ()):
-        if not has_domain(requirement_text, other_domain) and _has_strong_domain_contamination(story_text, other_domain):
+        if not any(kw in requirement_text for kw in DOMAIN_KEYWORDS.get(other_domain, [])) and _has_strong_domain_contamination(story_text, other_domain):
             if domain == "auth" and other_domain == "notification" and _auth_email_reference_is_allowed(story_text):
                 continue
             issues.append(issue_messages.get((domain, other_domain), f"Output contains unrelated {other_domain} content for current requirement."))

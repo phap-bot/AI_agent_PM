@@ -170,6 +170,7 @@ class PreparedAction(SanitizedBaseModel):
 class ActionPlan(SanitizedBaseModel):
     jira: PreparedAction
     slack: PreparedAction
+    github: PreparedAction | None = None
 
 
 class ActionExecutionResult(SanitizedBaseModel):
@@ -185,6 +186,7 @@ class ActionExecutionResult(SanitizedBaseModel):
 class ActionExecutionPlan(SanitizedBaseModel):
     jira: ActionExecutionResult
     slack: ActionExecutionResult
+    github: ActionExecutionResult | None = None
 
 
 class ActionPreviewRequest(SanitizedBaseModel):

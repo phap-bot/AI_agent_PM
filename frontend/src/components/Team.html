@@ -1,0 +1,464 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>ScrumAI - Team Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@450&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet">
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .ai-insight-border {
+            border-left: 4px solid #4b41e1;
+        }
+        body {
+            background-color: #faf8ff;
+            color: #191b23;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "secondary-container": "#645efb",
+                      "surface-variant": "#e1e2ed",
+                      "primary": "#004ac6",
+                      "primary-fixed": "#dbe1ff",
+                      "on-primary": "#ffffff",
+                      "surface-container": "#ededf9",
+                      "surface": "#faf8ff",
+                      "outline-variant": "#c3c6d7",
+                      "on-error": "#ffffff",
+                      "inverse-primary": "#b4c5ff",
+                      "secondary-fixed": "#e2dfff",
+                      "on-secondary-fixed": "#0f0069",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary-container": "#fffbff",
+                      "secondary-fixed-dim": "#c3c0ff",
+                      "error-container": "#ffdad6",
+                      "on-primary-container": "#eeefff",
+                      "surface-container-lowest": "#ffffff",
+                      "on-primary-fixed-variant": "#003ea8",
+                      "tertiary-fixed": "#ffdbcd",
+                      "surface-dim": "#d9d9e5",
+                      "inverse-on-surface": "#f0f0fb",
+                      "surface-container-high": "#e7e7f3",
+                      "surface-bright": "#faf8ff",
+                      "secondary": "#4b41e1",
+                      "surface-container-highest": "#e1e2ed",
+                      "tertiary": "#943700",
+                      "tertiary-container": "#bc4800",
+                      "on-tertiary-container": "#ffede6",
+                      "on-surface-variant": "#434655",
+                      "surface-tint": "#0053db",
+                      "outline": "#737686",
+                      "on-secondary-fixed-variant": "#3323cc",
+                      "tertiary-fixed-dim": "#ffb596",
+                      "background": "#faf8ff",
+                      "on-tertiary-fixed": "#360f00",
+                      "primary-fixed-dim": "#b4c5ff",
+                      "primary-container": "#2563eb",
+                      "on-primary-fixed": "#00174b",
+                      "on-surface": "#191b23",
+                      "on-secondary": "#ffffff",
+                      "surface-container-low": "#f3f3fe",
+                      "on-error-container": "#93000a",
+                      "on-background": "#191b23",
+                      "inverse-surface": "#2e3039",
+                      "on-tertiary-fixed-variant": "#7d2d00",
+                      "error": "#ba1a1a"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "stack-lg": "24px",
+                      "unit": "4px",
+                      "stack-sm": "8px",
+                      "margin-page": "32px",
+                      "gutter": "16px",
+                      "container-padding": "24px",
+                      "stack-md": "16px"
+              },
+              "fontFamily": {
+                      "headline-md": ["Inter"],
+                      "display-lg": ["Inter"],
+                      "headline-sm": ["Inter"],
+                      "mono-sm": ["JetBrains Mono"],
+                      "label-md": ["Inter"],
+                      "body-md": ["Inter"],
+                      "body-lg": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                      "mono-sm": ["12px", {"lineHeight": "18px", "fontWeight": "450"}],
+                      "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                      "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="flex min-h-screen">
+<!-- SideNavBar -->
+<aside class="flex flex-col h-full p-stack-md fixed left-0 top-0 bg-surface-container-low dark:bg-surface-container-lowest border-r border-outline-variant dark:border-outline w-64 z-50">
+<div class="flex items-center gap-stack-sm mb-stack-lg">
+<div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined">corporate_fare</span>
+</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface dark:text-inverse-on-surface">Enterprise Scrum</h2>
+<p class="font-label-md text-label-md text-primary">AI Agent Active</p>
+</div>
+</div>
+<nav class="flex-1 space-y-unit">
+<a class="flex items-center gap-stack-sm px-stack-md py-stack-sm text-on-surface-variant hover:bg-surface-variant rounded-lg font-label-md text-label-md transition-all duration-200" href="#">
+<span class="material-symbols-outlined">folder_open</span> Projects
+            </a>
+<a class="flex items-center gap-stack-sm px-stack-md py-stack-sm text-on-surface-variant hover:bg-surface-variant rounded-lg font-label-md text-label-md transition-all duration-200" href="#">
+<span class="material-symbols-outlined">skateboarding</span> Sprints
+            </a>
+<a class="flex items-center gap-stack-sm px-stack-md py-stack-sm text-on-surface-variant hover:bg-surface-variant rounded-lg font-label-md text-label-md transition-all duration-200" href="#">
+<span class="material-symbols-outlined">settings_suggest</span> Cấu hình Jira
+            </a><a class="flex items-center gap-stack-sm px-stack-md py-stack-sm text-on-surface-variant hover:bg-surface-variant rounded-lg font-label-md text-label-md transition-all duration-200" href="#">
+<span class="material-symbols-outlined">hub</span> Cấu hình Slack
+            </a>
+<a class="flex items-center gap-stack-sm px-stack-md py-stack-sm text-on-surface-variant hover:bg-surface-variant rounded-lg font-label-md text-label-md transition-all duration-200" href="#">
+<span class="material-symbols-outlined">history</span> History
+            </a>
+</nav>
+<button class="mt-stack-lg bg-primary text-on-primary py-stack-sm rounded-lg font-label-md text-label-md flex items-center justify-center gap-stack-sm hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined">add</span> New Sprint
+        </button>
+<div class="mt-auto pt-stack-lg border-t border-outline-variant space-y-unit">
+<a class="flex items-center gap-stack-sm px-stack-md py-stack-sm text-on-surface-variant hover:bg-surface-variant rounded-lg font-label-md text-label-md transition-all" href="#">
+<span class="material-symbols-outlined">help</span> Support
+            </a>
+<a class="flex items-center gap-stack-sm px-stack-md py-stack-sm text-on-surface-variant hover:bg-surface-variant rounded-lg font-label-md text-label-md transition-all" href="#">
+<span class="material-symbols-outlined">logout</span> Logout
+            </a>
+</div>
+</aside>
+<main class="flex-1 ml-64 flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center w-full px-margin-page h-16 bg-surface dark:bg-inverse-surface border-b border-outline-variant dark:border-outline sticky top-0 z-40">
+<div class="flex items-center gap-stack-lg h-full">
+<span class="font-headline-md text-headline-md text-primary dark:text-inverse-primary">ScrumAI</span>
+<nav class="flex gap-stack-lg h-full">
+<a class="flex items-center h-full text-on-surface-variant dark:text-surface-variant font-body-md text-body-md hover:text-primary transition-colors duration-300" href="#">Dashboard</a>
+<a class="flex items-center h-full text-on-surface-variant dark:text-surface-variant font-body-md text-body-md hover:text-primary transition-colors duration-300" href="#">Analytics</a>
+<a class="flex items-center h-full text-primary font-bold border-b-2 border-primary pb-1 font-body-md text-body-md" href="#">Team</a>
+</nav>
+</div>
+<div class="flex items-center gap-stack-md">
+<div class="relative group">
+<span class="material-symbols-outlined cursor-pointer text-on-surface-variant hover:text-primary transition-colors">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full border border-white"></span>
+</div>
+<span class="material-symbols-outlined cursor-pointer text-on-surface-variant hover:text-primary transition-colors">settings</span>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKM93YpjDFZN_Mk_QIrt8-qMhZV7d346S59R1wOpgmT0glBhOs54RBsPwyn_PTSuIXO2rwxt8AuwRj1LSexJRdoNtVdcOxtrPeAwP6c2xpfG9X-BXwWeQpSg9OU_WL0oRZLsjXeNQQbKwPn9gw2mo1UUTtkWpeEMihpCGgcNtVxnXBOSnqaqoxfsKlx6yz3vGRWPJBvh_JEvzH5c9Mr0DSx2yXS7gckacp4HxDD3h08ElSetiECQXsYggWgGYFETukk7MVEXu262M">
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<div class="p-margin-page space-y-stack-lg">
+<!-- Page Header & Actions -->
+<div class="flex justify-between items-end">
+<div>
+<h1 class="font-display-lg text-display-lg text-on-surface">Team Management</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Manage your hybrid workforce of humans and autonomous agents.</p>
+</div>
+<div class="flex gap-stack-md">
+<button class="px-stack-lg py-stack-sm rounded-lg border border-outline text-on-surface font-label-md text-label-md flex items-center gap-stack-sm hover:bg-surface-variant transition-all">
+<span class="material-symbols-outlined">smart_toy</span> Agent Roles
+                    </button>
+<button class="px-stack-lg py-stack-sm rounded-lg bg-primary text-on-primary font-label-md text-label-md flex items-center gap-stack-sm hover:opacity-90 transition-all active:scale-95">
+<span class="material-symbols-outlined">person_add</span> Invite Member
+                    </button>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- AI Insights Panel -->
+<div class="col-span-12 lg:col-span-4 space-y-gutter">
+<div class="bg-surface-container-low p-container-padding rounded-xl ai-insight-border shadow-sm">
+<div class="flex items-center gap-stack-sm mb-stack-md">
+<span class="material-symbols-outlined text-secondary">auto_awesome</span>
+<h3 class="font-headline-sm text-headline-sm">Agent Velocity Audit</h3>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-stack-lg">
+                            The "Scribe-7" agent is currently handling 42% of project documentation. Human developers report a 15% increase in coding focus.
+                        </p>
+<div class="space-y-stack-sm">
+<div class="flex justify-between items-center text-label-md font-label-md">
+<span class="text-on-surface-variant">Agent Efficiency</span>
+<span class="text-primary">94%</span>
+</div>
+<div class="w-full bg-surface-variant h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[94%]"></div>
+</div>
+</div>
+</div>
+<div class="bg-white border border-outline-variant rounded-xl p-container-padding">
+<h3 class="font-label-md text-label-md uppercase tracking-wider text-outline mb-stack-md">Active Agent Nodes</h3>
+<div class="space-y-stack-md">
+<div class="flex items-center gap-stack-sm p-stack-sm hover:bg-surface-container rounded-lg transition-colors cursor-pointer">
+<div class="w-10 h-10 rounded bg-tertiary-fixed text-tertiary flex items-center justify-center">
+<span class="material-symbols-outlined" data-weight="fill">terminal</span>
+</div>
+<div class="flex-1">
+<div class="font-label-md text-label-md">RefactorBot v2</div>
+<div class="text-on-surface-variant text-[10px]">Processing PR #402</div>
+</div>
+<span class="w-2 h-2 rounded-full bg-success bg-green-500"></span>
+</div>
+<div class="flex items-center gap-stack-sm p-stack-sm hover:bg-surface-container rounded-lg transition-colors cursor-pointer">
+<div class="w-10 h-10 rounded bg-primary-fixed text-primary flex items-center justify-center">
+<span class="material-symbols-outlined" data-weight="fill">description</span>
+</div>
+<div class="flex-1">
+<div class="font-label-md text-label-md">WikiGen AI</div>
+<div class="text-on-surface-variant text-[10px]">Updating docs...</div>
+</div>
+<span class="w-2 h-2 rounded-full bg-success bg-green-500 animate-pulse"></span>
+</div>
+</div>
+</div>
+</div>
+<!-- Main Team List -->
+<div class="col-span-12 lg:col-span-8 bg-white border border-outline-variant rounded-xl overflow-hidden">
+<div class="px-container-padding py-stack-md border-b border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-stack-lg">
+<button class="font-label-md text-label-md text-primary border-b-2 border-primary pb-1">All Members (12)</button>
+<button class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors">Humans</button>
+<button class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors">Agents</button>
+</div>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
+<input class="pl-8 pr-stack-md py-1.5 border border-outline-variant rounded-full text-body-md focus:ring-2 focus:ring-primary focus:border-primary bg-surface-container-low w-64 outline-none" placeholder="Search team..." type="text">
+</div>
+</div>
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low font-label-md text-label-md text-on-surface-variant border-b border-outline-variant">
+<tr>
+<th class="px-container-padding py-3 font-semibold">Member</th>
+<th class="px-gutter py-3 font-semibold">Role</th>
+<th class="px-gutter py-3 font-semibold">Workload</th>
+<th class="px-gutter py-3 font-semibold">Permissions</th>
+<th class="px-container-padding py-3 font-semibold text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md divide-y divide-outline-variant">
+<!-- Member 1 -->
+<tr class="hover:bg-surface-bright transition-colors group">
+<td class="px-container-padding py-stack-md">
+<div class="flex items-center gap-stack-md">
+<div class="relative">
+<img alt="Team Member" class="w-10 h-10 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLMuIoKUMkDc2Dz9ZkDPysBK537o2isTwhLQOd1kkfqZzDHmCIz-w_zgPhuajdU7wTHrvZzt-yw3Oy4MdVJJb3ycY7cWbewHyrea7AACOcaHRtwAwpA9g1mxeTqyVQ0yyJOvHBi9Q4miYsdaOgIE9pAMd5xTWZ71P3TUIyDZoTi5Un5TPydTFQCewMwnAt6kU42U3gf12QH6zfZ-X8ts3fS1_eMq440_EmBPr5Rpiz9KgQNV1RNhXHR-VoRdqXFlyoQx2H8oHQcaM">
+<span class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+</div>
+<div>
+<div class="font-semibold text-on-surface">Alex Rivera</div>
+<div class="text-xs text-on-surface-variant">alex.r@scrumai.io</div>
+</div>
+</div>
+</td>
+<td class="px-gutter py-stack-md">
+<span class="px-2 py-1 rounded bg-secondary-container/10 text-secondary text-[10px] font-bold uppercase tracking-tighter">Product Owner</span>
+</td>
+<td class="px-gutter py-stack-md">
+<div class="flex flex-col gap-1">
+<div class="flex justify-between text-[10px]">
+<span class="">8/10 tickets</span>
+<span class="text-error font-bold">High</span>
+</div>
+<div class="w-24 h-1.5 bg-surface-variant rounded-full">
+<div class="bg-error w-[80%] h-full rounded-full"></div>
+</div>
+</div>
+</td>
+<td class="px-gutter py-stack-md">
+<span class="text-on-surface-variant text-xs">Admin</span>
+</td>
+<td class="px-container-padding py-stack-md text-right">
+<button class="p-1 hover:bg-surface-variant rounded transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- AI Member 1 -->
+<tr class="hover:bg-surface-bright transition-colors group">
+<td class="px-container-padding py-stack-md">
+<div class="flex items-center gap-stack-md">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined" data-weight="fill">smart_toy</span>
+</div>
+<div>
+<div class="font-semibold text-on-surface">SprintMaster-Bot</div>
+<div class="text-xs text-secondary font-mono-sm">Agent v4.2.1</div>
+</div>
+</div>
+</td>
+<td class="px-gutter py-stack-md">
+<span class="px-2 py-1 rounded bg-tertiary-container/10 text-tertiary text-[10px] font-bold uppercase tracking-tighter">Scrum Master</span>
+</td>
+<td class="px-gutter py-stack-md">
+<div class="flex flex-col gap-1">
+<div class="flex justify-between text-[10px]">
+<span class="">24 tasks monitor</span>
+<span class="text-success text-green-600 font-bold">Optimal</span>
+</div>
+<div class="w-24 h-1.5 bg-surface-variant rounded-full">
+<div class="bg-green-500 w-[45%] h-full rounded-full"></div>
+</div>
+</div>
+</td>
+<td class="px-gutter py-stack-md">
+<span class="text-on-surface-variant text-xs">Full Access</span>
+</td>
+<td class="px-container-padding py-stack-md text-right text-on-surface-variant">
+<button class="p-1 hover:bg-surface-variant rounded transition-colors">
+<span class="material-symbols-outlined">settings_input_component</span>
+</button>
+</td>
+</tr>
+<!-- Member 2 -->
+<tr class="hover:bg-surface-bright transition-colors group">
+<td class="px-container-padding py-stack-md">
+<div class="flex items-center gap-stack-md">
+<img alt="Team Member" class="w-10 h-10 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbphGvtDsezbCoOOZmmWZPyar2TdlRRFWhI6y9HPKIY4Xda7WCUR5R3QKNTxycDTGDjg5BnJztJtYY5W4sQkvtImifwqvwD6xjATYK5gwEaXtUBPzKJoBJE677qu3Mf7fNDi_psFz5nzBscVhMKa9oXKyC4rc6rRHyPwPUBDPqdwvXYF3H0Rxi_IGWMWciEgeS891F_0Egk052ayGQYtEasP1m9JNnvN74ecMTS6F4_B6XLAIGg1-AcE0evrKX5yAmnQLv7jF-uyw">
+<div>
+<div class="font-semibold text-on-surface">Jordan Chen</div>
+<div class="text-xs text-on-surface-variant">j.chen@scrumai.io</div>
+</div>
+</div>
+</td>
+<td class="px-gutter py-stack-md">
+<span class="px-2 py-1 rounded bg-outline-variant/20 text-on-surface-variant text-[10px] font-bold uppercase tracking-tighter">Lead Dev</span>
+</td>
+<td class="px-gutter py-stack-md">
+<div class="flex flex-col gap-1">
+<div class="flex justify-between text-[10px]">
+<span class="">3/10 tickets</span>
+<span class="text-primary font-bold">Low</span>
+</div>
+<div class="w-24 h-1.5 bg-surface-variant rounded-full">
+<div class="bg-primary w-[30%] h-full rounded-full"></div>
+</div>
+</div>
+</td>
+<td class="px-gutter py-stack-md">
+<span class="text-on-surface-variant text-xs">Write</span>
+</td>
+<td class="px-container-padding py-stack-md text-right">
+<button class="p-1 hover:bg-surface-variant rounded transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Member 3 -->
+<tr class="hover:bg-surface-bright transition-colors group">
+<td class="px-container-padding py-stack-md">
+<div class="flex items-center gap-stack-md">
+<img alt="Team Member" class="w-10 h-10 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGUhRHCkjEFjAOl7XGlNX9jSQQuYkaau5Dh4WG6q24_g_SmPFsHxBh60e92Gc8wLvU3JPxun2SU4Fturi7urZClUPgMLwKYmz8zrMvORaav8692WyyWPuPNh73Wh6I00sOftJS_snc8fZ-2C8cljdnOUHnfls26gRFVH6jkFJyyIEu5oSOwwWMwlr1Pp1JEPM1G2-qyb2HxRcRi3wEfJDfEQvrRe2Z0ZduzmODWwLwht7gI-egLjE4EoODSTnJfVwy8mkZr-PyPWQ">
+<div>
+<div class="font-semibold text-on-surface">Maya Patel</div>
+<div class="text-xs text-on-surface-variant">maya.p@scrumai.io</div>
+</div>
+</div>
+</td>
+<td class="px-gutter py-stack-md">
+<span class="px-2 py-1 rounded bg-outline-variant/20 text-on-surface-variant text-[10px] font-bold uppercase tracking-tighter">QA Lead</span>
+</td>
+<td class="px-gutter py-stack-md">
+<div class="flex flex-col gap-1">
+<div class="flex justify-between text-[10px]">
+<span class="">5/10 tickets</span>
+<span class="text-on-surface-variant font-bold">Normal</span>
+</div>
+<div class="w-24 h-1.5 bg-surface-variant rounded-full">
+<div class="bg-secondary w-[50%] h-full rounded-full"></div>
+</div>
+</div>
+</td>
+<td class="px-gutter py-stack-md">
+<span class="text-on-surface-variant text-xs">Write</span>
+</td>
+<td class="px-container-padding py-stack-md text-right">
+<button class="p-1 hover:bg-surface-variant rounded transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="p-container-padding border-t border-outline-variant flex items-center justify-between text-label-md font-label-md text-on-surface-variant">
+<span class="">Showing 4 of 12 members</span>
+<div class="flex gap-stack-sm">
+<button class="px-3 py-1 rounded border border-outline-variant hover:bg-surface-variant transition-colors">Previous</button>
+<button class="px-3 py-1 rounded border border-outline-variant hover:bg-surface-variant transition-colors">Next</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Stats / Meta Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<div class="bg-white border border-outline-variant p-stack-md rounded-xl flex items-center gap-stack-md">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-2xl">groups</span>
+</div>
+<div>
+<div class="text-on-surface-variant font-label-md text-label-md">Total Team Seats</div>
+<div class="text-headline-sm font-headline-sm">12 / 20</div>
+</div>
+</div>
+<div class="bg-white border border-outline-variant p-stack-md rounded-xl flex items-center gap-stack-md">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-2xl">precision_manufacturing</span>
+</div>
+<div>
+<div class="text-on-surface-variant font-label-md text-label-md">AI Agent Tokens</div>
+<div class="text-headline-sm font-headline-sm">4 Active</div>
+</div>
+</div>
+<div class="bg-white border border-outline-variant p-stack-md rounded-xl flex items-center gap-stack-md">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-2xl">pending_actions</span>
+</div>
+<div>
+<div class="text-on-surface-variant font-label-md text-label-md">Pending Invites</div>
+<div class="text-headline-sm font-headline-sm">2 Sent</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Micro-interaction Script -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                row.addEventListener('mouseenter', () => {
+                    row.classList.add('scale-[1.002]', 'shadow-sm');
+                });
+                row.addEventListener('mouseleave', () => {
+                    row.classList.remove('scale-[1.002]', 'shadow-sm');
+                });
+            });
+        });
+    </script>
+
+
+</body></html>

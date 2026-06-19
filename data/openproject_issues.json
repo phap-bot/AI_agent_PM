@@ -1,0 +1,734 @@
+[
+  {
+    "id": 4671294844,
+    "number": 23767,
+    "title": "Merge release/17.5 into dev",
+    "state": "open",
+    "body": "Created by GitHub action",
+    "created_at": "2026-06-16T05:17:30Z",
+    "updated_at": "2026-06-16T08:07:33Z",
+    "url": "https://github.com/opf/openproject/pull/23767",
+    "user": "openprojectci",
+    "labels": [
+      "create-merge-release-into-dev-pr"
+    ],
+    "type": "pull_request"
+  },
+  {
+    "id": 4666901814,
+    "number": 23760,
+    "title": "Address collaborative document presence change detection and debounce",
+    "state": "open",
+    "body": "Two latent bugs in the collaborative-document presence controller (`live-events.controller.ts`), which renders connected-user avatars from the Yjs awareness protocol. The change-detector keyed its presence map by array index instead of `state.clientId`, so it only noticed when the user *count* changed and missed same-count membership swaps (one peer leaving as another joins) — leaving stale avatars; and the refresh debounce named a non-existent method (`triggerUpdateUI` vs the real `triggerUpdateUsersUI`), so every awareness frame fetched immediately instead of throttling to 1s. Both fixed by keying on the real client id and pointing the debounce at the correct method.\n",
+    "created_at": "2026-06-15T16:21:12Z",
+    "updated_at": "2026-06-16T07:32:28Z",
+    "url": "https://github.com/opf/openproject/pull/23760",
+    "user": "akabiru",
+    "labels": [
+      "maintenance"
+    ],
+    "type": "pull_request"
+  },
+  {
+    "id": 4666595862,
+    "number": 23759,
+    "title": "Adds upsell template and behaviour. Update tests to reflect changes.",
+    "state": "open",
+    "body": "Related Work Package: [OP#XWI-81](https://community.openproject.org/projects/XWI/work_packages/XWI-81)\r\n",
+    "created_at": "2026-06-15T15:41:55Z",
+    "updated_at": "2026-06-16T08:16:27Z",
+    "url": "https://github.com/opf/openproject/pull/23759",
+    "user": "mereghost",
+    "labels": [],
+    "type": "pull_request"
+  },
+  {
+    "id": 4666173252,
+    "number": 23757,
+    "title": "Update op-blocknote-extensions to 0.1.3",
+    "state": "open",
+    "body": "This includes:\r\n- [BNE-93] Semantic ID and markdown support for copy-paste\r\n- [BNE-108] Dragging a work package link reloads the data via the network\r\n- [#74978] split surrounding sentence when promoting inline chip to block\r\n- New translations\r\n- [BNE-84] Remove getSideMenuExtension workaround\r\n\r\n# Ticket\r\nhttps://community.openproject.org/projects/STC/work_packages/BNE-93 amongst others\r\n\r\n# Merge checklist\r\n\r\n- [ ] Added/updated tests\r\n- [ ] Added/updated documentation in Lookbook (patterns, previews, etc)\r\n- [ ] Tested major browsers (Chrome, Firefox, Edge, ...)\r\n",
+    "created_at": "2026-06-15T14:49:30Z",
+    "updated_at": "2026-06-15T14:52:03Z",
+    "url": "https://github.com/opf/openproject/pull/23757",
+    "user": "judithroth",
+    "labels": [],
+    "type": "pull_request"
+  },
+  {
+    "id": 4666078659,
+    "number": 23756,
+    "title": "[OP-19205] Build User Card View for Resource Management  ",
+    "state": "open",
+    "body": "# Ticket\r\n<!-- Provide the link to respective work package -->\r\nhttps://community.openproject.org/wp/OP-19205\r\n\r\n<!-- Contributors: Please check our PR guide: https://www.openproject.org/docs/development/code-review-guidelines/#preparing-your-pull-request before opening a PR. -->\r\n\r\n<!-- Reviewers: Please check our Review guide: https://www.openproject.org/docs/development/code-review-guidelines/#reviewing -->\r\n\r\n# What are you trying to accomplish?\r\n<!-- Provide a description of the changes. -->\r\n\r\n## Screenshots\r\n<!-- Provide before/after screenshots, videos, or graphs for any visual changes; otherwise, remove this section -->\r\n\r\n# What approach did you choose and why?\r\n<!-- This section is a place for you to describe your thought process in making these changes.\r\n     List any tradeoffs you made to take on or pay down tech debt.\r\n     Describe any alternative approaches you considered and why you discarded them. -->\r\n\r\n# Merge checklist\r\n\r\n- [ ] Added/updated tests\r\n- [ ] Added/updated documentation in Lookbook (patterns, previews, etc)\r\n- [ ] Tested major browsers (Chrome, Firefox, Edge, ...)\r\n",
+    "created_at": "2026-06-15T14:37:21Z",
+    "updated_at": "2026-06-15T15:01:14Z",
+    "url": "https://github.com/opf/openproject/pull/23756",
+    "user": "mrmir",
+    "labels": [],
+    "type": "pull_request"
+  },
+  {
+    "id": 4665047894,
+    "number": 23755,
+    "title": "hocuspocus: Add provider/server wire-protocol integration test with CI version-skew guard",
+    "state": "open",
+    "body": "https://community.openproject.org/wp/STC-834 · Follows  #23754 (Hocuspocus v4.2.0 lockstep bump)\r\n\r\nThe Hocuspocus client and server live in separate dependabot ecosystems and ship as independently deployed artifacts, so they can drift apart in version on future bumps — with nothing testing that the real `@hocuspocus/provider` ↔ server wire protocol still holds across that drift.\r\n\r\nThis adds a failsafe on two fronts: a vitest integration test that boots the server in-process and connects a real provider, asserting the connect/auth/load/sync handshake across adjacent provider majors so the supported skew stays proven; and a soft-warning CI check that flags whenever the client and server majors diverge, since only a single major of drift is supported (two or more is not).\r\n\r\nThe check never blocks the build, and the test runs in the existing `npm test` with no workflow change.\r\n",
+    "created_at": "2026-06-15T12:26:46Z",
+    "updated_at": "2026-06-15T18:24:43Z",
+    "url": "https://github.com/opf/openproject/pull/23755",
+    "user": "akabiru",
+    "labels": [
+      "maintenance"
+    ],
+    "type": "pull_request"
+  },
+  {
+    "id": 4664691594,
+    "number": 23754,
+    "title": "Code maintenance/STC-834: Bump Hocuspocus client & server to v4.2.0 (lockstep)",
+    "state": "open",
+    "body": "# Ticket\r\n\r\nhttps://community.openproject.org/wp/STC-834\r\n\r\nServer-side follow-up to the `@hocuspocus/provider` v4 client bump in #23570.\r\n\r\n# What are you trying to accomplish?\r\n\r\n#23570 moves the frontend client `@hocuspocus/provider` to v4. The collaboration server in `op-blocknote-hocuspocus` was still on v3. The two talk over a versioned wire protocol and ship as independent artifacts — the server is the separately built `openproject/hocuspocus` image — so a one-major skew is tolerated, but the goal is to bring the server up to v4 as well so both halves run the current major.\r\n\r\nThis PR bumps `@hocuspocus/server` and `@hocuspocus/extension-logger` to v4 and applies the API changes the major introduces.\r\n\r\n## What v4 changes, and how it's applied here\r\n\r\nv4 is a cross-runtime release that standardizes the server hook payloads on web-standard primitives and restructures a couple of hook shapes ([v4.0.0 release notes](https://github.com/ueberdosis/hocuspocus/releases/tag/v4.0.0), [full diff](https://github.com/ueberdosis/hocuspocus/compare/v3.4.4...v4.0.0)). Three of those touch our `OpenProjectApi` extension:\r\n\r\n- **Request headers are now a web-standard `Headers` object** — upgrade guide §2 *Request and Headers (Breaking)*. `onAuthenticate` previously read the request origin off a plain object (`data.request.headers.origin`). v4 exposes it as `Headers`, accessed with `.get()`:\r\n\r\n  ```ts\r\n  // before (v3)\r\n  const requestOrigin = data.request?.headers?.origin;\r\n  // after (v4)\r\n  const requestOrigin = data.requestHeaders?.get(\"origin\") ?? undefined;\r\n  ```\r\n\r\n  This matters beyond a rename: against v4 the old plain-object access would silently return `undefined`, quietly weakening the origin check passed to `decryptAndValidateToken`.\r\n\r\n- **The store hook's context is renamed `context` → `lastContext`** — upgrade guide §3 *`onStoreDocument` Payload (Breaking)*. `onStoreDocument` reads the resource URL, readonly flag, and token from the snapshot of the last connection context:\r\n\r\n  ```ts\r\n  // before (v3): data.context\r\n  // after (v4):  data.lastContext\r\n  const { resourceUrl, readonly } = data.lastContext;\r\n  ```\r\n\r\n- **Broadcasting to connected clients goes through `Document#broadcastStateless`.** In v4 `Document.connections` is a `Map<Connection, { clients }>`, so the old `connections.forEach(({ connection }) => connection.sendStateless(...))` no longer typechecks. `broadcastStateless` is the supported helper for this ([CHANGELOG, client-initiated broadcastStateless #1103](https://github.com/ueberdosis/hocuspocus/blob/main/CHANGELOG.md)):\r\n\r\n  ```ts\r\n  // before (v3)\r\n  data.document.connections.forEach(({ connection }) => connection.sendStateless(\"storeEvent\"));\r\n  // after (v4)\r\n  data.document.broadcastStateless(\"storeEvent\");\r\n  ```\r\n\r\nThe rest of the extension is unchanged: `onTokenSync`, `connection.close({ code, reason })`, `connectionConfig.readOnly`, and the ad-hoc `context` writes all compile and behave the same under v4. `@hocuspocus/common` resolves to v4 transitively; `closeEvents.ts` already uses the v4-narrowed `{ code, reason }` CloseEvent shape (upgrade guide §11 *`CloseEvent` Shape*), so no change was needed there.\r\n\r\n### References\r\n\r\n- v4.0.0 release notes & v3→v4 upgrade guide: https://github.com/ueberdosis/hocuspocus/releases/tag/v4.0.0\r\n- Full changelog: https://github.com/ueberdosis/hocuspocus/blob/main/CHANGELOG.md\r\n- v3.4.4 → v4.0.0 diff: https://github.com/ueberdosis/hocuspocus/compare/v3.4.4...v4.0.0\r\n\r\nA standing assertion of the client/server compatibility, plus a CI guard against future major drift, lands in the follow-up #23755.\r\n\r\n# Merge checklist\r\n\r\n- [x] Added/updated tests\r\n- [ ] Added/updated documentation in Lookbook (n/a)\r\n- [x] Tested major browsers (live smoke test in Chrome)\r\n",
+    "created_at": "2026-06-15T11:36:03Z",
+    "updated_at": "2026-06-15T18:14:45Z",
+    "url": "https://github.com/opf/openproject/pull/23754",
+    "user": "akabiru",
+    "labels": [
+      "maintenance"
+    ],
+    "type": "pull_request"
+  },
+  {
+    "id": 4664075063,
+    "number": 23753,
+    "title": "Add development and test log rotation",
+    "state": "closed",
+    "body": "Noticed this after my laptop cried about no remaining disk space and there were 350+ gigs of logs somehow",
+    "created_at": "2026-06-15T10:08:17Z",
+    "updated_at": "2026-06-15T13:17:38Z",
+    "url": "https://github.com/opf/openproject/pull/23753",
+    "user": "mrmir",
+    "labels": [],
+    "type": "pull_request"
+  },
+  {
+    "id": 4664002714,
+    "number": 23752,
+    "title": "Bug/op 19472 custom actions rejected for conflicting change if clicked after changing something",
+    "state": "closed",
+    "body": "# Ticket\r\n\r\nhttps://community.openproject.org/wp/OP-19472\r\n\r\n# What are you trying to accomplish?\r\n\r\nFix clicking a custom action after modifications on the work package page have already been done (e.g., clicking another custom action or any other attribute change).\r\n\r\nThe action before would sent the patch to the backend updating the work package and its lockVersion. That response is correctly returned to the frontend. But the change is not correctly listened to by the subscription in WorkPackageSingleViewBase. The subscription will always be registered using the semantic identifier (if it is active) but the api's response will update the cache using the canonical id. The fact that `this.workPackageId` gets the canonical id assigned does not change the subscription being with the semantic identifier.\r\n\r\nThis problem then propagates down to components having `workPackage` as their input like WpCustomActionComponent. \r\n\r\nThe fix is to only take the first value (possibly listening to the semantic identifiers there) and only then subscribing after the id listened to (`this.workPackageId`) has been set to the canonical id.\r\n\r\n# Merge checklist\r\n\r\n- [x] Added/updated tests\r\n",
+    "created_at": "2026-06-15T09:59:03Z",
+    "updated_at": "2026-06-16T07:11:30Z",
+    "url": "https://github.com/opf/openproject/pull/23752",
+    "user": "ulferts",
+    "labels": [],
+    "type": "pull_request"
+  },
+  {
+    "id": 4662858242,
+    "number": 23751,
+    "title": "feat: Add numeric ID into work package show UI",
+    "state": "open",
+    "body": "# Ticket\r\n<!-- Provide the link to respective work package -->\r\n\r\n<!-- Contributors: Please check our PR guide: https://www.openproject.org/docs/development/code-review-guidelines/#preparing-your-pull-request before opening a PR. -->\r\n\r\n<!-- Reviewers: Please check our Review guide: https://www.openproject.org/docs/development/code-review-guidelines/#reviewing -->\r\n\r\n# What are you trying to accomplish?\r\n<!-- Provide a description of the changes. -->\r\n\r\n## Screenshots\r\nNew menu item:\r\n<img width=\"1119\" height=\"415\" alt=\"Screenshot 2026-06-15 at 16 15 49\" src=\"https://github.com/user-attachments/assets/54a39344-7f2e-4f2d-95b8-650461534cef\" />\r\n\r\n\r\n\r\n# What approach did you choose and why?\r\n<!-- This section is a place for you to describe your thought process in making these changes.\r\n     List any tradeoffs you made to take on or pay down tech debt.\r\n     Describe any alternative approaches you considered and why you discarded them. -->\r\n\r\n# Merge checklist\r\n\r\n- [ ] Added/updated tests\r\n- [ ] Added/updated documentation in Lookbook (patterns, previews, etc)\r\n- [ ] Tested major browsers (Chrome, Firefox, Edge, ...)\r\n",
+    "created_at": "2026-06-15T07:13:30Z",
+    "updated_at": "2026-06-15T15:25:58Z",
+    "url": "https://github.com/opf/openproject/pull/23751",
+    "user": "thykel",
+    "labels": [],
+    "type": "pull_request"
+  },
+  {
+    "id": 4662513441,
+    "number": 23750,
+    "title": "Run npm audit fix",
+    "state": "closed",
+    "body": "Created by GitHub action.\n\n## Impacted packages\n\n### frontend\n- `@angular-builders/custom-esbuild` (high)\n- `@angular/build` (high)\n- `esbuild` (high)\n- `vite` (high)\n",
+    "created_at": "2026-06-15T06:11:11Z",
+    "updated_at": "2026-06-15T07:43:07Z",
+    "url": "https://github.com/opf/openproject/pull/23750",
+    "user": "openprojectci",
+    "labels": [],
+    "type": "pull_request"
+  },
+  {
+    "id": 4660637945,
+    "number": 23742,
+    "title": "[OP-19553] Type `ElementRef` generics",
+    "state": "open",
+    "body": "> [!NOTE]\r\n> This should not result in changes to production (transpiled) code. Typing improvements are for Dx.\r\n\r\n# Ticket\r\n\r\nhttps://community.openproject.org/wp/OP-19553\r\n\r\n# What are you trying to accomplish?\r\n\r\nParameterizes `inject(ElementRef)`, `@ViewChild` refs, and related declarations across the Angular views with concrete element types (`ElementRef<HTMLElement>` and specific subtypes such as `HTMLInputElement`/`HTMLCanvasElement`), so `nativeElement` is no longer `any`.\r\n\r\n# What approach did you choose and why?\r\n\r\nNarrowing the generics lets redundant `as HTMLElement` casts drop out and surfaces several previously `any`-hidden holes where `querySelector` results were used without a null check or as the wrong element type. Pure typing change, no runtime behaviour change.\r\n\r\n# Merge checklist\r\n\r\n- [x] Added/updated tests\r\n- [ ] Added/updated documentation in Lookbook (patterns, previews, etc)\r\n- [ ] Tested major browsers (Chrome, Firefox, Edge, ...)\r\n",
+    "created_at": "2026-06-14T21:12:51Z",
+    "updated_at": "2026-06-14T21:45:03Z",
+    "url": "https://github.com/opf/openproject/pull/23742",
+    "user": "myabc",
+    "labels": [
+      "maintenance",
+      "javascript",
+      "needs review",
+      "eslint"
+    ],
+    "type": "pull_request"
+  },
+  {
+    "id": 4659899904,
+    "number": 23741,
+    "title": "[OP-19549] Remove Webpack remnants from docs and code",
+    "state": "open",
+    "body": "# Ticket\n\nhttps://community.openproject.org/wp/OP-19549\n\n# What are you trying to accomplish?\n\nCleanup of Webpack remnants missed in [OP-17301](https://community.openproject.org/work_packages/OP-17301): stale references in docs and code comments (now naming Vite/esbuild), unsupported magic comments on dynamic imports, and dead webpack-only files (the Karma test bootstrap, the `webpack-watch` Docker script, and an obsolete ESLint override).\n\nAlso replaces the Webpack-only `__webpack_public_path__` global — still read by the image/video path helpers — with an own `publicAssetPath` declaration, which fixes a typecheck break left by dropping `@types/webpack-env`.\n\n# Merge checklist\n\n- [ ] Added/updated tests\n- [x] Added/updated documentation\n- [ ] Tested major browsers (Chrome, Firefox, Edge, ...)\n",
+    "created_at": "2026-06-14T16:58:56Z",
+    "updated_at": "2026-06-16T05:58:44Z",
+    "url": "https://github.com/opf/openproject/pull/23741",
+    "user": "myabc",
+    "labels": [
+      "documentation",
+      "maintenance",
+      "javascript",
+      "needs review",
+      "docker",
+      "ci"
+    ],
+    "type": "pull_request"
+  },
+  {
+    "id": 4658665021,
+    "number": 23740,
+    "title": "Fix Rubocop offenses in backlogs module",
+    "state": "closed",
+    "body": "# Ticket\r\n\r\nn/a\r\n\r\n# What are you trying to accomplish?\r\n\r\nFixes autocorrectable Rubocop offenses via `rubocop -A modules/backlogs`\r\n\r\n## Screenshots\r\n\r\nno visual changes\r\n\r\n# What approach did you choose and why?\r\n\r\nSame reasons as #23717\r\n\r\n# Merge checklist\r\n\r\n- [ ] Added/updated tests\r\n- [ ] Added/updated documentation in Lookbook (patterns, previews, etc)\r\n- [ ] Tested major browsers (Chrome, Firefox, Edge, ...)\r\n",
+    "created_at": "2026-06-14T09:47:22Z",
+    "updated_at": "2026-06-15T13:28:27Z",
+    "url": "https://github.com/opf/openproject/pull/23740",
+    "user": "myabc",
+    "labels": [
+      "ruby",
+      "needs review",
+      "rubocop 👮"
+    ],
+    "type": "pull_request"
+  },
+  {
+    "id": 4657173017,
+    "number": 23739,
+    "title": "Sortable Lists controller restructure with outlets",
+    "state": "open",
+    "body": "> [!NOTE]\r\n> This PR is based on #23218. Please review that PR first. \r\n\r\n# Ticket\r\n<!-- Provide the link to respective work package -->\r\n\r\n<!-- Contributors: Please check our PR guide: https://www.openproject.org/docs/development/code-review-guidelines/#preparing-your-pull-request before opening a PR. -->\r\n\r\n<!-- Reviewers: Please check our Review guide: https://www.openproject.org/docs/development/code-review-guidelines/#reviewing -->\r\n\r\n# What are you trying to accomplish?\r\n<!-- Provide a description of the changes. -->\r\n\r\n## Screenshots\r\n<!-- Provide before/after screenshots, videos, or graphs for any visual changes; otherwise, remove this section -->\r\n\r\n# What approach did you choose and why?\r\n<!-- This section is a place for you to describe your thought process in making these changes.\r\n     List any tradeoffs you made to take on or pay down tech debt.\r\n     Describe any alternative approaches you considered and why you discarded them. -->\r\n\r\n# Merge checklist\r\n\r\n- [ ] Added/updated tests\r\n- [ ] Added/updated documentation in Lookbook (patterns, previews, etc)\r\n- [ ] Tested major browsers (Chrome, Firefox, Edge, ...)\r\n",
+    "created_at": "2026-06-13T22:38:06Z",
+    "updated_at": "2026-06-15T20:48:11Z",
+    "url": "https://github.com/opf/openproject/pull/23739",
+    "user": "myabc",
+    "labels": [
+      "feature",
+      "DO NOT MERGE",
+      "javascript",
+      "experiment"
+    ],
+    "type": "pull_request"
+  },
+  {
+    "id": 4656842230,
+    "number": 23738,
+    "title": "Drop deprecated @stylistic overrides.arrow option",
+    "state": "open",
+    "body": "# Ticket\n<!-- Provide the link to respective work package -->\n\n# What are you trying to accomplish?\n\n`@stylistic/type-annotation-spacing` deprecated its `overrides.arrow` option, so every ESLint run printed a deprecation warning.\n\n# What approach did you choose and why?\n\nThe deprecation message suggests `arrow-spacing`, but that rule only covers arrow *expressions* (`(x) => x`), not type-level `() => void`. The config needs tight colons (`x:any`) combined with spaced type arrows, which previously relied on `overrides.arrow`. Moving the tight-colon rule into the non-deprecated `overrides.colon` and letting the base options carry the spaced `=>` style preserves the exact existing formatting while removing the deprecated option.\n\n# Merge checklist\n\n- [ ] Added/updated tests\n- [ ] Added/updated documentation in Lookbook (patterns, previews, etc)\n- [ ] Tested major browsers (Chrome, Firefox, Edge, ...)",
+    "created_at": "2026-06-13T20:28:10Z",
+    "updated_at": "2026-06-13T20:30:54Z",
+    "url": "https://github.com/opf/openproject/pull/23738",
+    "user": "myabc",
+    "labels": [
+      "maintenance",
+      "javascript",
+      "needs review"
+    ],
+    "type": "pull_request"
+  },
+  {
+    "id": 4656531809,
+    "number": 23737,
+    "title": "[STC-820/STC-828] Update Hocuspocus to TypeScript 6.0",
+    "state": "closed",
+    "body": "# Ticket\n\nhttps://community.openproject.org/wp/STC-820\nhttps://community.openproject.org/wp/STC-828\n\n# What are you trying to accomplish?\n\nUpdate the Hocuspocus extension to the same Node baseline as OpenProject core and make the OpenProject API extension compile cleanly with TypeScript 6.\n\nRelated core upgrade: https://github.com/opf/openproject/pull/23588\n\n## Screenshots\n\nNo visible changes.\n\n# What approach did you choose and why?\n\nThe runtime metadata, Docker base images, and Hocuspocus test workflow now use the core Node range/version. TypeScript is an explicit dev dependency, the extension tsconfig keeps bundler-style imports while satisfying TypeScript 6, and the stale BlockNote suppression in openProjectApi.ts was removed.\n\n# Merge checklist\n\n- [x] Added/updated tests\n- [ ] Added/updated documentation in Lookbook (patterns, previews, etc)\n- [ ] Tested major browsers (Chrome, Firefox, Edge, ...)\n",
+    "created_at": "2026-06-13T18:36:28Z",
+    "updated_at": "2026-06-15T08:44:09Z",
+    "url": "https://github.com/opf/openproject/pull/23737",
+    "user": "myabc",
+    "labels": [
+      "javascript",
+      "needs review",
+      "ci"
+    ],
+    "type": "pull_request"
+  },
+  {
+    "id": 4656442146,
+    "number": 23736,
+    "title": "[OP-19547] Remove lodash global and dependency",
+    "state": "open",
+    "body": "> [!WARNING]\r\n> **Merge last.** This PR removes the global `_` and the `lodash` dependency, so every other bucket must be merged first:\r\n> #23728, #23729, #23730, #23731, #23732, #23733. Rebase onto `dev` after they land — until then CI is expected to fail (the branch is cut from `dev`, which still contains the `_.` usages this PR's prerequisites remove).\r\n\r\n# Ticket\r\n\r\nhttps://community.openproject.org/wp/OP-19547\r\n\r\n# What are you trying to accomplish?\r\n\r\nFinal step of removing lodash from the frontend (parent: OP-17486 / WP 65621). Once every helper bucket has dropped its global `_.` usage (in both `frontend/src` **and** the linked-plugin module frontends), this removes the global itself and the `lodash` package.\r\n\r\n- Removes `window._ = lodash` from `init-vendors.ts` and the mirrored assignment in `test-setup.ts`.\r\n- Removes the ambient `_` type declarations (`init-vendors.ts` `Window` augmentation, `shims.d.ts` global).\r\n- Drops `lodash` and `@types/lodash` from `package.json`. `lodash-es` (and `@types/lodash-es`) remain — they back the handful of helpers with no native equivalent (`isEqual`, `merge`, `debounce`, …).\r\n\r\n## Screenshots\r\n\r\nNo visual changes.\r\n\r\n# What approach did you choose and why?\r\n\r\nCleanup only — no behavioural change. Draft until the prerequisite PRs merge and this is rebased onto a `dev` with no remaining `_.` usage.\r\n\r\n# Merge checklist\r\n\r\n- [ ] Added/updated tests <!-- cleanup only -->\r\n- [ ] Added/updated documentation in Lookbook (patterns, previews, etc)\r\n- [ ] Tested major browsers (Chrome, Firefox, Edge, ...) <!-- after rebase -->\r\n",
+    "created_at": "2026-06-13T18:09:08Z",
+    "updated_at": "2026-06-13T19:29:30Z",
+    "url": "https://github.com/opf/openproject/pull/23736",
+    "user": "myabc",
+    "labels": [
+      "maintenance",
+      "DO NOT MERGE",
+      "javascript"
+    ],
+    "type": "pull_request"
+  },
+  {
+    "id": 4656420602,
+    "number": 23735,
+    "title": "[STC-222] Update text on Notification settings for clarity",
+    "state": "open",
+    "body": "# Ticket\r\nhttps://community.openproject.org/work_packages/STC-222\r\n\r\n# What are you trying to accomplish?\r\n\r\nUsers reported that the helper text under each section header in **Account settings → Notifications** was unclear and had not been updated since the Date alerts feature was introduced. This PR updates the five affected strings in the English locale file to be more accurate and user-friendly:\r\n\r\n## Screenshots\r\nBefore:\r\n<img width=\"895\" height=\"1068\" alt=\"Screenshot 2026-06-15 at 9 48 33\" src=\"https://github.com/user-attachments/assets/d6534778-5aae-4889-ac34-003991ba5b64\" />\r\n\r\nAfter:\r\n<img width=\"1101\" height=\"1117\" alt=\"Screenshot 2026-06-15 at 9 48 10\" src=\"https://github.com/user-attachments/assets/915582cd-a1ef-4ebf-9f72-80ecf83ed6c4\" />\r\n\r\n# What approach did you choose and why?\r\n\r\nAll five changes are confined to a single place: `config/locales/en.yml` under `my_account.notifications`. Because all components (`participating_form.rb`, `date_alerts_form.rb`, `non_participating_form.rb`, and the show-page template) reference these keys dynamically, no Ruby, ERB, or TypeScript files required modification.\r\n\r\n# Merge checklist\r\n\r\n- [ ] Added/updated tests\r\n- [ ] Added/updated documentation in Lookbook (patterns, previews, etc)\r\n- [ ] Tested major browsers (Chrome, Firefox, Edge, ...)",
+    "created_at": "2026-06-13T18:01:57Z",
+    "updated_at": "2026-06-15T15:04:15Z",
+    "url": "https://github.com/opf/openproject/pull/23735",
+    "user": "thykel",
+    "labels": [],
+    "type": "pull_request"
+  },
+  {
+    "id": 4656411275,
+    "number": 23734,
+    "title": "[STC-645] Properly handle unsupported upload file types in CKEditor",
+    "state": "open",
+    "body": "### Merge pre-requirement: https://github.com/opf/commonmark-ckeditor-build/pull/120\r\n\r\n# Ticket\r\nhttps://community.openproject.org/work_packages/STC-645\r\n\r\n# What are you trying to accomplish?\r\n\r\nWhen a user drags or pastes an image of an unsupported type (e.g. WebP) into the CKEditor description field on an instance where WebP is not on the attachment allowlist, the backend already returns a clear 422 error:\r\n\r\n> \"The file was rejected by an automatic filter. 'image/webp' is not allowed for upload.\"\r\n\r\nHowever, that message was silently discarded by the frontend. The upload progress toast dismissed itself on failure without ever surfacing the error text, and a generic CKEditor indicator was shown instead — leaving the user with no actionable explanation.\r\n\r\nThis PR ensures the specific backend error message is shown to the user in an OpenProject error toast whenever an attachment upload is rejected (by file-type filter or any other server-side validation).\r\n\r\n## Screenshots\r\n\r\nN/A\r\n\r\n# What approach did you choose and why?\r\n\r\n**Root cause:** `toast.component.html` bound the `(uploadError)` output of `UploadProgressComponent` to `remove()`. The `HttpErrorResponse` carrying the backend message was emitted but never passed to `ToastService.addError()`, so the only thing that happened on failure was that the upload toast silently disappeared.\r\n\r\n**Fix — two-part:**\r\n\r\n1. **`ToastComponent` (`toast.component.ts` + `toast.component.html`):** Added an `onUploadError(error: HttpErrorResponse)` method that calls `this.toastService.addError(error)` — which already knows how to extract HAL error messages — and then removes the upload toast. The template binding was changed from `(uploadError)=\"remove()\"` to `(uploadError)=\"onUploadError($event)\"`.\r\n\r\n2. **`AttachmentsResourceService` (`attachments.service.ts`):** Added a `catchError` pipe in `uploadAttachments()` that converts the opaque `HttpErrorResponse` into a plain `Error` with the human-readable message before re-throwing. This ensures that callers further up the chain (such as the CKEditor upload plugin) receive a meaningful string rather than an unreadable object when calling `loader.reject()`.\r\n\r\n**Why not only fix the service layer?** The `ToastService.addUpload()` and the `UploadProgressComponent` are the natural point where per-file upload errors are observed; fixing the component handler is the minimal, targeted change that guarantees the message is shown exactly once without interfering with other callers. The service-layer `catchError` is a complementary improvement for CKEditor's own error path and does not duplicate the toast display.\r\n\r\nNo backend changes are required — the error message (`not_allowlisted`) already exists and is translated in all supported locales.\r\n\r\n# Merge checklist\r\n\r\n- [x] Added/updated tests\r\n- [ ] Added/updated documentation in Lookbook (patterns, previews, etc)\r\n- [ ] Tested major browsers (Chrome, Firefox, Edge, ...)",
+    "created_at": "2026-06-13T17:59:07Z",
+    "updated_at": "2026-06-13T21:20:04Z",
+    "url": "https://github.com/opf/openproject/pull/23734",
+    "user": "thykel",
+    "labels": [],
+    "type": "pull_request"
+  },
+  {
+    "id": 4656397551,
+    "number": 23733,
+    "title": "[OP-19545] Replace lodash equality/clone helpers",
+    "state": "open",
+    "body": "> [!NOTE]\n> Please review and merge #23732 before this PR (lodash-removal series, parent #65621). Also merge #23729 first — both add `lodash-es`.\n\n# Ticket\n\nhttps://community.openproject.org/wp/OP-19545\n\n# What are you trying to accomplish?\n\nContinues removing lodash from the frontend (parent: OP-17486 / WP 65621). This is the **equality / clone** bucket: `clone`, `cloneDeep`, `isEqual`, `isEqualWith` (~27 call sites) move off the global `_`.\n\nThe global `_` deliberately stays — `lodash` is still required by the remaining buckets and is removed only in the final cleanup ticket.\n\n## Screenshots\n\nNo visual changes.\n\n# What approach did you choose and why?\n\n- **`clone`** → native shallow copy chosen per type: `{ ...obj }`, `[...arr]`, and a no-op for the one `clone(string)` case.\n- **`cloneDeep`** → `lodash-es` `cloneDeep` (**not** `structuredClone`). The three sites deep-clone a HAL `$source`. It is usually plain JSON, but a query filter's `$source` can hold live `HalLink` instances (set via the UI when filtering by project/user), and those carry a `requestMethod` **function** — so `structuredClone` throws `DataCloneError` when a query is saved (`cloneFilters()` → `$copy()` → `$plain()`). `lodash-es` `cloneDeep` reproduces the original `_.cloneDeep` behaviour exactly while still dropping the global `_`.\n- **`isEqual` / `isEqualWith`** → `lodash-es` named imports. There is no safe native deep-equality, and reimplementing one is riskier than keeping the exact lodash implementation; this matches the lodash-es bucket's approach for helpers with no native equivalent. Adds `lodash-es` + `@types/lodash-es` (the same dependency that PR introduces — trivial rebase if it merges first).\n- Three `expect(_.isEqual(a, b)).toBeTruthy()` spec assertions become idiomatic `expect(a).toEqual(b)`.\n\n`tsc --noEmit` passes; the full vitest suite passes (including `hal-resource.spec`, which covers the `cloneDeep` path, and `url-params-helper.spec`, whose assertions were upgraded here).\n\n# Merge checklist\n\n- [x] Added/updated tests <!-- spec assertions upgraded to toEqual; cloneDeep path covered by hal-resource.spec -->\n- [ ] Added/updated documentation in Lookbook (patterns, previews, etc)\n- [ ] Tested major browsers (Chrome, Firefox, Edge, ...) <!-- no visual change; full vitest suite green -->\n",
+    "created_at": "2026-06-13T17:55:27Z",
+    "updated_at": "2026-06-15T11:19:25Z",
+    "url": "https://github.com/opf/openproject/pull/23733",
+    "user": "myabc",
+    "labels": [
+      "maintenance",
+      "javascript",
+      "needs review"
+    ],
+    "type": "pull_request"
+  },
+  {
+    "id": 4656385828,
+    "number": 23732,
+    "title": "[OP-19544] Replace lodash set/dedup helpers with native",
+    "state": "open",
+    "body": "> [!NOTE]\n> Please review and merge #23731 before this PR (lodash-removal series, parent #65621).\n\n# Ticket\n\nhttps://community.openproject.org/wp/OP-19544\n\n# What are you trying to accomplish?\n\nContinues removing lodash from the frontend (parent: OP-17486 / WP 65621). This is the **set / dedup / difference** bucket: `flatten`, `uniq`, `without`, `uniqBy`, `difference`, `differenceBy` (~33 call sites) move from the global `_` to native operations.\n\nThe global `_` deliberately stays — `lodash` is still required by the remaining buckets and is removed only in the final cleanup ticket.\n\n## Screenshots\n\nNo visual changes.\n\n# What approach did you choose and why?\n\n- `flatten(a)` → `a.flat()` (lodash `flatten` is one-level, matching `flat()`).\n- `uniq(a)` → `Array.from(new Set(a))`.\n- `without(a, ...vals)` → `a.filter(x => x !== val)` / `!… .includes(x)`.\n- `difference(a, b)` → `a.filter(x => !b.includes(x))`.\n- `uniqBy(a, key)` → `a.filter((x, i, self) => i === self.findIndex(y => key(y) === key(x)))`.\n- `differenceBy(a, b, key)` → `a.filter(x => !b.some(y => key(y) === key(x)))`.\n\nThe one behavioural subtlety: `uniqBy` keeps the **first** occurrence of each key, which the `findIndex` form preserves — a `Map`-based dedup would keep the last. `tsc --noEmit` passes; the full vitest suite passes (including `wp-view-hierarchy-indentation.service.spec`, which covers one of the `difference` conversions).\n\nNo dedicated spec added — these conversions live in DI-heavy services/HAL resources with no clean pure seam, and are exercised by the existing suite.\n\n# Merge checklist\n\n- [ ] Added/updated tests <!-- covered by existing suite; no clean pure seam to add to -->\n- [ ] Added/updated documentation in Lookbook (patterns, previews, etc)\n- [ ] Tested major browsers (Chrome, Firefox, Edge, ...) <!-- no visual change; full vitest suite green -->",
+    "created_at": "2026-06-13T17:51:10Z",
+    "updated_at": "2026-06-15T11:19:25Z",
+    "url": "https://github.com/opf/openproject/pull/23732",
+    "user": "myabc",
+    "labels": [
+      "maintenance",
+      "javascript",
+      "needs review"
+    ],
+    "type": "pull_request"
+  },
+  {
+    "id": 4656373424,
+    "number": 23731,
+    "title": "[OP-19543] Replace lodash null/empty helpers with native",
+    "state": "open",
+    "body": "> [!NOTE]\n> Please review and merge #23730 before this PR (lodash-removal series, parent #65621).\n\n# Ticket\n\nhttps://community.openproject.org/wp/OP-19543\n\n# What are you trying to accomplish?\n\nContinues removing lodash from the frontend (parent: OP-17486 / WP 65621). This is the **null / empty / type-predicate** bucket: `isNil`, `isNaN`, `defaultTo`, `compact`, `isEmpty`, `castArray`, `isObject`, `reject` (~72 call sites) move from the global `_` to native expressions.\n\nThe global `_` deliberately stays — `lodash` is still required by the remaining buckets and is removed only in the final cleanup ticket.\n\n## Screenshots\n\nNo visual changes.\n\n# What approach did you choose and why?\n\nThe bulk are exact 1:1 swaps: `isNil(x)` → `x == null`, `isNaN` → `Number.isNaN` (same NaN-only semantics, unlike the global `isNaN`), `defaultTo(x, d)` → `x ?? d` (call sites only default on `null`/`undefined`), `compact(a)` → `a.filter(Boolean)`.\n\nThe type-aware predicates are handled per call site against the concrete collection type:\n\n- `isEmpty` → `.length === 0` / `Object.keys(...).length === 0` for known arrays/objects; for the few `any`/HAL-typed values the faithful general form `x == null || (Array.isArray(x) ? x.length === 0 : Object.keys(x).length === 0)`.\n- `castArray(x)` → `Array.isArray(x) ? x : [x]`.\n- `isObject(x)` → `typeof x === 'object' && x !== null`.\n- `reject(c, p)` → `c.filter((…) => !p(…))`.\n\n`compact` results that feed a non-nullable type use a narrowing `(x): x is NonNullable<typeof x>` predicate, because `filter(Boolean)` does not narrow in TypeScript. `tsc --noEmit` drove these; the full vitest suite passes.\n\nNo dedicated spec was added: unlike the lodash-es bucket (which had the pure `ApiV3FilterBuilder` to lock down), these conversions live in DI-heavy services with no clean pure seam, and are already exercised by the existing suite (`current-user`, `edit-form`, `op-autocompleter`, `url-params`, …).\n\n# Merge checklist\n\n- [ ] Added/updated tests <!-- covered by existing suite; no clean pure seam to add to -->\n- [ ] Added/updated documentation in Lookbook (patterns, previews, etc)\n- [ ] Tested major browsers (Chrome, Firefox, Edge, ...) <!-- no visual change; full vitest suite green -->",
+    "created_at": "2026-06-13T17:46:24Z",
+    "updated_at": "2026-06-15T11:19:24Z",
+    "url": "https://github.com/opf/openproject/pull/23731",
+    "user": "myabc",
+    "labels": [
+      "maintenance",
+      "javascript",
+      "needs review"
+    ],
+    "type": "pull_request"
+  },
+  {
+    "id": 4656344183,
+    "number": 23730,
+    "title": "[OP-19542] Migrate lodash iteration helpers to native ES6",
+    "state": "open",
+    "body": "> [!NOTE]\n> Please review and merge #23729 before this PR (lodash-removal series, parent #65621 — shared files).\n\n# Ticket\n\nhttps://community.openproject.org/wp/OP-19542\n\n# What are you trying to accomplish?\n\nContinues removing lodash from the frontend (parent: OP-17486 / WP 65621). This is the **iteration / collection** bucket: `each`/`forEach`, `map`, `find`, `filter`, `some`, `every`, `findIndex`, `keys`, `values`, `assign`, `extend`, `isArray`, `size`, `last`, `has`, `max` all move from the global `_` to native Array / Object methods (~130 call sites).\n\nThe global `_` deliberately stays — `lodash` is still required by the remaining buckets and is removed only in the final cleanup ticket.\n\n## Screenshots\n\nNo visual changes.\n\n# What approach did you choose and why?\n\nMost call sites map 1:1 to native methods. The non-trivial cases — and where reviewer attention is worthwhile — are:\n\n- **Object-keyed collections.** `_.each`/`_.map`/`_.filter`/`_.find` iterate object *values* (and pass the key as the 2nd argument). Those sites become `Object.entries(...)` / `Object.values(...)` so value/key iteration is preserved exactly.\n- **Null-safety.** lodash silently treats `null`/`undefined` collections as empty; native methods throw. Nullable receivers gained explicit `?? {}` / `?? []` / `?.` guards (verified against the types — `tsc` flags any that were missed).\n- **Shorthand iteratees.** A few `_.find(coll, { id })` matchers were rewritten as predicate functions.\n\n`tsc --noEmit` drove the object-vs-array and nullability classification; the full vitest suite passes. A vitest spec was added for `ApiV3FilterBuilder` to lock in the migrated object iteration (the codebase is thin on coverage here).\n\n> Note for the reviewer: this branch is cut from `dev` independently of the other lodash buckets; ~9 files overlap the lodash-es bucket (#23729) and will need a trivial rebase if that merges first.\n\n# Merge checklist\n\n- [x] Added/updated tests <!-- vitest spec for ApiV3FilterBuilder -->\n- [ ] Added/updated documentation in Lookbook (patterns, previews, etc)\n- [ ] Tested major browsers (Chrome, Firefox, Edge, ...) <!-- no visual change; full vitest suite green -->",
+    "created_at": "2026-06-13T17:35:31Z",
+    "updated_at": "2026-06-15T11:19:24Z",
+    "url": "https://github.com/opf/openproject/pull/23730",
+    "user": "myabc",
+    "labels": [
+      "maintenance",
+      "javascript",
+      "needs review"
+    ],
+    "type": "pull_request"
+  },
+  {
+    "id": 4656275949,
+    "number": 23729,
+    "title": "[OP-19546] Migrate lodash helpers to lodash-es",
+    "state": "open",
+    "body": "> [!NOTE]\n> First in the lodash-removal series (parent #65621 / OP-17486). Suggested merge order:\n> **#23729 → #23730 → #23731 → #23732 → #23733 → #23728 → #23736 (last)**.\n> Merge this before #23730 (shared files) and #23733 (both add `lodash-es`).\n\n# Ticket\n\nhttps://community.openproject.org/wp/OP-19546\n\n# What are you trying to accomplish?\n\nContinues removing lodash from the frontend (parent: OP-17486 / WP 65621), following on from the `_.get` migration. This bucket covers the helpers that have **no clean native ES6 equivalent**: `merge`, `sortBy`, `keyBy`, `groupBy`, `pickBy`, `omitBy`, `set`, `debounce`, `escape`, `escapeRegExp`, `truncate`, `range`, `take`, `chunk`, `defaults`, `camelCase`, `upperFirst`.\n\nThese move from the global `_` to tree-shakeable `lodash-es` named imports, and the existing named `lodash` imports of the same helpers (`debounce`, `DebouncedFunc`, `omit`, `uniqueId`) are repointed to `lodash-es`. Adds `lodash-es` + `@types/lodash-es`.\n\nThe global `_` deliberately stays — `lodash` is still required by the remaining buckets and is removed only in the final cleanup ticket.\n\n## Screenshots\n\nNo visual changes.\n\n# What approach did you choose and why?\n\n`lodash-es` is the ES-module build of the same lodash implementation, so runtime behaviour is identical while enabling tree-shaking. Helpers with straightforward native equivalents (iteration, null/empty, set/dedup, equality/clone) are intentionally **out of scope** here and tracked under sibling tickets, keeping each PR's review focused on a single substitution rule.\n\n# Merge checklist\n\n- [x] Added/updated tests <!-- mechanical, no behaviour change; existing specs pass -->\n- [ ] Added/updated documentation in Lookbook (patterns, previews, etc)\n- [ ] Tested major browsers (Chrome, Firefox, Edge, ...) <!-- no visual change -->",
+    "created_at": "2026-06-13T17:10:24Z",
+    "updated_at": "2026-06-15T11:19:23Z",
+    "url": "https://github.com/opf/openproject/pull/23729",
+    "user": "myabc",
+    "labels": [
+      "maintenance",
+      "javascript",
+      "needs review"
+    ],
+    "type": "pull_request"
+  },
+  {
+    "id": 4655954255,
+    "number": 23728,
+    "title": "[OP-19541] Replace `_.get` with optional chaining",
+    "state": "open",
+    "body": "> [!NOTE]\n> Please review and merge #23733 before this PR (lodash-removal series, parent #65621).\n\n# Ticket\n\nhttps://community.openproject.org/wp/OP-19541\n\n# What are you trying to accomplish?\n\nFirst step towards removing lodash from the frontend, starting with `_.get`. All 24 `_.get` call sites are replaced by native optional chaining / nullish coalescing, preserving the lodash default-on-`undefined` semantics. The global `_` stays for now as other lodash helpers (`filter`, `debounce`, ...) remain in use.\n\nWhile migrating, `ConfigurationService` and `ConfigurationResource` are properly typed (declared attributes verified against the live `/api/v3/configuration` response, including nullable fields), removing the `any` access that `_.get` was masking. The configuration loader also switches off the deprecated `Observable.toPromise()` to `firstValueFrom`.\n\n## Screenshots\n\nno visual changes\n\n# What approach did you choose and why?\n\nRemoving the `[attribute:string]:any` index signature from `HalResource` wholesale is out of scope (it underpins runtime-attached HAL properties across the app); `ConfigurationResource` is typed here as a contained proof of the per-resource pattern. A couple of dead helpers surfaced during the migration (`trackByTrackingIdentifier`, `hoursPerWeek`) and were removed.\n\n# Merge checklist\n\n- [x] Added/updated tests\n- [ ] Added/updated documentation in Lookbook (patterns, previews, etc)\n- [x] Tested major browsers (Chrome, Firefox, Edge, ...)",
+    "created_at": "2026-06-13T15:16:45Z",
+    "updated_at": "2026-06-15T11:19:23Z",
+    "url": "https://github.com/opf/openproject/pull/23728",
+    "user": "myabc",
+    "labels": [
+      "maintenance",
+      "javascript",
+      "needs review"
+    ],
+    "type": "pull_request"
+  },
+  {
+    "id": 4655868040,
+    "number": 23727,
+    "title": "Remove @types/uuid@11.0.0 stub",
+    "state": "closed",
+    "body": "Fixes warning on `npm ci`:\n\n    \"This is a stub types definition. uuid provides its own type definitions, so you do not need this installed.\"\n\n# Ticket\n<!-- Provide the link to respective work package -->\n\n<!-- Contributors: Please check our PR guide: https://www.openproject.org/docs/development/code-review-guidelines/#preparing-your-pull-request before opening a PR. -->\n\n<!-- Reviewers: Please check our Review guide: https://www.openproject.org/docs/development/code-review-guidelines/#reviewing -->\n\n# What are you trying to accomplish?\n<!-- Provide a description of the changes. -->\n\n## Screenshots\n<!-- Provide before/after screenshots, videos, or graphs for any visual changes; otherwise, remove this section -->\n\n# What approach did you choose and why?\n<!-- This section is a place for you to describe your thought process in making these changes.\n     List any tradeoffs you made to take on or pay down tech debt.\n     Describe any alternative approaches you considered and why you discarded them. -->\n\n# Merge checklist\n\n- [ ] Added/updated tests\n- [ ] Added/updated documentation in Lookbook (patterns, previews, etc)\n- [ ] Tested major browsers (Chrome, Firefox, Edge, ...)\n",
+    "created_at": "2026-06-13T14:46:35Z",
+    "updated_at": "2026-06-13T15:36:28Z",
+    "url": "https://github.com/opf/openproject/pull/23727",
+    "user": "myabc",
+    "labels": [],
+    "type": "pull_request"
+  },
+  {
+    "id": 4655779991,
+    "number": 23726,
+    "title": "Fix frontend spec warnings",
+    "state": "open",
+    "body": "# Ticket\n\nn/a\n\n# What are you trying to accomplish?\n\nRunning `npm run test` (Vitest) from `frontend/` printed a wall of expected console noise — `NG0953` destroyed-`OutputRef` warnings, the jquery-migrate banner, `Unknown icon`, `InvalidStateError`, and \"Failed to activate all erroneous fields.\" The suite passed, but the output buried any genuine failure. This silences the expected noise without hiding real errors.\n\n<details><summary>Sample of the noise before this change</summary>\n\n```\nstderr | op-autocompleter.spec.ts > should display classic formattedId in selected value label\nNG0953: Unexpected emit for destroyed `OutputRef`. The owning directive/component is destroyed.\nstderr | dynamic-icon.directive.spec.ts > should warn when rendering unknown icon\nUnknown icon: unknown-icon\nstdout | unknown test\nJQMIGRATE: Migrate is installed with logging active, version 4.0.2\nstderr | attribute-help-text-modal.service.spec.ts > should handle Turbo Stream dialog response and update dialog\n[InvalidStateError: Failed to execute 'showModal' on 'HTMLDialogElement': The element is not in a Document.]\nstderr | edit-form.spec.ts > does not require visibility twice for newly erroneous inactive fields\nFailed to activate all erroneous fields.\n```\n\n</details>\n\n# What approach did you choose and why?\n\n- Filter the jquery-migrate banner at the reporter level via Vitest `onConsoleLog` in a new `vitest-base.config.ts` (wired through the builder's `runnerConfig`), rather than monkeypatching the global `console.log`.\n- Scope expected warnings/errors with `vi.spyOn` per spec, only where the call is part of the assertion, so unrelated output still surfaces.\n- In the autocompleter spec, drop redundant manual `ngAfterViewInit()` calls (already run by `detectChanges()`) and select items programmatically; in the edit-form spec, await activation with `vi.waitFor` instead of a fixed number of microtask ticks.\n\n# Merge checklist\n\n- [x] Added/updated tests\n- [ ] Added/updated documentation in Lookbook (patterns, previews, etc)\n- [x] Tested major browsers (Chrome, Firefox, Edge, ...)\n",
+    "created_at": "2026-06-13T14:16:26Z",
+    "updated_at": "2026-06-13T15:41:35Z",
+    "url": "https://github.com/opf/openproject/pull/23726",
+    "user": "myabc",
+    "labels": [
+      "bugfix",
+      "javascript",
+      "needs review"
+    ],
+    "type": "pull_request"
+  },
+  {
+    "id": 4650336674,
+    "number": 23724,
+    "title": "[#SSI-466] remove unescaping logic from nextcloud rename command",
+    "state": "closed",
+    "body": "# Ticket\r\n[OP#SSI-466](https://community.openproject.org/wp/SSI-466)\r\n\r\n# What are you trying to accomplish?\r\n- AMPF sync must succeed\r\n\r\n# What approach did you choose and why?\r\n- remove breaking unescaping calls from the rename file command\r\n",
+    "created_at": "2026-06-12T15:07:05Z",
+    "updated_at": "2026-06-15T11:29:55Z",
+    "url": "https://github.com/opf/openproject/pull/23724",
+    "user": "kharonus",
+    "labels": [],
+    "type": "pull_request"
+  },
+  {
+    "id": 4650165370,
+    "number": 23723,
+    "title": "Keep CKEditor floating UI inside open dialogs so autocomplete is usable",
+    "state": "open",
+    "body": "Fixes https://community.openproject.org/work_packages/76021\n\n## Context\n\nCKEditor renders its floating UI (the small list that appears near the cursor after typing `#` or `@`) into a single `.ck-body-wrapper` appended to `document.body`. When an editor is inside a native `<dialog>` opened with `showModal()` (for example after clicking `Create new child` in the `Relations` tab of a work package), the dialog is in the top layer, so anything in `document.body` is painted behind it and can't be interacted with (whatwg/html#9936).\n\n`watchTopLayer` (from #15277) already moved the wrapper into an open dialog, but only when the wrapper was added while a dialog was open. On a work-package page the wrapper already exists, created by the page editors, so opening a dialog reused it and nothing moved it. It also never moved the wrapper back.\n\n## Changes\n\n`watchTopLayer` now keeps `.ck-body-wrapper` inside the front-most open dialog, and returns it to `document.body` when none is open. Two observers on `document.body`: a `childList` one (no subtree) for the wrapper and dialogs being added or removed, and an attribute one scoped to the dialog `open` attribute.\n\nRestore-on-close uses the `open` attribute mutation, which fires on a microtask, before the close-event task where Turbo removes the dialog. The dialog `close` event does not reach `document` listeners, so a close handler is not an option. Same idea as the existing hover-card and date-picker top-layer handling.\n\nNo CSS or z-index change.\n\n## Before / after\n\n`#` typed in the Description field of the create child dialog.\n\nBefore:\n\n![before](https://community.openproject.org/api/v3/attachments/921980/content)\n\nAfter:\n\n![after](https://community.openproject.org/api/v3/attachments/921981/content)\n\n## Verifications\n\n- [x] Manual: `#` and `@` work above the dialog, and the page editors still work after closing it (Cancel and Escape).\n",
+    "created_at": "2026-06-12T14:43:41Z",
+    "updated_at": "2026-06-12T15:05:30Z",
+    "url": "https://github.com/opf/openproject/pull/23723",
+    "user": "brdns",
+    "labels": [],
+    "type": "pull_request"
+  },
+  {
+    "id": 4649772188,
+    "number": 23722,
+    "title": "[STC-356] Disallow setting journal aggregation period to >2 hours",
+    "state": "closed",
+    "body": "# Ticket\r\nhttps://community.openproject.org/projects/STC/work_packages/65108/activity\r\n\r\n# What are you trying to accomplish?\r\n\r\nAdministrators could enter an arbitrarily large value in the \"User actions aggregated within\" field under Administration → Emails and notifications → Aggregation. When a value large enough to overflow PostgreSQL's `timestamp` range was stored (e.g. `9999999999`), every subsequent call to `Notifications::WorkflowJob` crashed with:\r\n\r\n```\r\nPG::DatetimeFieldOverflow: ERROR: timestamp out of range: \"677347521-07-22 12:03:56\"\r\n```\r\n\r\nThis blocked notification delivery for all users on the affected instance.\r\n\r\nLet's cap this to a reasonable value -- I'm going with 2 hours, but open to further suggestions.\r\n\r\n# What approach did you choose and why?\r\n\r\n* **UI constraint** (`AggregationSettingsForm`): Added `max: 3600` (and `min: 0`) to the number input so the browser enforces the allowed range before a form submission is even made.\r\n\r\n* **Server-side contract validation** (`Settings::UpdateContract`): Added a `journal_aggregation_time_minutes_range` validation that rejects any value outside `0..3600`. This is the authoritative guard — it runs regardless of how the setting is written (UI, API, console).\r\n\r\n\r\n# Screenshots\r\n\r\nBefore:\r\n<img width=\"1261\" height=\"451\" alt=\"Screenshot 2026-06-12 at 15 32 41\" src=\"https://github.com/user-attachments/assets/424b4663-6078-4d68-ab83-b644ccb4198a\" />\r\n\r\nAfter:\r\n<img width=\"1243\" height=\"541\" alt=\"Screenshot 2026-06-12 at 16 01 07\" src=\"https://github.com/user-attachments/assets/88d4b8f0-7cb0-40e7-b76d-f2ff2f83eed7\" />\r\n\r\n\r\n# Merge checklist\r\n\r\n- [x] Added/updated tests\r\n- [ ] Added/updated documentation in Lookbook (patterns, previews, etc)\r\n- [x] Tested major browsers (Chrome, Firefox, Edge, ...)",
+    "created_at": "2026-06-12T13:50:35Z",
+    "updated_at": "2026-06-16T06:56:15Z",
+    "url": "https://github.com/opf/openproject/pull/23722",
+    "user": "thykel",
+    "labels": [],
+    "type": "pull_request"
+  },
+  {
+    "id": 4649564576,
+    "number": 23721,
+    "title": "[STC-550] Prevent accidental creation of multiple Documents by rapid clicking",
+    "state": "open",
+    "body": "# Ticket\r\nhttps://community.openproject.org/work_packages/69319\r\n\r\n# What are you trying to accomplish?\r\n\r\nRapidly clicking the \"+ Document\" button on the Documents index page (both in the sub-header and in the blank-slate view) created multiple documents named \"New document\" before the browser could navigate away. Each click fired an independent Turbo POST to `documents#create`, and without any guard the server happily fulfilled each request.\r\n\r\n## Screenshots\r\n\r\nBefore:\r\n[Kapture 2026-06-15 at 17.55.24.webm](https://github.com/user-attachments/assets/94bcc6d2-84ee-4ad7-9879-b14658d6750d)\r\n\r\nAfter:\r\n[Kapture 2026-06-15 at 17.58.17.webm](https://github.com/user-attachments/assets/012287ca-33c9-457d-a93c-9221c7c3ba8e)\r\n\r\n\r\n# What approach did you choose and why?\r\n\r\nThe root cause is that both \"+ Document\" buttons are rendered as `<a>` tags with `data-turbo-method=\"post\"`. The existing `disable-when-clicked` Stimulus controller was written for `<button>`/`<input>` elements and guards them by setting the native `disabled` property after the first click — but `disabled` is not a valid attribute on anchors (it only applies to form elements), so the controller offered no protection here.\r\n\r\n**Fix — guard repeat clicks, and disable elements semantically:**\r\n\r\n- An `alreadyClicked` flag was added to `DisableWhenClickedController`. The click handler now receives the `Event`: on the first click it sets the flag and defers disabling; on any subsequent click it calls `event.preventDefault()` and `event.stopImmediatePropagation()` before Turbo's document-level listener sees the event, then returns. This guard is what actually prevents the duplicate Turbo POST, and it works regardless of element type.\r\n- The controller's generic was broadened from `HTMLInputElement` to `HTMLElement`, and disabling was split into a `disable()` step that picks the correct mechanism per element: native `disabled` for `<button>`/`<input>`, and `aria-disabled=\"true\"` for everything else (e.g. anchors). `aria-disabled` is the correct semantic for non-form elements and keeps them focusable for assistive tech. The `setTimeout` defer is retained so the first click's navigation/POST is not cancelled.\r\n- The flag resets automatically when the controller disconnects (i.e. on navigation), so if the server returns an error and the user lands back on the index page the button works again — no extra reset logic needed.\r\n\r\n**Wire it up on both buttons:**\r\n\r\n`data: { controller: \"disable-when-clicked\" }` was added to:\r\n- The sub-header `+ Document` button via `new_document_path_options` in `SubHeaderComponent` (both the collaborative-documents branch that uses `turbo_method: :post` and the classic branch that navigates to a GET form).\r\n- The blank-slate primary action button in `ListComponent`.\r\n\r\n**Alternatives considered:**\r\n\r\n- *Convert to a `<form>` + `<button>`* — Turbo natively locks form submission, which would solve this without touching the Stimulus controller. However it would require restructuring the ViewComponent slots and is a larger, higher-risk change for a low-priority bug.\r\n\r\n# Merge checklist\r\n\r\n- [x] Added/updated tests\r\n- [ ] Added/updated documentation in Lookbook (patterns, previews, etc)\r\n- [ ] Tested major browsers (Chrome, Firefox, Edge, ...)\r\n",
+    "created_at": "2026-06-12T13:22:12Z",
+    "updated_at": "2026-06-15T16:12:51Z",
+    "url": "https://github.com/opf/openproject/pull/23721",
+    "user": "thykel",
+    "labels": [],
+    "type": "pull_request"
+  },
+  {
+    "id": 4649534152,
+    "number": 23720,
+    "title": "[STC-563] Fix label of new document type button in admin",
+    "state": "closed",
+    "body": "# Ticket\r\nhttps://community.openproject.org/projects/STC/work_packages/69498/activity\r\n\r\n# What are you trying to accomplish?\r\n\r\nThe \"+Add\" button on the Documents admin Types page (`admin/settings/document_types`) displayed the generic \"Add\" label instead of the context-specific \"Type\" label. The button renders a leading `+` icon automatically, so the full visible label should be \"+Type\" — not \"+Add\".\r\n\r\n## Screenshots\r\nBefore:\r\n<img width=\"1029\" height=\"803\" alt=\"Screenshot 2026-06-12 at 16 10 53\" src=\"https://github.com/user-attachments/assets/87e99c0f-307b-4116-ab48-576dd6b1e85d\" />\r\n\r\nAfter:\r\n<img width=\"1033\" height=\"753\" alt=\"Screenshot 2026-06-12 at 16 10 39\" src=\"https://github.com/user-attachments/assets/102b80bd-9bec-487f-bdd5-10b404b8f93c\" />\r\n\r\n\r\n\r\n# Merge checklist\r\n\r\n- [x] Added/updated tests\r\n- [ ] Added/updated documentation in Lookbook (patterns, previews, etc)\r\n- [ ] Tested major browsers (Chrome, Firefox, Edge, ...)",
+    "created_at": "2026-06-12T13:17:32Z",
+    "updated_at": "2026-06-13T15:19:48Z",
+    "url": "https://github.com/opf/openproject/pull/23720",
+    "user": "thykel",
+    "labels": [],
+    "type": "pull_request"
+  },
+  {
+    "id": 4649515540,
+    "number": 23719,
+    "title": "[STC-564] Fix rendering on double separator in enumeration component ",
+    "state": "open",
+    "body": "# Ticket\r\n\r\nhttps://community.openproject.org/work_packages/69518\r\n\r\n# What are you trying to accomplish?\r\n\r\nWhen the Documents administration \"Types\" page has only a single document type, the three-dot more menu displays a double separator line between the \"Edit\" and \"Delete\" items. This is caused by two unconditional `menu.with_divider` calls in `Admin::Enumerations::ItemComponent#build_enumeration_menu` that were intended to bracket the \"move\" actions (Move to top / Move up / Move down / Move to bottom). When only one type exists, `first_item?` and `last_item?` are both true, so no move actions are rendered — but both dividers still appear, producing two consecutive horizontal separator lines.\r\n\r\n## What approach did you choose and why?\r\n\r\nTweak the conditional that dictates when separators get rendered.\r\n\r\nThe fix lives in the base class `Admin::Enumerations::ItemComponent`, which is shared by all enumeration admin pages (document types, issue priorities, time entry activities, etc.), so all of them benefit from the correction without any additional changes.\r\n\r\n## Screenshots\r\n\r\nN/A\r\n\r\n# Merge checklist\r\n\r\n- [x] Added/updated tests\r\n- [ ] Added/updated documentation in Lookbook (patterns, previews, etc)\r\n- [ ] Tested major browsers (Chrome, Firefox, Edge, ...)",
+    "created_at": "2026-06-12T13:14:33Z",
+    "updated_at": "2026-06-16T06:37:21Z",
+    "url": "https://github.com/opf/openproject/pull/23719",
+    "user": "thykel",
+    "labels": [],
+    "type": "pull_request"
+  },
+  {
+    "id": 4649478358,
+    "number": 23718,
+    "title": "[#72986] add wiki page link via editor toolbar macro",
+    "state": "closed",
+    "body": "# Ticket\r\n- [OP#XWI-35](https://community.openproject.org/wp/XWI-35)\r\n\r\n# What are you trying to accomplish?\r\n- add new macro to inline existing wiki pages as wiki page links\r\n\r\n# What approach did you choose and why?\r\n- add new controller actions and dialog to handle data from ckeditor\r\n- enable macro in work package editor context\r\n- use forms input for wiki page search\r\n- disable wiki macros if no wikis are available\r\n- use default provider, if only a single provider is available\r\n- update locale keys\r\n\r\n### Related ckeditor PR\r\nhttps://github.com/opf/commonmark-ckeditor-build/pull/119",
+    "created_at": "2026-06-12T13:08:45Z",
+    "updated_at": "2026-06-16T08:11:08Z",
+    "url": "https://github.com/opf/openproject/pull/23718",
+    "user": "kharonus",
+    "labels": [],
+    "type": "pull_request"
+  },
+  {
+    "id": 4649389522,
+    "number": 23717,
+    "title": "Fix rubocop offenses in wikis module",
+    "state": "closed",
+    "body": "Those sneaked in most likely due to a Rubocop update. Fixing them all at once, bringing the wikis module back to formall no offenses.\r\n\r\n# Ticket\r\nnone",
+    "created_at": "2026-06-12T12:56:02Z",
+    "updated_at": "2026-06-15T05:52:53Z",
+    "url": "https://github.com/opf/openproject/pull/23717",
+    "user": "nobodysnightmare",
+    "labels": [
+      "ruby",
+      "rubocop 👮"
+    ],
+    "type": "pull_request"
+  },
+  {
+    "id": 4649365249,
+    "number": 23716,
+    "title": "Fix Backlog bucket capitalization",
+    "state": "closed",
+    "body": "# Ticket\r\nN/A\r\n",
+    "created_at": "2026-06-12T12:52:29Z",
+    "updated_at": "2026-06-15T13:24:42Z",
+    "url": "https://github.com/opf/openproject/pull/23716",
+    "user": "dombesz",
+    "labels": [],
+    "type": "pull_request"
+  },
+  {
+    "id": 4649271971,
+    "number": 23715,
+    "title": "[DREAM-720] Show project attributes in separate tab in the WP view",
+    "state": "open",
+    "body": "# Ticket\r\nhttps://community.openproject.org/wp/DREAM-720\r\n\r\n# What are you trying to accomplish?\r\nAdd a tab for project attributes within the WP view\r\n\r\n**ToDo**\r\n\r\n- [x] Create new tab called \"Project attributes\"\r\n- [x] Render the project attribute of that project in the tab\r\n  - [x] activate inline editing\r\n  - [ ] Limit to those active for that type\r\n- [ ] Add tests\r\n- [ ] Permission checks\r\n\r\n\r\n## Screenshots\r\n\r\n<img width=\"2147\" height=\"888\" alt=\"Bildschirmfoto 2026-06-12 um 14 37 29\" src=\"https://github.com/user-attachments/assets/05a22c62-e670-42f0-8b83-0a1afd56eda1\" />\r\n",
+    "created_at": "2026-06-12T12:38:30Z",
+    "updated_at": "2026-06-12T12:56:55Z",
+    "url": "https://github.com/opf/openproject/pull/23715",
+    "user": "hdinger",
+    "labels": [
+      "feature"
+    ],
+    "type": "pull_request"
+  },
+  {
+    "id": 4648792982,
+    "number": 23714,
+    "title": "Restore accepting X-Requested-With for non-GET requests",
+    "state": "closed",
+    "body": "This is necessary to support HTTP (read: not HTTPS) deployments of OpenProject.\r\n\r\n# Ticket\r\nhttps://community.openproject.org/wp/OP-19499\r\n\r\n# References\r\n\r\n* https://w3c.github.io/webappsec-fetch-metadata/#sec-fetch-site-header\r\n* https://www.w3.org/TR/secure-contexts/#potentially-trustworthy-url\r\n* Problem originally introduced via https://github.com/opf/openproject/pull/22549",
+    "created_at": "2026-06-12T11:21:51Z",
+    "updated_at": "2026-06-15T07:46:25Z",
+    "url": "https://github.com/opf/openproject/pull/23714",
+    "user": "nobodysnightmare",
+    "labels": [],
+    "type": "pull_request"
+  },
+  {
+    "id": 4648782955,
+    "number": 23713,
+    "title": "[STC-162] Open attachment links from activity tab in a new tab",
+    "state": "closed",
+    "body": "# Ticket\r\nhttps://community.openproject.org/projects/STC/work_packages/59942/activity\r\n\r\n# What are you trying to accomplish?\r\n\r\nAttachment links and storage file links shown in the Activity tab now open in a new browser tab, matching the behaviour of the Files tab.\r\n\r\nPreviously, clicking an attachment link in the Activity/Journal tab navigated the current tab away from the work package, requiring a browser back action to return. The Files tab already rendered those same links with `target=\"_blank\"`. This inconsistency was reported and confirmed as a bug; the team decision is that any link to an external resource (file content, storage file) should open in a new tab throughout the application.\r\n\r\n## Screenshots\r\nBefore:\r\n<img width=\"1850\" height=\"848\" alt=\"Kapture 2026-06-12 at 17 06 03\" src=\"https://github.com/user-attachments/assets/b2deb41a-1b38-4d02-b120-ffabefed371d\" />\r\n\r\nAfter:\r\n<img width=\"1850\" height=\"848\" alt=\"Kapture 2026-06-12 at 17 04 02\" src=\"https://github.com/user-attachments/assets/af1e6e3a-8597-4067-b73f-5c1b84c1f70a\" />\r\n\r\n# What approach did you choose and why?\r\n\r\nThe journal formatters for attachments (`OpenProject::JournalFormatter::Attachment`) and storage file links (`OpenProject::JournalFormatter::FileLink`) each call a `link_to`-based helper — `link_to_attachment` and `link_to_file_link` respectively — to produce the anchor tag. Both helpers already forward arbitrary HTML options to Rails' `link_to`, so adding `target: \"_blank\"` at the two call sites is sufficient.\r\n\r\n# Merge checklist\r\n\r\n- [x] Added/updated tests\r\n- [ ] Added/updated documentation in Lookbook (patterns, previews, etc)\r\n- [ ] Tested major browsers (Chrome, Firefox, Edge, ...)",
+    "created_at": "2026-06-12T11:20:19Z",
+    "updated_at": "2026-06-15T13:49:48Z",
+    "url": "https://github.com/opf/openproject/pull/23713",
+    "user": "thykel",
+    "labels": [],
+    "type": "pull_request"
+  },
+  {
+    "id": 4648753848,
+    "number": 23712,
+    "title": "Implementation/STC-783: Adapt PDF export of timesheets for semantic identifiers",
+    "state": "closed",
+    "body": "# Ticket\r\n\r\nhttps://community.openproject.org/wp/STC-783\r\n\r\n# What are you trying to accomplish?\r\n\r\nOn instances configured with project-based work package identifiers, the timesheet PDF export still showed the numeric database id in the work package column. The column now renders the configured identifier, so an entry exports as `PROD-42 Improve onboarding flow` rather than `#65 Improve onboarding flow`.\r\n\r\n## Screenshots\r\n\r\n**Before (classic identifiers)**\r\n\r\n<img width=\"595\" height=\"842\" alt=\"stc783-timesheet-classic-before\" src=\"https://github.com/user-attachments/assets/fc9e9a1d-f1cf-4c57-b077-00f9239b8488\" />\r\n\r\n[stc783-timesheet-classic-before.pdf](https://github.com/user-attachments/files/28877090/stc783-timesheet-classic-before.pdf)\r\n\r\n**After (semantic identifiers)**\r\n\r\n<img width=\"595\" height=\"842\" alt=\"stc783-timesheet-semantic-after\" src=\"https://github.com/user-attachments/assets/d1f0a9a5-e0a9-4e2a-ae68-00fe7f432402\" />\r\n\r\n[stc783-timesheet-semantic-after.pdf](https://github.com/user-attachments/files/28877088/stc783-timesheet-semantic-after.pdf)\r\n\r\n# What approach did you choose and why?\r\n\r\nSame approach as the meeting PDF exports (#23708): the work package cell built its label from the raw numeric id, while the rest of the application renders identifiers through `formatted_id`, which returns the hash-prefixed numeric id in classic mode and the project-based identifier in semantic mode. The cell label now goes through that method; classic-mode output is unchanged, and the link URL already resolved to the configured identifier through the URL helpers.\r\n\r\n# Merge checklist\r\n\r\n- [x] Added/updated tests\r\n- [ ] Added/updated documentation in Lookbook (patterns, previews, etc)\r\n- [ ] Tested major browsers (Chrome, Firefox, Edge, ...)\r\n",
+    "created_at": "2026-06-12T11:15:48Z",
+    "updated_at": "2026-06-12T14:09:30Z",
+    "url": "https://github.com/opf/openproject/pull/23712",
+    "user": "akabiru",
+    "labels": [
+      "needs review"
+    ],
+    "type": "pull_request"
+  },
+  {
+    "id": 4648704486,
+    "number": 23711,
+    "title": "[#69801] Real-time collaboration admin page: save button visible on read-only non-editable form",
+    "state": "open",
+    "body": "# Ticket\r\n\r\nhttps://community.openproject.org/work_packages/STC-588\r\n\r\n# What are you trying to accomplish?\r\n\r\nOn the real-time collaboration admin settings page, the **Save** button was unconditionally rendered even when all settings (`hocuspocus_url` and `hocuspocus_secret`) are locked via environment variables, making the form fully read-only. The button was non-functional in that state (no editable fields exist) and misleading to administrators.\r\n\r\nThis fix hides the Save button when `none_writable_settings?` is `true` — i.e., when every tracked setting is overridden by an environment variable — and adds a feature spec asserting this behaviour.\r\n\r\n## Screenshots\r\n\r\nBefore:\r\n<img width=\"1317\" height=\"579\" alt=\"Screenshot 2026-06-13 at 19 47 54\" src=\"https://github.com/user-attachments/assets/f01aee94-f371-46cb-b807-7321bc365733\" />\r\n\r\nAfter:\r\n<img width=\"1311\" height=\"529\" alt=\"Screenshot 2026-06-13 at 19 46 36\" src=\"https://github.com/user-attachments/assets/d0e4141d-43da-43da-b779-1bd9f3bc1821\" />\r\n\r\n# Merge checklist\r\n\r\n- [x] Added/updated tests\r\n- [ ] Added/updated documentation in Lookbook (patterns, previews, etc)\r\n- [ ] Tested major browsers (Chrome, Firefox, Edge, ...)",
+    "created_at": "2026-06-12T11:07:57Z",
+    "updated_at": "2026-06-16T06:34:36Z",
+    "url": "https://github.com/opf/openproject/pull/23711",
+    "user": "thykel",
+    "labels": [],
+    "type": "pull_request"
+  },
+  {
+    "id": 4648696896,
+    "number": 23710,
+    "title": "Chore: Spell out Angular CLI entry path for Node 22.22.3",
+    "state": "closed",
+    "body": "# Ticket\nNo work package. Follow-up to #23588 ([OP-19470] Upgrade Angular to v22), which surfaced this.\n\n# What are you trying to accomplish?\nOn a fresh install, the Docker dev `frontend` container crashes with:\n\n```\nError: Cannot find module '/home/dev/openproject/frontend/node_modules/@angular/cli/bin/ng'\n```\n\nThe frontend launch commands invoke the Angular CLI through an **extensionless** path — `node ./node_modules/@angular/cli/bin/ng`. Node used to auto-append `.js` to the main-module argument, so this resolved for years even though the actual file has always been `bin/ng.js`. Node 22.22.3 dropped that fallback, so the extensionless path now fails to resolve.\n\n#23588 bumped the frontend Docker base image from `node:22.21.0` to `node:22.22.3` — the trigger. It didn't touch these invocation paths, and it didn't touch `docker-compose.yml` at all, so the breakage only shows up once `node_modules` is reinstalled against the new image.\n\nThe fix spells out `bin/ng.js` everywhere the CLI is launched by explicit path:\n\n- `docker-compose.yml` — the `frontend` service `command`\n- `frontend/package.json` — the `build`, `build:watch`, and `serve` scripts\n\nThe `analyze`, `test`, and `lint` scripts call the bare `ng`, which resolves through the `node_modules/.bin/ng` symlink, so they were never affected and stay as-is. `Procfile.dev` runs `npm run serve`, so it inherits the fix.\n\n# What approach did you choose and why?\nThese commands use `node --max_old_space_size=… <path>` to pass a V8 heap flag to the process running the CLI, so they need an explicit file path rather than the bare `ng` on PATH. Pointing them at the published entry `bin/ng.js` is the direct, intended target and is robust across Node versions. Routing through the `.bin/ng` symlink would also work but adds indirection for no gain.\n\n# Merge checklist\n\n- [ ] Added/updated tests\n- [ ] Added/updated documentation in Lookbook (patterns, previews, etc)\n- [ ] Tested major browsers (Chrome, Firefox, Edge, ...)",
+    "created_at": "2026-06-12T11:06:43Z",
+    "updated_at": "2026-06-12T11:41:06Z",
+    "url": "https://github.com/opf/openproject/pull/23710",
+    "user": "akabiru",
+    "labels": [
+      "needs review"
+    ],
+    "type": "pull_request"
+  },
+  {
+    "id": 4648686636,
+    "number": 23709,
+    "title": "[STC-549] Correct label in new document type form",
+    "state": "open",
+    "body": "# Ticket\r\nhttps://community.openproject.org/work_packages/69304\r\n\r\n# What are you trying to accomplish?\r\n\r\nThe \"Default\" checkbox caption on the admin document types edit form incorrectly reads \"Making this priority default will override the previous default priority.\" — wording copied from the issue priorities form — instead of document-type-specific text.\r\n\r\n# What approach did you choose and why?\r\nMigrate to a shared parametrized translation string.\r\n\r\n\r\n## Screenshots\r\n\r\nBefore:\r\n<img width=\"473\" height=\"351\" alt=\"Screenshot 2026-06-15 at 18 30 35\" src=\"https://github.com/user-attachments/assets/5fc4d1db-e7e8-4633-8c49-9f16f0b259d0\" />\r\nAfter:\r\n<img width=\"567\" height=\"345\" alt=\"Screenshot 2026-06-15 at 18 30 17\" src=\"https://github.com/user-attachments/assets/83bc0af7-a7a6-4e9e-b031-ec6bc541f8b9\" />\r\n\r\n\r\n# Merge checklist\r\n\r\n- [x] Added/updated tests\r\n- [ ] Added/updated documentation in Lookbook (patterns, previews, etc)\r\n- [ ] Tested major browsers (Chrome, Firefox, Edge, ...)",
+    "created_at": "2026-06-12T11:05:09Z",
+    "updated_at": "2026-06-15T16:34:39Z",
+    "url": "https://github.com/opf/openproject/pull/23709",
+    "user": "thykel",
+    "labels": [],
+    "type": "pull_request"
+  },
+  {
+    "id": 4648685027,
+    "number": 23708,
+    "title": "Feature/STC-746: Adapt meeting PDF exports for semantic identifiers",
+    "state": "closed",
+    "body": "# Ticket\r\n\r\nhttps://community.openproject.org/wp/STC-746\r\n\r\n# What are you trying to accomplish?\r\n\r\nOn instances configured with project-based work package identifiers, meeting PDF exports still showed the numeric database id. This PR makes the agenda and minutes templates render the configured identifier instead, so a work package agenda item exports as `Task PROD-42 Improve onboarding flow` rather than `Task #39 Improve onboarding flow`. The same applies to work package outcomes. Work package mentions inside agenda item notes already resolved to the configured identifier through the shared markdown-to-PDF pipeline, and the meeting exporter specs now cover that path too.\r\n\r\n## Screenshots\r\n\r\n**Before (classic identifiers)**\r\n\r\n<img width=\"595\" height=\"842\" alt=\"stc746-minutes-classic-before\" src=\"https://github.com/user-attachments/assets/7e4965c1-e1a7-4e70-8fb8-6ea6e297f6fe\" />\r\n\r\n[stc746-minutes-classic-before.pdf](https://github.com/user-attachments/files/28876688/stc746-minutes-classic-before.pdf)\r\n\r\n**After (semantic identifiers)**\r\n\r\n<img width=\"595\" height=\"842\" alt=\"stc746-minutes-semantic-after\" src=\"https://github.com/user-attachments/assets/d6699ca2-d86b-4e79-9039-8bde73a001fc\" />\r\n\r\n[stc746-minutes-semantic-after.pdf](https://github.com/user-attachments/files/28876689/stc746-minutes-semantic-after.pdf)\r\n\r\n<!-- drop stc746-minutes-semantic-after.png here -->\r\n\r\n# What approach did you choose and why?\r\n\r\nThe agenda title and outcome lines built their label with the raw numeric id, while the rest of the application (the meeting page itself, the work package PDF exports, mention expansion) renders identifiers through `formatted_id`, which returns the hash-prefixed numeric id in classic mode and the project-based identifier in semantic mode. The fix is to build the meeting PDF labels the same way, through a single helper shared by the agenda item title and the outcome line. Link URLs needed no change since URL helpers already resolve to the configured identifier.\r\n\r\nUndisclosed work package references (where the viewer lacks permission) keep showing the numeric id, consistent with how the meeting page renders them.\r\n\r\n# Merge checklist\r\n\r\n- [x] Added/updated tests\r\n- [ ] Added/updated documentation in Lookbook (patterns, previews, etc)\r\n- [ ] Tested major browsers (Chrome, Firefox, Edge, ...)\r\n",
+    "created_at": "2026-06-12T11:04:54Z",
+    "updated_at": "2026-06-15T09:02:59Z",
+    "url": "https://github.com/opf/openproject/pull/23708",
+    "user": "akabiru",
+    "labels": [],
+    "type": "pull_request"
+  },
+  {
+    "id": 4648600588,
+    "number": 23707,
+    "title": "Work Package Card: normalize priority label width",
+    "state": "open",
+    "body": "# Ticket\r\nhttps://community.openproject.org/wp/AGILE-281\r\n\r\n# What are you trying to accomplish?\r\nCuts off after a certain threshold.\r\n\r\nUsing a fixed width leads to a more structured and calm visual design. The price is that a bit of space is wasted for priorities with shorter names.\r\n\r\nAs fixed width, I chose 90 px as it could hold \"Immediate\", which is the longest predefined priority in English - and then add 10 pixels of additional buffer space. It might not work as well for other languages (or different font settings and sizes), but we have to choose _some_ width if we want to go with this general approach.\r\n\r\nI briefly considered using the `ch` unit instead of `px`, but it does not seem like we use it anywhere else in OP. Hence, I stuck to `px`.\r\n\r\n## Screenshots\r\n\r\n### Before\r\n<img width=\"1400\" height=\"912\" alt=\"image\" src=\"https://github.com/user-attachments/assets/c0330820-2fed-4199-8c27-e423fc983ec6\" />\r\n\r\n\r\n### After\r\n<img width=\"1400\" height=\"912\" alt=\"image\" src=\"https://github.com/user-attachments/assets/f106d5a5-c1dd-406f-ba7f-c94d5b156693\" />\r\n\r\n\r\n# Merge checklist\r\n\r\n- [x] Added/updated tests\r\n- [ ] Added/updated documentation in Lookbook (patterns, previews, etc)\r\n- [x] Tested major browsers (Chrome, Firefox, Edge, ...)\r\n",
+    "created_at": "2026-06-12T10:51:58Z",
+    "updated_at": "2026-06-16T05:48:37Z",
+    "url": "https://github.com/opf/openproject/pull/23707",
+    "user": "einlama",
+    "labels": [
+      "styling"
+    ],
+    "type": "pull_request"
+  },
+  {
+    "id": 4648577224,
+    "number": 23706,
+    "title": "Implement scope to get all `ResourceAllocation` objects for a given project",
+    "state": "closed",
+    "body": "# Ticket\r\nPreparation for https://community.openproject.org/projects/OP/work_packages/OP-19444/activity\r\n\r\nThis adds a scope to get all `ResourceAllocation` models that are connected to a given project.\r\n\r\nIn the implementation we can then use `ResourceAllication.for_project(@project).needs_principal_assignment`",
+    "created_at": "2026-06-12T10:48:29Z",
+    "updated_at": "2026-06-12T11:30:39Z",
+    "url": "https://github.com/opf/openproject/pull/23706",
+    "user": "klaustopher",
+    "labels": [
+      "needs review"
+    ],
+    "type": "pull_request"
+  },
+  {
+    "id": 4648544345,
+    "number": 23705,
+    "title": "[OP-19489] Update docs after adding multiple variants",
+    "state": "closed",
+    "body": "# Ticket\r\n<!-- Provide the link to respective work package -->\r\n  https://community.openproject.org/wp/OP-19489",
+    "created_at": "2026-06-12T10:44:09Z",
+    "updated_at": "2026-06-12T12:26:00Z",
+    "url": "https://github.com/opf/openproject/pull/23705",
+    "user": "mrmir",
+    "labels": [],
+    "type": "pull_request"
+  },
+  {
+    "id": 4648489116,
+    "number": 23704,
+    "title": "Code-maintenance: remove unreachable WorkPackageCostlogController",
+    "state": "closed",
+    "body": "Dead code cleanup: `WorkPackageCostlogController` has no route in the application and is referenced nowhere, so it can never be dispatched. The similarly-named cost-report redirect flow is served elsewhere.",
+    "created_at": "2026-06-12T10:35:31Z",
+    "updated_at": "2026-06-12T11:46:36Z",
+    "url": "https://github.com/opf/openproject/pull/23704",
+    "user": "akabiru",
+    "labels": [],
+    "type": "pull_request"
+  },
+  {
+    "id": 4648453175,
+    "number": 23703,
+    "title": "test: cover blank work-package journal values in meeting activity formatter",
+    "state": "open",
+    "body": "Regression coverage for an `UnsupportedLookup` on the activity stream: a meeting agenda-item journal holds a blank value for the absent side of a work-package link, and rendering it must show the undisclosed label rather than trip the `find_by` semantic-id guard. Test-only — the predicate-level fix already landed in #23213.",
+    "created_at": "2026-06-12T10:30:28Z",
+    "updated_at": "2026-06-12T10:31:44Z",
+    "url": "https://github.com/opf/openproject/pull/23703",
+    "user": "akabiru",
+    "labels": [],
+    "type": "pull_request"
+  }
+]

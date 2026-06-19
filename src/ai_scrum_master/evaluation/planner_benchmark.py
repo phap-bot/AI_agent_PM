@@ -13,7 +13,6 @@ from ai_scrum_master.agents.evaluator import EvaluatorAgent
 from ai_scrum_master.agents.planner import PlannerAgent
 from ai_scrum_master.agents.researcher import ResearcherAgent
 from ai_scrum_master.core.validation.quality import (
-    classify_requirement,
     domain_contamination_issues,
     is_generic_acceptance_criterion,
     is_placeholder_task,
@@ -203,7 +202,7 @@ def build_classification_flags(result: dict[str, Any]) -> dict[str, bool]:
     context = result.get("context", {}) if isinstance(result.get("context"), dict) else {}
     has_expected_sources = bool(result.get("case", {}).get("expected_sources", [])) if isinstance(result.get("case"), dict) else False
     requirement = _case_requirement(result, story)
-    domain_issues = domain_contamination_issues(requirement, story) if story else []
+    domain_issues = domain_contamination_issues(expected_domain, requirement, story) if story else []
     validation = _deterministic_validation(result, story, context)
     similar_pairs = similar_item_pairs(story.get("acceptance_criteria", [])) if story else []
     return {
@@ -388,7 +387,7 @@ def run_case(version: str, case: dict[str, Any], n_results: int) -> dict[str, An
     story = PlannerAgent().run(
         requirement,
         context,
-        requirement_type=route.get("story_type") or classify_requirement(requirement),
+        requirement_type=route.get("story_type") or "software_feature",
         route=route,
     )
     evaluation = EvaluatorAgent().run(story)
