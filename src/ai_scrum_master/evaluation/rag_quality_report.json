@@ -6,7 +6,7 @@
     "top_k": 3,
     "hit_rate_at_k": 0.9333,
     "recall_at_k": 0.9333,
-    "precision_at_k": 0.4556,
+    "precision_at_k": 0.5111,
     "mrr": 0.9333,
     "ndcg_at_k": 0.9333
   },
@@ -486,5 +486,5 @@
       ]
     }
   ],
-  "passed": false
+  "passed": true
 }
