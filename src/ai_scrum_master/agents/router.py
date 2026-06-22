@@ -30,10 +30,12 @@ Output in strict JSON format with exactly these 6 keys:
 - "scope_reasoning": Explain your evaluation of the requirement's scope. A good task can be completed by 1 dev in 1-3 days. If the requirement describes a massive feature requiring frontend, backend, DB, and 3rd-party integration, explain why the scope > 80 (oversized).
 - "story_type": Must be one of ["software_feature", "process_improvement", "oversized_request", "ambiguous_request"].
   * IMPORTANT RULES for story_type:
-    1. If the request is a bug fix, minor update, or single concrete feature with acceptable clarity, it is "software_feature".
-    2. ONLY use "oversized_request" if your scope_reasoning concludes it's a massive Epic that MUST be split.
-    3. Use "ambiguous_request" if your clarity_reasoning concludes it lacks specific metrics or is too vague to act on.
-    4. Use "process_improvement" if it's about Agile/Scrum processes.
+    1. SOFT THRESHOLD FOR CLARIFICATION: If the requirement contains "[Clarification from user]:", the user has already attempted to answer questions. Significantly lower your ambiguity threshold. DO NOT use "ambiguous_request" unless the requirement is fundamentally impossible to start development on. If only minor edge cases (like QA details, split-screen, or performance constraints) are missing, assume reasonable defaults or leave placeholders, and classify as "software_feature" to avoid infinite Q&A loops.
+    2. AVOID "ambiguous_request" for SPLITS: If the requirement is clearly a sub-ticket or split from a larger Epic (e.g., it starts with "Tập trung phân tích và viết Story cho tính năng này:"), NEVER use "ambiguous_request". ALWAYS classify it as "software_feature".
+    3. PRIORITIZE "oversized_request": If your scope_reasoning concludes it's a massive Epic (like building a whole new system, marketplace, or app), ALWAYS classify it as "oversized_request", EVEN IF it lacks clarity.
+    4. Use "ambiguous_request" ONLY IF it is a brand new, standalone request that is too vague to act on.
+    5. Use "process_improvement" if it's about Agile/Scrum processes.
+    6. Otherwise, use "software_feature".
 - "domain": The core business domain or feature area (e.g., "auth", "checkout", "notification", "scrum", "general").
 - "tech_stack": Likely technologies involved (e.g., "react", "fastapi", "postgres").
 - "search_keywords": A list of highly relevant, specific keywords for RAG vector search.

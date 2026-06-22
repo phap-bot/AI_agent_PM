@@ -106,6 +106,21 @@ def clear_collection(collection_name: str | None = None) -> None:
         client.delete_collection(collection_name=collection)
 
 
+def delete_project_documents(project_id: str, collection_name: str | None = None) -> None:
+    client = get_qdrant_client()
+    collection = canonical_collection_name(collection_name)
+    if client.collection_exists(collection_name=collection):
+        client.delete(
+            collection_name=collection,
+            points_selector=rest.FilterSelector(
+                filter=rest.Filter(
+                    must=[rest.FieldCondition(key="project_id", match=rest.MatchValue(value=project_id))]
+                )
+            )
+        )
+        logger.info("[VECTOR_STORE] Deleted documents for project_id=%s from collection='%s'", project_id, collection)
+
+
 def add_documents(
     documents: Sequence[str],
     ids: Sequence[str],
@@ -131,16 +146,9 @@ def query_documents(
     embedder = get_embedding_function()
     query_vector = embedder.embed_query(compact_query_for_embedding(query))
     
-    query_filter = None
-    if project_id:
-        query_filter = rest.Filter(
-            must=[rest.FieldCondition(key="project_id", match=rest.MatchValue(value=project_id))]
-        )
-    
     search_result = client.query_points(
         collection_name=collection,
         query=query_vector,
-        query_filter=query_filter,
         limit=n_results
     )
     
@@ -254,11 +262,7 @@ def get_chunks_by_filenames(
         for fname in filenames
     ]
     
-    must_conditions = []
-    if project_id:
-        must_conditions.append(rest.FieldCondition(key="project_id", match=rest.MatchValue(value=project_id)))
-        
-    query_filter = rest.Filter(should=should_conditions, must=must_conditions)
+    query_filter = rest.Filter(should=should_conditions)
     all_matches: list[dict] = []
 
     if query:

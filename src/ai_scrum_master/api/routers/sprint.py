@@ -33,7 +33,7 @@ def get_sprint_board(project_id: Optional[str] = Query(None)):
     sprint_data = sprint_resp.json_body if sprint_resp.status_code == 200 else {"id": sprint_id, "name": f"Sprint {sprint_id}"}
         
     # Get issues in sprint
-    url = f"{jira.config.base_url.rstrip('/')}/rest/agile/1.0/board/{board_id}/sprint/{sprint_id}/issue"
+    url = f"{jira.config.base_url.rstrip('/')}/rest/agile/1.0/board/{board_id}/sprint/{sprint_id}/issue?maxResults=500"
     response = jira.http_client.get_json(
         url=url,
         basic_auth=(jira.config.email, jira.config.api_token),
@@ -50,8 +50,38 @@ def get_sprint_board(project_id: Optional[str] = Query(None)):
                 "summary": fields.get("summary"),
                 "status": fields.get("status", {}).get("name", ""),
                 "type": fields.get("issuetype", {}).get("name", ""),
-                "assignee": fields.get("assignee")
+                "assignee": fields.get("assignee"),
+                "parent_key": fields.get("parent", {}).get("key")
             })
+            
+        # Also fetch subtasks of these issues
+        parent_keys = [i["key"] for i in mapped_issues]
+        if parent_keys:
+            import urllib.parse
+            # chunk parent_keys to avoid URL too long if there are many
+            chunked_parents = [parent_keys[i:i + 50] for i in range(0, len(parent_keys), 50)]
+            for chunk in chunked_parents:
+                jql = f"parent in ({','.join(chunk)})"
+                sub_url = f"{jira.config.base_url.rstrip('/')}/rest/agile/1.0/board/{board_id}/issue?jql={urllib.parse.quote(jql)}&maxResults=500"
+                sub_resp = jira.http_client.get_json(
+                    url=sub_url,
+                    basic_auth=(jira.config.email, jira.config.api_token),
+                    headers={"Accept": "application/json"}
+                )
+                if sub_resp.status_code == 200:
+                    for sub in sub_resp.json_body.get("issues", []):
+                        fields = sub.get("fields", {})
+                        # Avoid duplicates if a subtask was somehow already returned
+                        if not any(x["key"] == sub["key"] for x in mapped_issues):
+                            mapped_issues.append({
+                                "key": sub.get("key"),
+                                "summary": fields.get("summary"),
+                                "status": fields.get("status", {}).get("name", ""),
+                                "type": fields.get("issuetype", {}).get("name", ""),
+                                "assignee": fields.get("assignee"),
+                                "parent_key": fields.get("parent", {}).get("key")
+                            })
+
         return {
             "sprint": sprint_data,
             "issues": mapped_issues
@@ -94,3 +124,52 @@ def create_new_sprint(project_id: Optional[str] = Query(None)):
     if resp.status_code in [200, 201]:
         return {"message": "Sprint created", "sprint": resp.json()}
     return {"error": f"Failed to create sprint: {resp.text}"}
+
+@router.post("/sprint/{sprint_id}/complete", response_model=dict[str, Any])
+def complete_sprint(sprint_id: int, project_id: Optional[str] = Query(None)):
+    if project_id:
+        jira = JiraTool.from_project(project_id)
+    else:
+        jira = JiraTool()
+        
+    board_id = jira.config.board_id
+    if not board_id:
+        return {"error": "JIRA_BOARD_ID is not configured"}
+        
+    import requests
+    
+    payload = {
+        "state": "closed"
+    }
+    
+    url = f"{jira.config.base_url.rstrip('/')}/rest/agile/1.0/sprint/{sprint_id}"
+    resp = requests.post(
+        url,
+        json=payload,
+        auth=(jira.config.email, jira.config.api_token),
+        headers={"Accept": "application/json"}
+    )
+    
+    if resp.status_code in [200, 204]:
+        return {"message": "Sprint completed successfully", "success": True}
+    return {"error": f"Failed to complete sprint: {resp.text}", "success": False}
+
+@router.delete("/sprint/issue/{issue_key}", response_model=dict[str, Any])
+def delete_issue(issue_key: str, project_id: Optional[str] = Query(None)):
+    if project_id:
+        jira = JiraTool.from_project(project_id)
+    else:
+        jira = JiraTool()
+    return jira.delete_issue(issue_key)
+
+from pydantic import BaseModel
+class TransitionRequest(BaseModel):
+    status: str
+
+@router.put("/sprint/issue/{issue_key}/status", response_model=dict[str, Any])
+def transition_issue(issue_key: str, req: TransitionRequest, project_id: Optional[str] = Query(None)):
+    if project_id:
+        jira = JiraTool.from_project(project_id)
+    else:
+        jira = JiraTool()
+    return jira.transition_issue(issue_key, req.status)

@@ -337,6 +337,63 @@ class JiraTool:
             ]
         return []
 
+    def delete_issue(self, issue_key: str) -> dict[str, Any]:
+        """Delete a Jira issue by key."""
+        if not self.config.is_configured:
+            return {"success": False, "error": "Jira is not configured."}
+
+        url = f"{self.config.base_url.rstrip('/')}/rest/api/3/issue/{issue_key}?deleteSubtasks=true"
+        logger.info("Jira delete issue started issue_key=%s", issue_key)
+        response = self.http_client.delete_request(
+            url=url,
+            basic_auth=(self.config.email, self.config.api_token),
+            headers={"Accept": "application/json"},
+        )
+        if response.status_code == 204:
+            logger.info("Jira delete issue success issue_key=%s", issue_key)
+            return {"success": True}
+
+        logger.warning("Jira delete issue failed issue_key=%s status_code=%s", issue_key, response.status_code)
+        return {"success": False, "status_code": response.status_code, "error": response.text}
+
+    def transition_issue(self, issue_key: str, target_status: str) -> dict[str, Any]:
+        """Transition a Jira issue to a target status name (e.g. 'In Progress', 'Done')."""
+        if not self.config.is_configured:
+            return {"success": False, "error": "Jira is not configured."}
+
+        base = self.config.base_url.rstrip('/')
+        auth = (self.config.email, self.config.api_token)
+
+        # Fetch available transitions for this issue
+        transitions_url = f"{base}/rest/api/3/issue/{issue_key}/transitions"
+        resp = self.http_client.get_json(
+            url=transitions_url, basic_auth=auth,
+            headers={"Accept": "application/json"},
+        )
+        if resp.status_code != 200 or not resp.json_body:
+            return {"success": False, "error": f"Failed to get transitions: {resp.text}"}
+
+        # Find the transition whose target status name matches
+        transition_id = None
+        for t in resp.json_body.get("transitions", []):
+            if t.get("to", {}).get("name", "").lower() == target_status.lower():
+                transition_id = t["id"]
+                break
+
+        if not transition_id:
+            available = [t.get("to", {}).get("name") for t in resp.json_body.get("transitions", [])]
+            return {"success": False, "error": f"No transition to '{target_status}'. Available: {available}"}
+
+        # Execute the transition
+        logger.info("Jira transition issue=%s to '%s' transition_id=%s", issue_key, target_status, transition_id)
+        post_resp = self._post_with_retry(transitions_url, {"transition": {"id": transition_id}})
+        if post_resp.status_code == 204:
+            logger.info("Jira transition success issue=%s status=%s", issue_key, target_status)
+            return {"success": True, "new_status": target_status}
+
+        logger.warning("Jira transition failed issue=%s status_code=%s", issue_key, post_resp.status_code)
+        return {"success": False, "status_code": post_resp.status_code, "error": post_resp.text}
+
     def _get_active_sprint(self, board_id: str) -> int | None:
         url = f"{self.config.base_url.rstrip('/')}/rest/agile/1.0/board/{board_id}/sprint?state=active"
         response = self.http_client.get_json(
@@ -380,6 +437,56 @@ class JiraTool:
             
         logger.warning("Failed to auto-create sprint '%s': status=%s body=%s", sprint_name, create_resp.status_code, create_resp.text)
         return None
+
+    def complete_sprint(self, sprint_id: int, move_open_to: str = "backlog", open_issues: list[str] | None = None) -> dict[str, Any]:
+        """Complete a sprint, optionally moving open issues to the backlog or a new sprint."""
+        if not self.config.is_configured:
+            return {"success": False, "error": "Jira is not configured."}
+            
+        open_issues = open_issues or []
+        base = self.config.base_url.rstrip('/')
+        
+        # 1. Handle open issues
+        if open_issues:
+            if move_open_to == "backlog":
+                logger.info("Moving %s open issues to backlog", len(open_issues))
+                url = f"{base}/rest/agile/1.0/backlog/issue"
+                resp = self._post_with_retry(url, {"issues": open_issues})
+                if resp.status_code not in (200, 204):
+                    logger.warning("Failed to move issues to backlog: %s", resp.text)
+            elif move_open_to == "new_sprint" and self.config.board_id:
+                logger.info("Creating new sprint to move %s open issues", len(open_issues))
+                from datetime import datetime, timedelta, timezone
+                now = datetime.now(timezone.utc)
+                end = now + timedelta(days=14)
+                payload = {
+                    "name": f"AI Auto Sprint {now.strftime('%d%m')}",
+                    "startDate": now.isoformat(timespec='milliseconds').replace("+00:00", "+0000"),
+                    "endDate": end.isoformat(timespec='milliseconds').replace("+00:00", "+0000"),
+                    "originBoardId": int(self.config.board_id)
+                }
+                create_url = f"{base}/rest/agile/1.0/sprint"
+                create_resp = self._post_with_retry(create_url, payload)
+                if create_resp.status_code in (200, 201) and create_resp.json_body:
+                    new_sprint_id = create_resp.json_body.get("id")
+                    if new_sprint_id:
+                        move_url = f"{base}/rest/agile/1.0/sprint/{new_sprint_id}/issue"
+                        move_resp = self._post_with_retry(move_url, {"issues": open_issues})
+                        if move_resp.status_code not in (200, 204):
+                            logger.warning("Failed to move issues to new sprint: %s", move_resp.text)
+                else:
+                    logger.warning("Failed to create new sprint: %s", create_resp.text)
+
+        # 2. Close the current sprint
+        logger.info("Closing sprint %s", sprint_id)
+        url = f"{base}/rest/agile/1.0/sprint/{sprint_id}"
+        # Agile API update sprint is POST
+        resp = self._post_with_retry(url, {"state": "closed"})
+        if resp.status_code in (200, 204) or (resp.json_body and resp.json_body.get("state") == "closed"):
+            return {"success": True}
+            
+        logger.warning("Failed to close sprint: %s", resp.text)
+        return {"success": False, "status_code": resp.status_code, "error": resp.text}
 
     def _move_issue_to_sprint(self, sprint_id: int, issue_key: str) -> None:
         url = f"{self.config.base_url.rstrip('/')}/rest/agile/1.0/sprint/{sprint_id}/issue"

@@ -45,6 +45,15 @@ class HttpClient(Protocol):
     ) -> HttpResponse:
         pass
 
+    def delete_request(
+        self,
+        url: str,
+        headers: dict[str, str] | None = None,
+        basic_auth: tuple[str, str] | None = None,
+        timeout: int = 30,
+    ) -> HttpResponse:
+        pass
+
 
 class UrllibHttpClient:
     def get_json(
@@ -74,6 +83,20 @@ class UrllibHttpClient:
             data=json.dumps(payload).encode("utf-8"),
             headers=self._build_headers(headers={"Content-Type": "application/json", **(headers or {})}, basic_auth=basic_auth),
             method="POST",
+        )
+        return self._open(request, timeout)
+
+    def delete_request(
+        self,
+        url: str,
+        headers: dict[str, str] | None = None,
+        basic_auth: tuple[str, str] | None = None,
+        timeout: int = 30,
+    ) -> HttpResponse:
+        request = Request(
+            url,
+            headers=self._build_headers(headers=headers, basic_auth=basic_auth),
+            method="DELETE",
         )
         return self._open(request, timeout)
 

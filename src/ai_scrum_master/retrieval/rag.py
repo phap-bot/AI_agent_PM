@@ -58,14 +58,34 @@ def _load_attr(module_name: str, attr_name: str) -> Any:
     return getattr(module, attr_name)
 
 
+from functools import lru_cache
+
+@lru_cache(maxsize=1)
 def build_embeddings() -> Any:
     settings = get_settings()
     OllamaEmbeddings = _load_attr("langchain_ollama", "OllamaEmbeddings")
     logger.info(f"Using OllamaEmbeddings with model: {settings.embedding_model}")
-    return OllamaEmbeddings(
+    underlying_embeddings = OllamaEmbeddings(
         model=settings.embedding_model,
         base_url=settings.ollama_base_url,
     )
+    
+    try:
+        CacheBackedEmbeddings = _load_attr("langchain.embeddings", "CacheBackedEmbeddings")
+        LocalFileStore = _load_attr("langchain_community.storage", "LocalFileStore")
+        
+        cache_dir = Path(".cache/embeddings")
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        store = LocalFileStore(str(cache_dir))
+        
+        cached_embedder = CacheBackedEmbeddings.from_bytes_store(
+            underlying_embeddings, store, namespace=settings.embedding_model
+        )
+        logger.info("Enabled CacheBackedEmbeddings (LocalFileStore) for vector caching.")
+        return cached_embedder
+    except Exception as e:
+        logger.warning(f"Could not enable embedding cache: {e}")
+        return underlying_embeddings
 
 
 def build_chat_ollama(**overrides: Any) -> Any:
@@ -111,9 +131,6 @@ def search_context_with_langchain(
     fetch_k = max(n_results, settings.rag_vector_fetch_k if settings.rag_hybrid_search else n_results)
     
     search_kwargs = {}
-    if project_id:
-        search_kwargs["filter"] = {"project_id": project_id}
-        
     results = vector_store.similarity_search_with_score(retrieval_query, k=fetch_k, **search_kwargs)
 
     matches: list[dict[str, Any]] = []

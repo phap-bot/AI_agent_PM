@@ -179,6 +179,43 @@ export async function createSprint(projectId?: string) {
   return handleResponse(response);
 }
 
+export async function completeSprint(sprintId: string, payload: any, projectId?: string) {
+  let url = `${API_BASE_URL}/sprint/${sprintId}/complete`;
+  if (projectId) {
+    url += `?project_id=${projectId}`;
+  }
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+  return handleResponse(response);
+}
+
+export async function deleteSprintIssue(issueKey: string, projectId?: string) {
+  let url = `${API_BASE_URL}/sprint/issue/${issueKey}`;
+  if (projectId) {
+    url += `?project_id=${projectId}`;
+  }
+  const response = await fetch(url, { method: 'DELETE' });
+  return handleResponse(response);
+}
+
+export async function updateSprintIssueStatus(issueKey: string, status: string, projectId?: string) {
+  let url = `${API_BASE_URL}/sprint/issue/${issueKey}/status`;
+  if (projectId) {
+    url += `?project_id=${projectId}`;
+  }
+  const response = await fetch(url, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status }),
+  });
+  return handleResponse(response);
+}
+
 export async function getProjects(): Promise<any[]> {
   const response = await fetch(`${API_BASE_URL}/projects`);
   return handleResponse(response);

@@ -179,8 +179,9 @@ def apply_chunk_overlap(chunks: list[str], chunk_size: int, overlap: int) -> lis
     return overlapped
 
 
-def build_chunk_id(path: Path, chunk_index: int, chunk: str = "") -> str:
-    digest = hashlib.sha1(f"{path.as_posix()}:{chunk_index}".encode("utf-8")).hexdigest()[:12]
+def build_chunk_id(path: Path, chunk_index: int, chunk: str = "", project_id: str | None = None) -> str:
+    digest_input = f"{path.as_posix()}:{chunk_index}"
+    digest = hashlib.sha1(digest_input.encode("utf-8")).hexdigest()[:12]
     return f"{path.stem}-{chunk_index}-{digest}"
 
 
@@ -198,7 +199,6 @@ def build_chunk_metadata(path: Path, source_dir: Path, chunk_index: int, chunk: 
         "chunk_strategy": CHUNK_STRATEGY,
         "chunk_size": get_settings().rag_chunk_size,
         "chunk_overlap": get_settings().rag_chunk_overlap,
-        "project_id": project_id or "",
     }
 
 
@@ -294,7 +294,7 @@ def prepare_langchain_chunks(chunks: list[Any], source_dir: Path, ingested_at: s
 
         text = normalize_document_text(str(chunk.page_content))
         document_sha1 = document_hash(source_path, read_source_text(source_path))
-        chunk_id = build_chunk_id(source_path.relative_to(source_dir), chunk_index, text)
+        chunk_id = build_chunk_id(source_path.relative_to(source_dir), chunk_index, text, project_id)
         metadata = build_chunk_metadata(
             path=source_path,
             source_dir=source_dir,
@@ -339,7 +339,7 @@ def resolve_chunk_source_path(chunk: Any, source_dir: Path) -> Path:
     return path.resolve()
 
 
-def _get_existing_doc_hashes(collection_name: str) -> set[str]:
+def _get_existing_doc_hashes(collection_name: str, project_id: str | None = None) -> set[str]:
     """Query Qdrant for all unique document_sha1 values already ingested."""
     try:
         from ai_scrum_master.retrieval.vector_store import get_qdrant_client, canonical_collection_name
@@ -385,9 +385,7 @@ def ingest_raw_docs(raw_docs_dir: Path | None = None, collection_name: str | Non
     settings = get_settings()
     source_dir = raw_docs_dir or BASE_DIR / "data" / "raw_docs"
     
-    # If project_id is provided and we are using the default directory, append project_id
-    if not raw_docs_dir and project_id:
-        source_dir = source_dir / project_id
+    # We no longer append project_id to source_dir because docs are shared globally.
         
     target_collection = canonical_collection_name(collection_name)
     t_start = time.time()
@@ -396,7 +394,7 @@ def ingest_raw_docs(raw_docs_dir: Path | None = None, collection_name: str | Non
     logger.info("[INGEST] source_dir=%s  collection=%s project_id=%s", source_dir, target_collection, project_id)
 
     # --- Step 1: Get existing hashes for incremental ingestion ---
-    existing_hashes = _get_existing_doc_hashes(target_collection)
+    existing_hashes = _get_existing_doc_hashes(target_collection, project_id)
 
     # --- Step 2: Filter files BEFORE loading (fast hash check on raw bytes) ---
     all_source_files = list(iter_source_files(source_dir))
