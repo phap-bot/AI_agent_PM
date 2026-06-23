@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { fetchSprintBoard, deleteSprintIssue, updateSprintIssueStatus, completeSprint } from '../lib/api';
 
 const COLUMN_STATUS_MAP = {
@@ -22,29 +22,46 @@ export default function SprintBoardPanel({ isActive, projectId }) {
   const [dropTarget, setDropTarget] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
-  
+
   // New features state
   const [groupBy, setGroupBy] = useState('None'); // 'None' or 'Subtask'
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [completeLoading, setCompleteLoading] = useState(false);
   const [moveOpenTo, setMoveOpenTo] = useState('new_sprint');
 
+  const isInteracting = useRef(false);
+
   useEffect(() => {
+    let intervalId;
     if (isActive) {
-      loadBoard();
+      loadBoard(true);
+      intervalId = setInterval(() => {
+        if (!isInteracting.current && !actionLoading && !confirmDelete && !showCompleteModal) {
+          loadBoard(false);
+        }
+      }, 5000);
     }
+    return () => clearInterval(intervalId);
   }, [isActive, projectId]);
 
-  const loadBoard = async () => {
+  // Track interaction state to pause polling
+  useEffect(() => {
+    isInteracting.current = (draggingKey !== null || dropTarget !== null);
+  }, [draggingKey, dropTarget]);
+
+  const loadBoard = async (showLoading = false) => {
     try {
-      setLoading(true);
+      if (showLoading) setLoading(true);
       setError(null);
       const data = await fetchSprintBoard(projectId);
-      setBoardData(data);
+      // Only update if not actively dragging to prevent drag drop interruption
+      if (!isInteracting.current) {
+        setBoardData(data);
+      }
     } catch (err) {
-      setError(err.message);
+      if (showLoading) setError(err.message);
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
 
@@ -157,7 +174,7 @@ export default function SprintBoardPanel({ isActive, projectId }) {
       <div className="text-center p-12 bg-surface-container-lowest rounded-2xl border border-outline-variant/30 text-on-surface-variant flex flex-col items-center justify-center gap-4">
         <span className="material-symbols-outlined text-4xl text-outline">calendar_month</span>
         <p>Chưa có Sprint nào đang Active trên Jira. Vui lòng Start một Sprint trên Jira Board của bạn.</p>
-        <button 
+        <button
           onClick={loadBoard}
           className="flex items-center gap-2 bg-primary/10 text-primary hover:bg-primary/20 px-4 py-2 rounded-full transition-colors"
         >
@@ -178,11 +195,10 @@ export default function SprintBoardPanel({ isActive, projectId }) {
     return (
       <div
         key={targetDropId}
-        className={`flex-1 flex flex-col min-w-[300px] rounded-2xl p-4 border transition-all duration-200 ${
-          dropTarget === targetDropId
+        className={`flex-1 flex flex-col min-w-[300px] rounded-2xl p-4 border transition-all duration-200 ${dropTarget === targetDropId
             ? 'bg-primary/5 border-primary/50 ring-2 ring-primary/20'
             : 'bg-surface-container-low border-outline-variant'
-        }`}
+          }`}
         onDragOver={(e) => {
           e.preventDefault();
           setDropTarget(targetDropId);
@@ -201,16 +217,15 @@ export default function SprintBoardPanel({ isActive, projectId }) {
             {colIssues.length}
           </span>
         </div>
-        
+
         <div className="flex-1 space-y-3 custom-scrollbar px-2 pb-2 min-h-[100px]">
           {colIssues.map(issue => renderIssueCard(issue))}
-          
+
           {colIssues.length === 0 && (
-            <div className={`h-24 border-2 border-dashed rounded-xl flex items-center justify-center text-sm transition-colors ${
-              dropTarget === targetDropId
+            <div className={`h-24 border-2 border-dashed rounded-xl flex items-center justify-center text-sm transition-colors ${dropTarget === targetDropId
                 ? 'border-primary/50 text-primary bg-primary/5'
                 : 'border-outline-variant/50 text-outline'
-            }`}>
+              }`}>
               {dropTarget === targetDropId ? 'Thả vào đây' : ''}
             </div>
           )}
@@ -223,7 +238,7 @@ export default function SprintBoardPanel({ isActive, projectId }) {
   const renderIssueCard = (issue) => {
     let displayId = issue.key;
     let displaySummary = issue.summary;
-    
+
     // Extract custom ID like [BE-001] or [FE-02] from the beginning of the summary
     const match = issue.summary?.match(/^\[(.*?)\]\s*(.*)/);
     if (match) {
@@ -232,83 +247,82 @@ export default function SprintBoardPanel({ isActive, projectId }) {
     }
 
     return (
-    <div
-      key={issue.key}
-      draggable={actionLoading !== issue.key}
-      onDragStart={(e) => {
-        e.dataTransfer.setData('text/plain', issue.key);
-        e.dataTransfer.effectAllowed = 'move';
-        setDraggingKey(issue.key);
-      }}
-      onDragEnd={() => {
-        setDraggingKey(null);
-        setDropTarget(null);
-      }}
-      className={`bg-surface p-4 rounded-xl shadow-sm border transition-all duration-200 cursor-grab active:cursor-grabbing relative group ${
-        draggingKey === issue.key
-          ? 'opacity-40 scale-95 border-primary/30'
-          : actionLoading === issue.key
-            ? 'opacity-60 pointer-events-none border-outline-variant'
-            : 'border-outline-variant hover:border-primary/50 hover:shadow-md'
-      }`}
-    >
-      {actionLoading === issue.key && (
-        <div className="absolute inset-0 flex items-center justify-center bg-surface/60 rounded-xl z-10">
-          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
-        </div>
-      )}
-
-      <div className="flex justify-between items-start mb-2">
-        <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded" title={displayId !== issue.key ? `Jira Key: ${issue.key}` : ''}>
-          {displayId}
-        </span>
-        <div className="flex items-center gap-1">
-          {confirmDelete === issue.key ? (
-            <div className="flex items-center gap-1 animate-in fade-in duration-150">
-              <button
-                onClick={() => handleDelete(issue.key)}
-                className="text-[11px] px-2 py-0.5 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
-                title="Xác nhận xoá"
-              >
-                Xoá
-              </button>
-              <button
-                onClick={() => setConfirmDelete(null)}
-                className="text-[11px] px-2 py-0.5 bg-surface-container-high text-on-surface-variant rounded hover:bg-surface-container-highest transition-colors"
-                title="Huỷ"
-              >
-                Huỷ
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => setConfirmDelete(issue.key)}
-              className="opacity-0 group-hover:opacity-100 transition-opacity text-outline hover:text-red-500 p-0.5 rounded"
-              title="Xoá issue"
-            >
-              <span className="material-symbols-outlined text-[16px]">delete</span>
-            </button>
-          )}
-          <span className="material-symbols-outlined text-outline text-[16px]" title={issue.type}>
-            {issue.type === 'Story' ? 'bookmark' : 'task'}
-          </span>
-        </div>
-      </div>
-      <p className="text-body-md text-on-surface font-medium line-clamp-3 mb-3" title={displaySummary}>
-        {displaySummary}
-      </p>
-      <div className="flex justify-between items-center">
-        <div className="w-6 h-6 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container text-[10px] font-bold" title={issue.assignee ? (issue.assignee.displayName || issue.assignee.name || issue.assignee) : 'Unassigned'}>
-          {issue.assignee ? (typeof issue.assignee === 'string' ? issue.assignee : (issue.assignee.displayName || issue.assignee.name || '??')).substring(0, 2).toUpperCase() : '??'}
-        </div>
-        {issue.parent_key && groupBy === 'None' && (
-          <span className="text-[10px] font-bold text-outline border border-outline-variant px-1 rounded truncate max-w-[80px]" title={`Parent: ${issue.parent_key}`}>
-            {issue.parent_key}
-          </span>
+      <div
+        key={issue.key}
+        draggable={actionLoading !== issue.key}
+        onDragStart={(e) => {
+          e.dataTransfer.setData('text/plain', issue.key);
+          e.dataTransfer.effectAllowed = 'move';
+          setDraggingKey(issue.key);
+        }}
+        onDragEnd={() => {
+          setDraggingKey(null);
+          setDropTarget(null);
+        }}
+        className={`bg-surface p-4 rounded-xl shadow-sm border transition-all duration-200 cursor-grab active:cursor-grabbing relative group ${draggingKey === issue.key
+            ? 'opacity-40 scale-95 border-primary/30'
+            : actionLoading === issue.key
+              ? 'opacity-60 pointer-events-none border-outline-variant'
+              : 'border-outline-variant hover:border-primary/50 hover:shadow-md'
+          }`}
+      >
+        {actionLoading === issue.key && (
+          <div className="absolute inset-0 flex items-center justify-center bg-surface/60 rounded-xl z-10">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+          </div>
         )}
+
+        <div className="flex justify-between items-start mb-2">
+          <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded" title={displayId !== issue.key ? `Jira Key: ${issue.key}` : ''}>
+            {displayId}
+          </span>
+          <div className="flex items-center gap-1">
+            {confirmDelete === issue.key ? (
+              <div className="flex items-center gap-1 animate-in fade-in duration-150">
+                <button
+                  onClick={() => handleDelete(issue.key)}
+                  className="text-[11px] px-2 py-0.5 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                  title="Xác nhận xoá"
+                >
+                  Xoá
+                </button>
+                <button
+                  onClick={() => setConfirmDelete(null)}
+                  className="text-[11px] px-2 py-0.5 bg-surface-container-high text-on-surface-variant rounded hover:bg-surface-container-highest transition-colors"
+                  title="Huỷ"
+                >
+                  Huỷ
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setConfirmDelete(issue.key)}
+                className="opacity-0 group-hover:opacity-100 transition-opacity text-outline hover:text-red-500 p-0.5 rounded"
+                title="Xoá issue"
+              >
+                <span className="material-symbols-outlined text-[16px]">delete</span>
+              </button>
+            )}
+            <span className="material-symbols-outlined text-outline text-[16px]" title={issue.type}>
+              {issue.type === 'Story' ? 'bookmark' : 'task'}
+            </span>
+          </div>
+        </div>
+        <p className="text-body-md text-on-surface font-medium line-clamp-3 mb-3" title={displaySummary}>
+          {displaySummary}
+        </p>
+        <div className="flex justify-between items-center">
+          <div className="w-6 h-6 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container text-[10px] font-bold" title={issue.assignee ? (issue.assignee.displayName || issue.assignee.name || issue.assignee) : 'Unassigned'}>
+            {issue.assignee ? (typeof issue.assignee === 'string' ? issue.assignee : (issue.assignee.displayName || issue.assignee.name || '??')).substring(0, 2).toUpperCase() : '??'}
+          </div>
+          {issue.parent_key && groupBy === 'None' && (
+            <span className="text-[10px] font-bold text-outline border border-outline-variant px-1 rounded truncate max-w-[80px]" title={`Parent: ${issue.parent_key}`}>
+              {issue.parent_key}
+            </span>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
   };
 
   return (
@@ -324,11 +338,11 @@ export default function SprintBoardPanel({ isActive, projectId }) {
             <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">calendar_today</span> Bắt đầu: {sprint.start_date ? new Date(sprint.start_date).toLocaleDateString() : 'N/A'}</span>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-3">
           <div className="flex items-center bg-surface rounded-full border border-outline-variant p-1">
             <span className="text-xs font-medium text-on-surface-variant px-2">Group by:</span>
-            <select 
+            <select
               value={groupBy}
               onChange={(e) => setGroupBy(e.target.value)}
               className="text-sm bg-transparent border-none py-1 pr-6 focus:ring-0 cursor-pointer text-on-surface font-medium"
@@ -338,7 +352,7 @@ export default function SprintBoardPanel({ isActive, projectId }) {
             </select>
           </div>
 
-          <button 
+          <button
             onClick={loadBoard}
             className="flex items-center justify-center p-2 rounded-full bg-surface-container border border-outline-variant hover:bg-surface-container-high transition-colors text-on-surface-variant tooltip-trigger"
             title="Đồng bộ Jira"
@@ -346,7 +360,7 @@ export default function SprintBoardPanel({ isActive, projectId }) {
             <span className="material-symbols-outlined text-xl">sync</span>
           </button>
 
-          <button 
+          <button
             onClick={() => setShowCompleteModal(true)}
             className="flex items-center gap-2 bg-primary text-on-primary hover:bg-primary/90 px-4 py-2 rounded-full transition-colors shadow-sm font-medium text-sm"
           >
@@ -376,7 +390,7 @@ export default function SprintBoardPanel({ isActive, projectId }) {
               issues.forEach(issue => {
                 const isStory = issue.type === 'Story' || !issue.parent_key;
                 const groupKey = isStory ? issue.key : (issue.parent_key || 'Unparented');
-                
+
                 if (!groups[groupKey]) {
                   groups[groupKey] = {
                     parent: isStory ? issue : issues.find(i => i.key === groupKey), // Try to find parent object if it's in the sprint
@@ -402,7 +416,7 @@ export default function SprintBoardPanel({ isActive, projectId }) {
                       {data.parent?.summary || 'Other Issues'}
                     </span>
                   </div>
-                  
+
                   {/* Swimlane Columns */}
                   <div className="flex gap-0 divide-x divide-outline-variant/30">
                     {['To Do', 'In Progress', 'Done'].map(colName => {
@@ -412,9 +426,8 @@ export default function SprintBoardPanel({ isActive, projectId }) {
                       return (
                         <div
                           key={colName}
-                          className={`flex-1 p-3 min-h-[120px] transition-colors ${
-                            dropTarget === targetDropId ? 'bg-primary/5' : 'bg-surface/50'
-                          }`}
+                          className={`flex-1 p-3 min-h-[120px] transition-colors ${dropTarget === targetDropId ? 'bg-primary/5' : 'bg-surface/50'
+                            }`}
                           onDragOver={(e) => {
                             e.preventDefault();
                             setDropTarget(targetDropId);

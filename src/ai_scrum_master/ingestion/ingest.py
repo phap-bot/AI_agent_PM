@@ -203,14 +203,24 @@ def build_chunk_metadata(path: Path, source_dir: Path, chunk_index: int, chunk: 
 
 
 def read_source_text(path: Path) -> str:
-    if path.suffix.lower() == ".pdf":
-        return read_pdf_text(path)
-    return path.read_text(encoding="utf-8")
-
-
-def read_pdf_text(path: Path) -> str:
-    import pymupdf4llm
-    return pymupdf4llm.to_markdown(str(path))
+    from ai_scrum_master.ingestion.universal_parser.core.router import ParserRouter
+    from ai_scrum_master.ingestion.universal_parser.core.post_processor import PostProcessor
+    
+    try:
+        # Route to the appropriate parser
+        parser = ParserRouter.get_parser(path)
+        
+        # Parse text (and save any images to path.parent / assets)
+        raw_markdown = parser.parse(path, path.parent)
+        
+        # Clean up text
+        return PostProcessor.process(raw_markdown)
+    except ValueError:
+        # Fallback for unsupported extensions if they slipped through
+        return path.read_text(encoding="utf-8", errors="ignore")
+    except Exception as e:
+        logger.error(f"Error parsing {path}: {e}")
+        return ""
 
 
 def document_hash(path: Path, text: str) -> str:

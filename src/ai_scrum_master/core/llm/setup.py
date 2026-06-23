@@ -12,6 +12,7 @@ def build_llm(**overrides: Any) -> Any:
     options = {
         "num_ctx": settings.ollama_num_ctx,
         "num_gpu": settings.ollama_num_gpu,
+        "keep_alive": "0",  # Unload immediately to save VRAM
         **overrides.pop("options", {}),
     }
 

@@ -407,6 +407,155 @@ class JiraTool:
                 return values[0].get("id")
         return None
 
+    def get_sprint_issues(self, sprint_id: int, max_results: int = 50) -> list[dict[str, Any]]:
+        """Fetch all issues belonging to a specific sprint from Jira Agile API.
+
+        Returns a list of dicts with keys: key, title, status, priority, story_points, issue_type.
+        """
+        if not self.config.is_configured:
+            return []
+
+        base = self.config.base_url.rstrip("/")
+        url = f"{base}/rest/agile/1.0/sprint/{sprint_id}/issue?maxResults={max_results}&fields=summary,status,priority,issuetype,customfield_10016"
+        response = self.http_client.get_json(
+            url=url,
+            basic_auth=(self.config.email, self.config.api_token),
+            headers={"Accept": "application/json"},
+        )
+        if response.status_code != 200 or not response.json_body:
+            logger.warning("get_sprint_issues failed sprint_id=%s status=%s", sprint_id, response.status_code)
+            return []
+
+        issues: list[dict[str, Any]] = []
+        for raw in response.json_body.get("issues", []):
+            fields = raw.get("fields", {})
+            status_obj = fields.get("status") or {}
+            priority_obj = fields.get("priority") or {}
+            issue_type_obj = fields.get("issuetype") or {}
+
+            # story_points: Jira Cloud uses customfield_10016 by default
+            story_points = fields.get("customfield_10016") or fields.get("story_points") or 0
+            try:
+                story_points = float(story_points)
+            except (TypeError, ValueError):
+                story_points = 0.0
+
+            status_name = status_obj.get("name", "Unknown")
+            status_category = (status_obj.get("statusCategory") or {}).get("key", "")
+
+            issues.append({
+                "key": raw.get("key", ""),
+                "title": fields.get("summary", "Untitled"),
+                "status": status_name,
+                "status_category": status_category,  # "done", "indeterminate", "new"
+                "priority": (priority_obj.get("name") or "Medium").upper(),
+                "story_points": story_points,
+                "issue_type": issue_type_obj.get("name", "Task"),
+            })
+
+        logger.info("get_sprint_issues sprint_id=%s returned %s issues", sprint_id, len(issues))
+        return issues
+
+    def get_active_sprint_details(self, board_id: str) -> dict[str, Any] | None:
+        """Return active sprint metadata + real progress computed from ticket statuses.
+
+        Returns dict with keys: id, name, start_date, end_date, progress, total_points,
+        done_points, issues, status_breakdown.
+        Returns None if no active sprint or Jira is not configured.
+        """
+        if not self.config.is_configured or not board_id:
+            return None
+
+        sprint_id = self._get_active_sprint(board_id)
+        if not sprint_id:
+            return None
+
+        # Fetch sprint metadata
+        base = self.config.base_url.rstrip("/")
+        sprint_url = f"{base}/rest/agile/1.0/sprint/{sprint_id}"
+        sprint_resp = self.http_client.get_json(
+            url=sprint_url,
+            basic_auth=(self.config.email, self.config.api_token),
+            headers={"Accept": "application/json"},
+        )
+        if sprint_resp.status_code != 200 or not sprint_resp.json_body:
+            return None
+
+        sdata = sprint_resp.json_body
+        sprint_name = sdata.get("name", "Unknown Sprint")
+
+        # Parse dates
+        from datetime import datetime, timezone as tz
+        end_date_str = sdata.get("endDate")
+        start_date_str = sdata.get("startDate")
+        end_date_fmt = "--"
+        if end_date_str:
+            try:
+                ed = datetime.fromisoformat(end_date_str.replace("Z", "+00:00"))
+                end_date_fmt = ed.strftime("%b %d, %Y")
+            except (ValueError, TypeError):
+                pass
+
+        # Fetch issues in the sprint
+        issues = self.get_sprint_issues(sprint_id)
+
+        # Compute progress from real ticket statuses
+        total_points = 0.0
+        done_points = 0.0
+        status_breakdown = {"todo": 0, "in_progress": 0, "done": 0}
+
+        valid_issues_count = 0
+        for issue in issues:
+            # Skip sub-tasks so Burndown exactly matches the task list
+            if issue.get("issue_type", "").lower() in ("sub-task", "subtask"):
+                continue
+                
+            valid_issues_count += 1
+            pts = issue.get("story_points", 0.0)
+            total_points += pts
+            
+            cat = issue.get("status_category", "")
+            status_name = issue.get("status", "").lower()
+            
+            if "done" in status_name or "resolved" in status_name or "closed" in status_name:
+                done_points += pts
+                status_breakdown["done"] += 1
+            elif "progress" in status_name or "doing" in status_name or "review" in status_name:
+                status_breakdown["in_progress"] += 1
+            elif cat == "done":
+                done_points += pts
+                status_breakdown["done"] += 1
+            elif cat == "indeterminate":
+                status_breakdown["in_progress"] += 1
+            else:
+                status_breakdown["todo"] += 1
+
+        # Progress: by story points if available, otherwise by ticket count
+        if total_points > 0:
+            progress = int((done_points / total_points) * 100)
+        elif valid_issues_count > 0:
+            progress = int((status_breakdown["done"] / valid_issues_count) * 100)
+        else:
+            progress = 0
+
+        logger.info(
+            "get_active_sprint_details sprint=%s progress=%s%% done_pts=%.0f/%.0f issues=%s",
+            sprint_name, progress, done_points, total_points, valid_issues_count,
+        )
+
+        return {
+            "id": sprint_id,
+            "name": sprint_name,
+            "start_date": start_date_str,
+            "end_date": end_date_fmt,
+            "progress": min(100, max(0, progress)),
+            "total_points": total_points,
+            "done_points": done_points,
+            "total_issues": valid_issues_count,
+            "issues": issues,
+            "status_breakdown": status_breakdown,
+        }
+
     def _get_or_create_sprint_by_name(self, board_id: str, sprint_name: str) -> int | None:
         url = f"{self.config.base_url.rstrip('/')}/rest/agile/1.0/board/{board_id}/sprint"
         response = self.http_client.get_json(

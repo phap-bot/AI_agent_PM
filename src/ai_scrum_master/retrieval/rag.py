@@ -68,6 +68,7 @@ def build_embeddings() -> Any:
     underlying_embeddings = OllamaEmbeddings(
         model=settings.embedding_model,
         base_url=settings.ollama_base_url,
+        keep_alive="0",  # Unload immediately to save VRAM
     )
     
     try:
@@ -97,6 +98,7 @@ def build_chat_ollama(**overrides: Any) -> Any:
         "temperature": 0.0,
         "num_ctx": settings.ollama_num_ctx,
         "num_gpu": settings.ollama_num_gpu,
+        "keep_alive": "0",  # Unload immediately to save VRAM
     }
     options.update(overrides)
     return ChatOllama(**options)

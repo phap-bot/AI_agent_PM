@@ -7,21 +7,33 @@ export default function AnalyticsPanel({ projectId }) {
   const [animate, setAnimate] = useState(false);
 
   useEffect(() => {
-    async function loadData() {
-      setLoading(true);
-      setAnimate(false);
+    let intervalId;
+    async function loadData(showLoading = false) {
+      if (showLoading) {
+        setLoading(true);
+        setAnimate(false);
+      }
       try {
         const response = await fetchAnalyticsOverview(projectId);
         setData(response);
       } catch (err) {
         console.error("Failed to load analytics data:", err);
       } finally {
-        setLoading(false);
-        // Trigger animations after a short delay
-        setTimeout(() => setAnimate(true), 100);
+        if (showLoading) {
+          setLoading(false);
+          // Trigger animations after a short delay
+          setTimeout(() => setAnimate(true), 100);
+        }
       }
     }
-    loadData();
+    
+    // Initial load with loading spinner
+    loadData(true);
+    
+    // Auto-refresh every 5 seconds without triggering loading animations again
+    intervalId = setInterval(() => loadData(false), 5000);
+
+    return () => clearInterval(intervalId);
   }, [projectId]);
 
   return (
@@ -53,6 +65,12 @@ export default function AnalyticsPanel({ projectId }) {
             <div className="text-right">
               <span className="text-display-lg font-bold text-primary">{data?.accuracy || 0}%</span>
               <p className="text-label-md text-on-surface-variant">{data?.accuracyTrend || '--'}</p>
+              {data?.jiraConnected && (
+                <span className="mt-1 inline-flex px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-[10px] font-bold border border-green-200 gap-1 items-center">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                  JIRA LIVE
+                </span>
+              )}
             </div>
           </div>
           <div className="h-64 relative bg-surface-container-lowest rounded-lg border border-dashed border-outline-variant flex items-center justify-center overflow-hidden">
@@ -77,7 +95,12 @@ export default function AnalyticsPanel({ projectId }) {
               {data?.teamVelocityDetails?.length > 0 ? data.teamVelocityDetails.map((tv, i) => (
                 <div key={i} className="flex justify-between items-end border-b border-outline-variant pb-2">
                   <span className="font-body-md">{tv.name}</span>
-                  <span className="font-headline-sm text-primary">{tv.pts} <span className="text-label-md text-on-surface-variant font-normal">pts</span></span>
+                  <div className="text-right">
+                    <span className="font-headline-sm text-primary">{tv.pts} <span className="text-label-md text-on-surface-variant font-normal">pts</span></span>
+                    {tv.total_pts > 0 && (
+                      <p className="text-[10px] text-on-surface-variant">{tv.done_pts?.toFixed(0) || 0}/{tv.total_pts?.toFixed(0) || 0} SP</p>
+                    )}
+                  </div>
                 </div>
               )) : (
                 <div className="text-on-surface-variant text-sm py-4">No data available</div>
@@ -166,7 +189,9 @@ export default function AnalyticsPanel({ projectId }) {
           <div className="px-container-padding py-stack-md border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
             <h3 className="font-headline-sm text-headline-sm">Project Resource Efficiency</h3>
             <div className="flex gap-stack-sm">
-              <span className="px-3 py-1 bg-green-100 text-green-800 text-[11px] rounded-full font-bold">HEALTHY SYSTEM</span>
+              <span className={`px-3 py-1 text-[11px] rounded-full font-bold ${data?.jiraConnected ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
+                {data?.jiraConnected ? 'LIVE DATA' : 'OFFLINE'}
+              </span>
             </div>
           </div>
           <table className="w-full text-left border-collapse">
@@ -175,6 +200,7 @@ export default function AnalyticsPanel({ projectId }) {
                 <th className="p-4 font-semibold">PROJECT NAME</th>
                 <th className="p-4 font-semibold">CYCLE TIME</th>
                 <th className="p-4 font-semibold">BLOCKER RATIO</th>
+                <th className="p-4 font-semibold">STATUS</th>
                 <th className="p-4 font-semibold">AI AUTOMATION</th>
                 <th className="p-4 font-semibold">TREND</th>
               </tr>
@@ -187,10 +213,21 @@ export default function AnalyticsPanel({ projectId }) {
                   <td className="p-4">
                     <div className="flex items-center gap-2">
                       <div className="w-24 h-2 bg-surface-variant rounded-full overflow-hidden">
-                        <div className={`h-full transition-all duration-1000 ease-out ${item.blockerRatio > 20 ? 'bg-error' : 'bg-tertiary'}`} style={{ width: animate ? `${item.blockerRatio}%` : '0%' }}></div>
+                        <div className={`h-full transition-all duration-1000 ease-out ${item.blockerRatio > 30 ? 'bg-error' : item.blockerRatio > 15 ? 'bg-amber-500' : 'bg-tertiary'}`} style={{ width: animate ? `${item.blockerRatio}%` : '0%' }}></div>
                       </div>
-                      <span className={`text-label-md ${item.blockerRatio > 20 ? 'text-error' : ''}`}>{item.blockerRatio}%</span>
+                      <span className={`text-label-md ${item.blockerRatio > 30 ? 'text-error' : ''}`}>{item.blockerRatio}%</span>
                     </div>
+                  </td>
+                  <td className="p-4">
+                    {(item.done > 0 || item.in_progress > 0 || item.todo > 0) ? (
+                      <div className="flex gap-1 items-center text-[11px]">
+                        <span className="px-1.5 py-0.5 rounded bg-green-100 text-green-700 font-bold">{item.done} Done</span>
+                        <span className="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-bold">{item.in_progress} WIP</span>
+                        <span className="px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 font-bold">{item.todo} To Do</span>
+                      </div>
+                    ) : (
+                      <span className="text-on-surface-variant text-sm">--</span>
+                    )}
                   </td>
                   <td className="p-4">
                     <span className={`px-2 py-1 rounded text-[11px] font-bold ${item.aiAutomation.includes('100%') ? 'bg-primary-fixed text-on-primary-fixed-variant' : 'bg-surface-variant text-on-surface-variant'}`}>{item.aiAutomation}</span>
@@ -202,7 +239,7 @@ export default function AnalyticsPanel({ projectId }) {
                   </td>
                 </tr>
               )) : (
-                <tr><td colSpan="5" className="p-4 text-center text-on-surface-variant">No resource data available.</td></tr>
+                <tr><td colSpan="6" className="p-4 text-center text-on-surface-variant">No resource data available.</td></tr>
               )}
             </tbody>
           </table>

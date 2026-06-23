@@ -6,18 +6,26 @@ export default function TeamPanel({ projectId }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function loadData() {
-      setLoading(true);
+    let intervalId;
+    async function loadData(showLoading = false) {
+      if (showLoading) setLoading(true);
       try {
         const response = await fetchTeamMembers(projectId);
         setData(response);
       } catch (err) {
         console.error("Failed to load team data:", err);
       } finally {
-        setLoading(false);
+        if (showLoading) setLoading(false);
       }
     }
-    loadData();
+    
+    // Initial load with loading spinner
+    loadData(true);
+    
+    // Auto-refresh every 5 seconds without showing loading spinner
+    intervalId = setInterval(() => loadData(false), 5000);
+
+    return () => clearInterval(intervalId);
   }, [projectId]);
 
   return (
