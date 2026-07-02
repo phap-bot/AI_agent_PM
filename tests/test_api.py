@@ -14,7 +14,7 @@ from ai_scrum_master.api.main import (
 )
 from ai_scrum_master.api.routers.generate import router as generate_router
 from ai_scrum_master.api.schemas import ActionPreviewRequest, GenerateStoriesRequest, IngestRequest
-from ai_scrum_master.core.finalizer import actions_are_ready
+from ai_scrum_master.core.pipeline.finalizer import actions_are_ready
 
 
 STORY = {

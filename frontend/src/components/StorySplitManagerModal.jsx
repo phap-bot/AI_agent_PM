@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import StoryDraftEditor from './StoryDraftEditor';
 import { generateStoriesAsync, getGenerateStatus, previewJiraAction, executeJiraAction } from '../lib/api';
 import { normalizeStoryDraft } from '../lib/normalizers';
+import { useTranslation } from 'react-i18next';
 
 export default function StorySplitManagerModal({ 
   splits, 
@@ -9,6 +10,7 @@ export default function StorySplitManagerModal({
   projectId, 
   forcedContextDocs = [] 
 }) {
+  const { t } = useTranslation();
   const [activeSplitId, setActiveSplitId] = useState(null); // Which split is currently being generated or viewed
   
   // States for the generated split draft
@@ -70,13 +72,13 @@ export default function StorySplitManagerModal({
   }, [generateJobId, isLoading]);
 
   const handleGenerateSplit = async (split) => {
-    const splitTitle = typeof split === 'string' ? split : (split.title || split.name || 'Sub-ticket');
+    const splitTitle = typeof split === 'string' ? split : (split.title || split.name || t('split_manager.sub_ticket'));
     const splitDesc = typeof split === 'string' ? '' : (split.description || split.reason || '');
     const splitText = splitTitle + (splitDesc ? `: ${splitDesc}` : '');
     
     setActiveSplitId(splitTitle);
     setIsLoading(true);
-    setGenerationMessage('Đang khởi tạo Agent phân tích Split...');
+    setGenerationMessage(t('split_manager.init_agent'));
     setError(null);
     setStoryDraft(null);
     setEvaluation(null);
@@ -109,7 +111,7 @@ export default function StorySplitManagerModal({
       });
       setActions(prev => ({ ...prev, jira: newActions.jira }));
     } catch (err) {
-      alert(`Jira Preview Error: ${err.message}`);
+      alert(`${t('split_manager.jira_preview_error')}${err.message}`);
     }
   };
 
@@ -125,7 +127,7 @@ export default function StorySplitManagerModal({
       });
       setActionExecution(result);
     } catch (err) {
-      alert(`Jira Execute Error: ${err.message}`);
+      alert(`${t('split_manager.jira_execute_error')}${err.message}`);
     } finally {
       setIsPushingJira(false);
     }
@@ -137,7 +139,7 @@ export default function StorySplitManagerModal({
     const enrichedRequirement = `Tập trung phân tích và viết Story cho tính năng này: ${activeSplitId}\n\n[Clarification from user]: ${clarificationText}`;
     
     setIsLoading(true);
-    setGenerationMessage('AI đang phân tích lại với thông tin bổ sung...');
+    setGenerationMessage(t('split_manager.ai_reanalyzing'));
     setError(null);
 
     try {
@@ -170,8 +172,8 @@ export default function StorySplitManagerModal({
           <div className="flex items-center gap-3">
             <span className="material-symbols-outlined text-primary text-[28px]" style={{fontVariationSettings: "'FILL' 1"}}>splitscreen</span>
             <div>
-              <h2 className="text-xl font-bold text-primary">Story Split Manager</h2>
-              <p className="text-sm text-on-surface-variant">Quản lý và tạo chi tiết cho các ticket con</p>
+              <h2 className="text-xl font-bold text-primary">{t('split_manager.title')}</h2>
+              <p className="text-sm text-on-surface-variant">{t('split_manager.subtitle')}</p>
             </div>
           </div>
           <button 
@@ -187,8 +189,8 @@ export default function StorySplitManagerModal({
           {/* Left Panel: List of splits */}
           <div className="w-1/3 border-r border-outline-variant bg-surface-container-lowest flex flex-col h-full">
             <div className="p-4 border-b border-outline-variant/50">
-              <h3 className="font-bold text-label-md uppercase tracking-wider text-outline mb-1">Danh sách Split Đề Xuất</h3>
-              <p className="text-xs text-on-surface-variant">Chọn một split để bắt đầu AI Generate</p>
+              <h3 className="font-bold text-label-md uppercase tracking-wider text-outline mb-1">{t('split_manager.list_title')}</h3>
+              <p className="text-xs text-on-surface-variant">{t('split_manager.list_subtitle')}</p>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-3 sidebar-scroll">
               {splits?.map((split, idx) => {
@@ -226,7 +228,7 @@ export default function StorySplitManagerModal({
                         <span className="material-symbols-outlined text-[14px]">
                           {isActive && isLoading ? 'sync' : 'auto_awesome'}
                         </span>
-                        {isActive && isLoading ? 'Đang phân tích...' : 'AI Generate'}
+                        {isActive && isLoading ? t('split_manager.analyzing') : t('split_manager.ai_generate')}
                       </button>
                     </div>
                   </div>
@@ -240,9 +242,9 @@ export default function StorySplitManagerModal({
             {!activeSplitId ? (
               <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
                 <span className="material-symbols-outlined text-[64px] text-outline-variant mb-4" style={{fontVariationSettings: "'wght' 200"}}>touch_app</span>
-                <h3 className="text-title-lg font-bold text-on-surface mb-2">Chưa chọn Split nào</h3>
+                <h3 className="text-title-lg font-bold text-on-surface mb-2">{t('split_manager.no_split_selected')}</h3>
                 <p className="text-body-md text-on-surface-variant max-w-sm">
-                  Hãy chọn một Split từ danh sách bên trái để AI bắt đầu phân tích và viết Draft chi tiết cho bạn.
+                  {t('split_manager.no_split_desc')}
                 </p>
               </div>
             ) : (
@@ -251,7 +253,7 @@ export default function StorySplitManagerModal({
                 {isLoading && (
                   <div className="bg-primary-container text-on-primary-container p-6 rounded-2xl flex flex-col items-center justify-center min-h-[300px] border border-primary/20">
                     <span className="material-symbols-outlined text-[48px] animate-spin mb-4">progress_activity</span>
-                    <h3 className="text-xl font-bold mb-2">AI Đang Phân Tích Split</h3>
+                    <h3 className="text-xl font-bold mb-2">{t('split_manager.ai_analyzing_split')}</h3>
                     <p className="text-sm font-medium opacity-80">{generationMessage}</p>
                   </div>
                 )}
@@ -261,13 +263,13 @@ export default function StorySplitManagerModal({
                   <div className="bg-error-container text-on-error-container p-6 rounded-2xl flex gap-3 items-start border border-error/20">
                     <span className="material-symbols-outlined text-[24px]">error</span>
                     <div>
-                      <h3 className="font-bold text-lg mb-1">Lỗi sinh luồng</h3>
+                      <h3 className="font-bold text-lg mb-1">{t('split_manager.generate_error')}</h3>
                       <p className="text-sm">{error}</p>
                       <button 
                         className="mt-4 px-4 py-2 bg-error text-on-error rounded-lg text-sm font-medium"
                         onClick={() => handleGenerateSplit(activeSplitId)}
                       >
-                        Thử lại
+                        {t('split_manager.retry')}
                       </button>
                     </div>
                   </div>
@@ -277,10 +279,10 @@ export default function StorySplitManagerModal({
                 {storyDraft && evaluation && !isLoading && (
                   <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <div className="mb-4 flex items-center justify-between">
-                      <h3 className="text-lg font-bold text-primary">Bản Nháp Cho: {activeSplitId}</h3>
+                      <h3 className="text-lg font-bold text-primary">{t('split_manager.draft_for').replace('{{split}}', activeSplitId)}</h3>
                       <span className="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
                         <span className="material-symbols-outlined text-[14px]">check_circle</span>
-                        Tạo thành công
+                        {t('split_manager.success_created')}
                       </span>
                     </div>
                     

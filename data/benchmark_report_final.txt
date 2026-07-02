@@ -1,0 +1,28 @@
+======================================
+📊 BENCHMARK REPORT: PM-Agent vs OpenRouter
+======================================
+Tổng số mẫu: 20
+
+✅ TYPE
+   - Accuracy  : 80.00%
+   - Precision : 78.44% (Macro Avg)
+   - Recall    : 85.35% (Macro Avg)
+   - F1-Score  : 80.88% (Macro Avg)
+
+✅ DOMAIN
+   - Accuracy  : 50.00%
+   - Precision : 49.63% (Macro Avg)
+   - Recall    : 33.89% (Macro Avg)
+   - F1-Score  : 36.49% (Macro Avg)
+
+✅ COMPLEXITY
+   - Accuracy  : 85.00%
+   - Precision : 81.25% (Macro Avg)
+   - Recall    : 76.67% (Macro Avg)
+   - F1-Score  : 78.49% (Macro Avg)
+
+✅ TEAM
+   - Accuracy  : 60.00%
+   - Precision : 50.00% (Macro Avg)
+   - Recall    : 47.18% (Macro Avg)
+   - F1-Score  : 45.91% (Macro Avg)

@@ -15,8 +15,11 @@ import { getProjects, createProject, updateProject, deleteProject } from './lib/
 import DashboardPanel from './components/DashboardPanel';
 import AnalyticsPanel from './components/AnalyticsPanel';
 import TeamPanel from './components/TeamPanel';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from './components/LanguageSwitcher';
 
 function App() {
+  const { t } = useTranslation();
   const [currentView, setCurrentView] = useState(() => localStorage.getItem('currentView') || 'dashboard');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -313,7 +316,7 @@ function App() {
         </div>
         <div className="flex items-center gap-stack-md">
           <div className="relative flex items-center gap-2">
-            <span className="text-sm font-medium text-on-surface-variant">Dự án:</span>
+            <span className="text-sm font-medium text-on-surface-variant">{t('header.project')}</span>
             <ProjectDropdown
               projects={projects}
               activeProjectId={activeProjectId}
@@ -345,7 +348,7 @@ function App() {
             }}
             className="bg-primary text-on-primary px-container-padding py-unit rounded-lg font-label-md text-label-md hover:opacity-80 transition-all active:scale-95"
           >
-            Create Sprint
+            {t('header.create_sprint')}
           </button>
           <span className="material-symbols-outlined text-on-surface-variant cursor-pointer">notifications</span>
           <span className="material-symbols-outlined text-on-surface-variant cursor-pointer">help</span>
@@ -455,26 +458,26 @@ function App() {
           </div>
         </div>
         <nav className="flex-1 overflow-y-auto sidebar-scroll space-y-unit">
-          <p className="text-[10px] uppercase tracking-wider font-bold text-outline px-stack-sm mb-unit">Main</p>
+          <p className="text-[10px] uppercase tracking-wider font-bold text-outline px-stack-sm mb-unit">{t('sidebar.main')}</p>
           <a 
             className={`flex items-center gap-stack-sm p-stack-sm rounded-lg font-label-md text-label-md cursor-pointer transition-colors ${currentView === 'project' ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container-high'}`}
             onClick={() => setCurrentView('project')}
           >
-            <span className="material-symbols-outlined">folder_open</span> Dự Án
+            <span className="material-symbols-outlined">folder_open</span> {t('sidebar.projects')}
           </a>
           <a 
             className={`flex items-center gap-stack-sm p-stack-sm rounded-lg font-label-md text-label-md cursor-pointer transition-colors ${currentView === 'sprint' ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container-high'}`}
             onClick={() => setCurrentView('sprint')}
           >
-            <span className="material-symbols-outlined">skateboarding</span> Sprint
+            <span className="material-symbols-outlined">skateboarding</span> {t('sidebar.sprint')}
           </a>
-          <p className="text-[10px] uppercase tracking-wider font-bold text-outline px-stack-sm mt-stack-md mb-unit">Settings</p>
+          <p className="text-[10px] uppercase tracking-wider font-bold text-outline px-stack-sm mt-stack-md mb-unit">{t('sidebar.settings')}</p>
           <div 
             className={`flex items-center justify-between p-stack-sm rounded-lg font-label-md text-label-md cursor-pointer transition-colors ${currentView === 'config_jira' ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container-high'}`}
             onClick={() => setCurrentView('config_jira')}
           >
             <div className="flex items-center gap-stack-sm">
-              <span className="material-symbols-outlined">settings_suggest</span> Cấu hình Jira
+              <span className="material-symbols-outlined">settings_suggest</span> {t('sidebar.jira_config')}
             </div>
           </div>
           <div 
@@ -482,7 +485,7 @@ function App() {
             onClick={() => setCurrentView('config_slack')}
           >
             <div className="flex items-center gap-stack-sm">
-              <span className="material-symbols-outlined">hub</span> Cấu hình Slack
+              <span className="material-symbols-outlined">hub</span> {t('sidebar.slack_config')}
             </div>
           </div>
           <div 
@@ -490,23 +493,26 @@ function App() {
             onClick={() => setCurrentView('config_github')}
           >
             <div className="flex items-center gap-stack-sm">
-              <span className="material-symbols-outlined">code</span> Cấu hình GitHub
+              <span className="material-symbols-outlined">code</span> {t('sidebar.github_config')}
             </div>
           </div>
-          <p className="text-[10px] uppercase tracking-wider font-bold text-outline px-stack-sm mt-stack-md mb-unit">History</p>
+          <p className="text-[10px] uppercase tracking-wider font-bold text-outline px-stack-sm mt-stack-md mb-unit">{t('sidebar.history')}</p>
           <a 
             className={`flex items-center gap-stack-sm p-stack-sm rounded-lg font-label-md text-label-md cursor-pointer transition-colors ${currentView === 'history' ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container-high'}`}
             onClick={() => setCurrentView('history')}
           >
-            <span className="material-symbols-outlined">history</span> Lịch sử truy vấn
+            <span className="material-symbols-outlined">history</span> {t('sidebar.query_history')}
           </a>
         </nav>
-        <div className="mt-auto border-t border-outline-variant pt-stack-md">
+        <div className="mt-auto border-t border-outline-variant pt-stack-md flex flex-col gap-2">
+          <div className="px-stack-sm mb-2">
+            <LanguageSwitcher />
+          </div>
           <a className="flex items-center gap-stack-sm p-stack-sm text-on-surface-variant hover:bg-surface-container-high rounded-lg font-label-md text-label-md">
-            <span className="material-symbols-outlined">help</span> Help
+            <span className="material-symbols-outlined">help</span> {t('sidebar.help')}
           </a>
           <a className="flex items-center gap-stack-sm p-stack-sm text-error hover:bg-error-container rounded-lg font-label-md text-label-md">
-            <span className="material-symbols-outlined">logout</span> Logout
+            <span className="material-symbols-outlined">logout</span> {t('sidebar.logout')}
           </a>
         </div>
       </aside>

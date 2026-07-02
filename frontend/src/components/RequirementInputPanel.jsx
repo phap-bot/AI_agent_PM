@@ -1,7 +1,9 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { uploadDocumentsAsync, getIngestStatus } from '../lib/api';
+import { useTranslation } from 'react-i18next';
 
 export default function RequirementInputPanel({ onSubmit, isLoading, projectId }) {
+  const { t } = useTranslation();
   const storageKey = `draftRequirement_${projectId || 'default'}`;
   const [requirement, setRequirement] = useState('');
 
@@ -124,12 +126,12 @@ export default function RequirementInputPanel({ onSubmit, isLoading, projectId }
   return (
     <section className="bg-white rounded-xl border border-outline-variant p-container-padding shadow-sm">
       <h2 className="font-headline-sm text-headline-sm text-primary mb-stack-md flex items-center gap-stack-sm">
-        <span className="material-symbols-outlined">edit_note</span> Nhập yêu cầu từ khách hàng
+        <span className="material-symbols-outlined">edit_note</span> {t('requirement_input.title')}
       </h2>
       <div className="relative">
         <textarea 
           className="w-full h-40 bg-surface-container-lowest border border-outline-variant rounded-lg p-stack-md font-body-md text-on-surface focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all resize-none" 
-          placeholder="Dán email hoặc tin nhắn Slack vào đây..."
+          placeholder={t('requirement_input.placeholder')}
           value={requirement}
           onChange={handleRequirementChange}
           disabled={isLoading}
@@ -152,9 +154,9 @@ export default function RequirementInputPanel({ onSubmit, isLoading, projectId }
             className={`flex items-center gap-stack-sm px-4 py-2 border border-outline-variant rounded-lg text-label-md font-label-md text-on-surface-variant transition-colors cursor-pointer ${isIngesting || isLoading ? 'opacity-50 pointer-events-none' : 'hover:bg-surface-container-high'}`}
           >
             <span className="material-symbols-outlined text-[20px]">upload_file</span>
-            {isIngesting ? "Đang xử lý..." : "Import Docs"}
+            {isIngesting ? t('requirement_input.processing') : t('requirement_input.import_docs')}
           </label>
-          <p className="text-[10px] text-outline font-bold uppercase tracking-widest">Support: PDF, DOCX, TXT, MD</p>
+          <p className="text-[10px] text-outline font-bold uppercase tracking-widest">{t('requirement_input.support_formats')}</p>
         </div>
         
         {/* Ingest Error */}
@@ -172,14 +174,14 @@ export default function RequirementInputPanel({ onSubmit, isLoading, projectId }
         {isIngesting && (
           <div className="flex items-center gap-stack-sm p-3 bg-primary/5 border border-primary/20 rounded-xl">
             <span className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></span>
-            <p className="text-[12px] text-primary font-bold">Backend đang embedding...</p>
+            <p className="text-[12px] text-primary font-bold">{t('requirement_input.backend_embedding')}</p>
           </div>
         )}
 
         {/* Accumulated Imported Files List */}
         {importedFiles.length > 0 && (
           <div className="space-y-stack-sm">
-            <p className="text-[10px] font-bold text-outline uppercase tracking-wider px-1">Imported Documents ({importedFiles.length})</p>
+            <p className="text-[10px] font-bold text-outline uppercase tracking-wider px-1">{t('requirement_input.imported_docs')} ({importedFiles.length})</p>
             <div className="flex flex-wrap gap-2">
               {importedFiles.map((file, idx) => (
                 <div
@@ -192,7 +194,7 @@ export default function RequirementInputPanel({ onSubmit, isLoading, projectId }
                   <button
                     className="ml-0.5 text-outline hover:text-error transition-colors opacity-0 group-hover:opacity-100"
                     onClick={() => handleRemoveFile(file.name)}
-                    title="Xoá file này khỏi context"
+                    title={t('requirement_input.remove_file')}
                   >
                     <span className="material-symbols-outlined text-[14px]">close</span>
                   </button>
@@ -206,7 +208,7 @@ export default function RequirementInputPanel({ onSubmit, isLoading, projectId }
       {/* Hidden controls */}
       <div className="flex flex-col md:flex-row gap-4 mt-stack-md mb-stack-md">
         <label className="flex items-center gap-2 text-label-md text-on-surface-variant">
-          Kết quả tìm kiếm: 
+          {t('requirement_input.search_results')} 
           <input 
             type="number" 
             min="1" max="10" 
@@ -224,7 +226,7 @@ export default function RequirementInputPanel({ onSubmit, isLoading, projectId }
             onChange={e => setAllowFallback(e.target.checked)}
             disabled={isLoading}
           />
-          Cho phép fallback khi không có context
+          {t('requirement_input.allow_fallback')}
         </label>
       </div>
 
@@ -235,9 +237,9 @@ export default function RequirementInputPanel({ onSubmit, isLoading, projectId }
           className="bg-primary text-on-primary px-8 py-3 rounded-lg font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all flex items-center gap-stack-sm shadow-md disabled:opacity-50"
         >
           {isLoading ? (
-             <><span className="w-4 h-4 border-2 border-on-primary border-t-transparent rounded-full animate-spin"></span> ĐANG PHÂN TÍCH...</>
+             <><span className="w-4 h-4 border-2 border-on-primary border-t-transparent rounded-full animate-spin"></span> {t('requirement_input.analyzing')}</>
           ) : (
-            <>🚀 PHÂN TÍCH & TẠO TASK</>
+            <>🚀 {t('requirement_input.analyze_create_task')}</>
           )}
         </button>
       </div>

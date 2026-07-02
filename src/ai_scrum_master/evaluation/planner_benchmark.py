@@ -553,6 +553,8 @@ def run_benchmark(
     output: Path | None = None,
     golden_output: Path | None = None,
 ) -> dict[str, Any]:
+    import os
+    os.environ["ENABLE_LLM_LOGGING"] = "1"
     cases = select_cases(load_cases(cases_path), offset=offset, limit=limit)
     results = []
     for version in versions:

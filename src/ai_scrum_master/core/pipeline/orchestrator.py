@@ -16,7 +16,6 @@ def generate_story_pipeline(
     n_results: int = 5,
     allow_fallback_without_context: bool = False,
     forced_context_docs: list[str] | None = None,
-    crewai_builder: Callable[..., Any] | None = None,
     progress_callback: Callable[[str, dict], None] | None = None,
     project_id: str | None = None,
 ) -> dict:

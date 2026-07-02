@@ -13,7 +13,6 @@ dependencies = [
     "uvicorn",
     "streamlit",
     "pytest",
-    "crewai",
     "langchain",
     "langchain-community",
     "langchain-qdrant",

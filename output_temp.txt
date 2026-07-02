@@ -1,0 +1,59 @@
+      "chunk_index": 1252,
+
+      "score": 0.926,
+
+      "excerpt": "Approval workflows for work packages with approval lists and review processes"
+
+    },
+
+    {
+
+      "id": "[3]",
+
+      "source": "openproject_full.md",
+
+      "chunk_index": 125,
+
+      "score": 0.924,
+
+      "excerpt": "Attribute help texts for work packages and projects including custom fields"
+
+    }
+
+  ],
+
+  "warnings": [
+
+    "Requirement 'Show multiplier for models' is critically vague - no context about AHP functionality, model structure, or display requirements found in retrieved documentation.",
+
+    "Retrieved context contains only general OpenProject features (approvals, attribute help texts) with zero relevant information about AHP, models, multipliers, or any related domain concepts.",
+
+    "Cannot generate meaningful acceptance criteria, tasks, or DoD without knowing: where models appear, what multiplier values exist, who views them, and how they should be presented.",
+
+    "PLANNING_STATUS_FROM_LOCAL_RULES = READY cannot be honored as requirement lacks fundamental scope definition."
+
+  ]
+
+}
+
+```
+
+---------------------------------------
+
+2026-07-01 14:54:38,856 INFO ai_scrum_master.ai_scrum_master.agents.planner - LLM trace planner parsed stage=initial keys=['acceptance_criteria', 'assumptions', 'clarification_questions', 'context_sources', 'definition_of_done', 'jira_issue_type', 'jira_labels', 'jira_linked_items', 'planning_status', 'sprint_allocation', 'story_points', 'story_splits', 'story_type', 'tasks', 'title', 'user_story', 'warnings']
+
+2026-07-01 14:54:38,856 INFO ai_scrum_master.ai_scrum_master.agents.planner - Planner normalized story planning_status=NEEDS_CLARIFICATION story_points=None warnings=4
+
+2026-07-01 14:54:38,856 INFO ai_scrum_master.ai_scrum_master.agents.planner - Planner completed planning_status=NEEDS_CLARIFICATION latency_ms=39952 repair_attempts_used=0
+
+2026-07-01 14:54:38,859 INFO ai_scrum_master.ai_scrum_master.workflows.graph_pipeline - Graph router [after_planner] NEEDS_CLARIFICATION, short-circuiting to finalize_clarification
+
+2026-07-01 14:54:38,861 INFO ai_scrum_master.ai_scrum_master.workflows.graph_pipeline - Graph node [finalize_clarification] returning to UI for clarification
+
+2026-07-01 14:54:38,863 INFO ai_scrum_master.ai_scrum_master.workflows.graph_pipeline - LangGraph pipeline completed iterations=1 status=NEEDS_CLARIFICATION
+
+2026-07-01 14:54:38,874 INFO ai_scrum_master.core.utils.database - Saved requirement history to MongoDB id=6a44c7bead341a455e9a87e3
+
+2026-07-01 14:54:38,874 INFO ai_scrum_master.ai_scrum_master.workflows.graph_pipeline - LangGraph pipeline started requirement_length=339 project_id=None
+
+2026-07-01 14:54:38,876 INFO ai_scrum_master.ai_scrum_master.workflows.graph_pipeline - Graph node [analyzer] starting

@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { fetchAnalyticsOverview } from '../lib/api';
+import { useTranslation } from 'react-i18next';
 
 export default function AnalyticsPanel({ projectId }) {
+  const { t } = useTranslation();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [animate, setAnimate] = useState(false);
@@ -40,17 +42,17 @@ export default function AnalyticsPanel({ projectId }) {
     <div className="p-margin-page max-w-[1600px] w-full mx-auto space-y-stack-lg">
       <div className="flex justify-between items-end">
         <div>
-          <h2 className="font-display-lg text-display-lg">Sprint Analytics</h2>
-          <p className="text-on-surface-variant mt-1">Global performance metrics across active projects.</p>
+          <h2 className="font-display-lg text-display-lg">{t('analytics.title')}</h2>
+          <p className="text-on-surface-variant mt-1">{t('analytics.subtitle')}</p>
         </div>
         <div className="flex gap-stack-sm">
           <button className="flex items-center gap-unit px-4 py-2 bg-white border border-outline-variant rounded-lg hover:bg-surface-container transition-all">
             <span className="material-symbols-outlined text-[18px]">calendar_today</span>
-            <span className="font-label-md">Last 30 Days</span>
+            <span className="font-label-md">{t('analytics.last_30_days')}</span>
           </button>
           <button className="flex items-center gap-unit px-4 py-2 bg-primary text-on-primary rounded-lg hover:brightness-110 transition-all">
             <span className="material-symbols-outlined text-[18px]">download</span>
-            <span className="font-label-md">Export Report</span>
+            <span className="font-label-md">{t('analytics.export_report')}</span>
           </button>
         </div>
       </div>
@@ -59,8 +61,8 @@ export default function AnalyticsPanel({ projectId }) {
         <div className="col-span-12 lg:col-span-8 bg-white rounded-xl border border-outline-variant p-container-padding shadow-sm" style={{borderLeft: "4px solid #4b41e1"}}>
           <div className="flex justify-between items-start mb-stack-lg">
             <div>
-              <span className="px-2 py-0.5 bg-secondary-container text-on-secondary-container text-[10px] rounded uppercase font-bold tracking-wider">AI AGENT INSIGHT</span>
-              <h3 className="font-headline-sm text-headline-sm mt-2">Accuracy Trend: Estimation Precision</h3>
+              <span className="px-2 py-0.5 bg-secondary-container text-on-secondary-container text-[10px] rounded uppercase font-bold tracking-wider">{t('analytics.ai_insight')}</span>
+              <h3 className="font-headline-sm text-headline-sm mt-2">{t('analytics.accuracy_trend')}</h3>
             </div>
             <div className="text-right">
               <span className="text-display-lg font-bold text-primary">{data?.accuracy || 0}%</span>
@@ -68,7 +70,7 @@ export default function AnalyticsPanel({ projectId }) {
               {data?.jiraConnected && (
                 <span className="mt-1 inline-flex px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-[10px] font-bold border border-green-200 gap-1 items-center">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                  JIRA LIVE
+                  {t('analytics.jira_live')}
                 </span>
               )}
             </div>
@@ -80,36 +82,36 @@ export default function AnalyticsPanel({ projectId }) {
               </svg>
             </div>
             <div className={`z-10 text-center transition-all duration-1000 transform ${animate ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
-              <p className="font-mono-sm text-outline">[ AI INSIGHT ]</p>
+              <p className="font-mono-sm text-outline">{t('analytics.insight_label')}</p>
               <p className="text-body-md mt-2 text-on-surface-variant italic max-w-lg mx-auto">
-                "{data?.aiInsightText || 'Loading insights...'}"
+                "{data?.aiInsightText || t('analytics.loading_insights')}"
               </p>
             </div>
           </div>
         </div>
 
         <div className="col-span-12 lg:col-span-4 bg-white rounded-xl border border-outline-variant p-container-padding shadow-sm flex flex-col">
-          <h3 className="font-label-md text-label-md text-outline uppercase tracking-widest mb-stack-md">Team Velocity</h3>
+          <h3 className="font-label-md text-label-md text-outline uppercase tracking-widest mb-stack-md">{t('analytics.team_velocity')}</h3>
           <div className="flex-1 flex flex-col justify-between">
             <div className="space-y-stack-md">
               {data?.teamVelocityDetails?.length > 0 ? data.teamVelocityDetails.map((tv, i) => (
                 <div key={i} className="flex justify-between items-end border-b border-outline-variant pb-2">
                   <span className="font-body-md">{tv.name}</span>
                   <div className="text-right">
-                    <span className="font-headline-sm text-primary">{tv.pts} <span className="text-label-md text-on-surface-variant font-normal">pts</span></span>
+                    <span className="font-headline-sm text-primary">{tv.pts} <span className="text-label-md text-on-surface-variant font-normal">{t('analytics.pts')}</span></span>
                     {tv.total_pts > 0 && (
                       <p className="text-[10px] text-on-surface-variant">{tv.done_pts?.toFixed(0) || 0}/{tv.total_pts?.toFixed(0) || 0} SP</p>
                     )}
                   </div>
                 </div>
               )) : (
-                <div className="text-on-surface-variant text-sm py-4">No data available</div>
+                <div className="text-on-surface-variant text-sm py-4">{t('analytics.no_data')}</div>
               )}
             </div>
             <div className="mt-stack-lg pt-stack-md border-t border-outline-variant">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-primary"></div>
-                <span className="text-label-md">Average: {data?.averageVelocity || 0} pts / sprint</span>
+                <span className="text-label-md">{t('analytics.average_velocity').replace('{{velocity}}', data?.averageVelocity || 0)}</span>
               </div>
             </div>
           </div>
@@ -117,7 +119,7 @@ export default function AnalyticsPanel({ projectId }) {
 
         <div className="col-span-12 md:col-span-6 bg-white rounded-xl border border-outline-variant p-container-padding shadow-sm">
           <div className="flex justify-between mb-stack-md">
-            <h3 className="font-headline-sm text-headline-sm">Ticket Lead Time</h3>
+            <h3 className="font-headline-sm text-headline-sm">{t('analytics.ticket_lead_time')}</h3>
             <span className="material-symbols-outlined text-outline">info</span>
           </div>
           <div className="grid grid-cols-4 items-end gap-2 h-40">
@@ -152,13 +154,13 @@ export default function AnalyticsPanel({ projectId }) {
 
         <div className="col-span-12 md:col-span-6 bg-white rounded-xl border border-outline-variant p-container-padding shadow-sm">
           <div className="flex justify-between mb-stack-md">
-            <h3 className="font-headline-sm text-headline-sm">Active Burndown</h3>
+            <h3 className="font-headline-sm text-headline-sm">{t('analytics.active_burndown')}</h3>
             <div className="flex gap-2">
               <span className="flex items-center gap-1 text-label-md">
-                <span className="w-3 h-0.5 bg-outline-variant"></span> Ideal
+                <span className="w-3 h-0.5 bg-outline-variant"></span> {t('analytics.ideal')}
               </span>
               <span className="flex items-center gap-1 text-label-md">
-                <span className="w-3 h-0.5 bg-primary"></span> Actual
+                <span className="w-3 h-0.5 bg-primary"></span> {t('analytics.actual')}
               </span>
             </div>
           </div>
@@ -179,30 +181,30 @@ export default function AnalyticsPanel({ projectId }) {
             </svg>
           </div>
           <div className="mt-4 flex justify-between text-label-md text-on-surface-variant font-mono-sm">
-            <span>START</span>
-            <span>MID</span>
-            <span>END</span>
+            <span>{t('analytics.start')}</span>
+            <span>{t('analytics.mid')}</span>
+            <span>{t('analytics.end')}</span>
           </div>
         </div>
 
         <div className="col-span-12 bg-white rounded-xl border border-outline-variant shadow-sm overflow-hidden">
           <div className="px-container-padding py-stack-md border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
-            <h3 className="font-headline-sm text-headline-sm">Project Resource Efficiency</h3>
+            <h3 className="font-headline-sm text-headline-sm">{t('analytics.resource_efficiency')}</h3>
             <div className="flex gap-stack-sm">
               <span className={`px-3 py-1 text-[11px] rounded-full font-bold ${data?.jiraConnected ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
-                {data?.jiraConnected ? 'LIVE DATA' : 'OFFLINE'}
+                {data?.jiraConnected ? t('analytics.live_data') : t('analytics.offline')}
               </span>
             </div>
           </div>
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-surface text-outline font-label-md border-b border-outline-variant">
-                <th className="p-4 font-semibold">PROJECT NAME</th>
-                <th className="p-4 font-semibold">CYCLE TIME</th>
-                <th className="p-4 font-semibold">BLOCKER RATIO</th>
-                <th className="p-4 font-semibold">STATUS</th>
-                <th className="p-4 font-semibold">AI AUTOMATION</th>
-                <th className="p-4 font-semibold">TREND</th>
+                <th className="p-4 font-semibold">{t('analytics.col_project_name')}</th>
+                <th className="p-4 font-semibold">{t('analytics.col_cycle_time')}</th>
+                <th className="p-4 font-semibold">{t('analytics.col_blocker_ratio')}</th>
+                <th className="p-4 font-semibold">{t('analytics.col_status')}</th>
+                <th className="p-4 font-semibold">{t('analytics.col_ai_automation')}</th>
+                <th className="p-4 font-semibold">{t('analytics.col_trend')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant text-body-md">
@@ -221,9 +223,9 @@ export default function AnalyticsPanel({ projectId }) {
                   <td className="p-4">
                     {(item.done > 0 || item.in_progress > 0 || item.todo > 0) ? (
                       <div className="flex gap-1 items-center text-[11px]">
-                        <span className="px-1.5 py-0.5 rounded bg-green-100 text-green-700 font-bold">{item.done} Done</span>
-                        <span className="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-bold">{item.in_progress} WIP</span>
-                        <span className="px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 font-bold">{item.todo} To Do</span>
+                        <span className="px-1.5 py-0.5 rounded bg-green-100 text-green-700 font-bold">{item.done} {t('analytics.done')}</span>
+                        <span className="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-bold">{item.in_progress} {t('analytics.wip')}</span>
+                        <span className="px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 font-bold">{item.todo} {t('analytics.todo')}</span>
                       </div>
                     ) : (
                       <span className="text-on-surface-variant text-sm">--</span>
@@ -239,7 +241,7 @@ export default function AnalyticsPanel({ projectId }) {
                   </td>
                 </tr>
               )) : (
-                <tr><td colSpan="6" className="p-4 text-center text-on-surface-variant">No resource data available.</td></tr>
+                <tr><td colSpan="6" className="p-4 text-center text-on-surface-variant">{t('analytics.no_resource_data')}</td></tr>
               )}
             </tbody>
           </table>

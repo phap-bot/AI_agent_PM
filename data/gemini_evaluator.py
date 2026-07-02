@@ -54,8 +54,9 @@ Classify it into exactly these categories:
 - type: "bug", "feature", or "maintenance"
 - domain: "ui/ux", "backend", "collaboration", "devops", or "general"
 - complexity: "high", "medium", or "low"
+- team: "be", "fe", "qa", or "fullstack"
 
-Output ONLY a valid JSON object with the keys: "type", "domain", "complexity". DO NOT wrap in markdown blocks.
+Output ONLY a valid JSON object with the keys: "type", "domain", "complexity", "team". DO NOT wrap in markdown blocks.
 
 Requirement:
 {requirement_text}
@@ -124,6 +125,7 @@ def evaluate_with_openai():
                 ai_type = result.get("type", "").lower()
                 ai_domain = result.get("domain", "").lower()
                 ai_complexity = result.get("complexity", "").lower()
+                ai_team = result.get("team", "").lower()
                 
                 # Chấm điểm độ đồng thuận (Agreement Rate)
                 metrics["type"]["total"] += 1
@@ -136,7 +138,7 @@ def evaluate_with_openai():
                 if ai_complexity == heuristic_complexity: metrics["complexity"]["match"] += 1
 
                 evaluated_data.append({
-                    "requirement": req_text[:200] + "...", # Rút gọn khi lưu file để dễ nhìn
+                    "requirement": req_text, # Không rút gọn để giữ đủ dữ liệu
                     "heuristic_guess": {
                         "type": heuristic_type,
                         "domain": heuristic_domain,
@@ -145,7 +147,8 @@ def evaluate_with_openai():
                     "ai_ground_truth": {
                         "type": ai_type,
                         "domain": ai_domain,
-                        "complexity": ai_complexity
+                        "complexity": ai_complexity,
+                        "team": ai_team
                     }
                 })
                 

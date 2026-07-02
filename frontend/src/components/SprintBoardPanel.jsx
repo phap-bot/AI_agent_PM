@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { fetchSprintBoard, deleteSprintIssue, updateSprintIssueStatus, completeSprint } from '../lib/api';
+import { useTranslation } from 'react-i18next';
 
 const COLUMN_STATUS_MAP = {
   'To Do': 'To Do',
@@ -15,6 +16,7 @@ function classifyIssue(status) {
 }
 
 export default function SprintBoardPanel({ isActive, projectId }) {
+  const { t } = useTranslation();
   const [boardData, setBoardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -76,10 +78,10 @@ export default function SprintBoardPanel({ isActive, projectId }) {
           issues: prev.issues.filter(i => i.key !== issueKey),
         }));
       } else {
-        alert(`Xoá thất bại: ${result.error || 'Unknown error'}`);
+        alert(t('sprint_board.delete_fail') + (result.error || 'Unknown error'));
       }
     } catch (err) {
-      alert(`Xoá thất bại: ${err.message}`);
+      alert(t('sprint_board.delete_fail') + err.message);
     } finally {
       setActionLoading(null);
     }
@@ -111,7 +113,7 @@ export default function SprintBoardPanel({ isActive, projectId }) {
             i.key === issueKey ? { ...i, status: previousStatus } : i
           ),
         }));
-        alert(`Chuyển trạng thái thất bại: ${result.error || 'Unknown error'}`);
+        alert(t('sprint_board.status_change_fail') + (result.error || 'Unknown error'));
       }
     } catch (err) {
       setBoardData(prev => ({
@@ -120,7 +122,7 @@ export default function SprintBoardPanel({ isActive, projectId }) {
           i.key === issueKey ? { ...i, status: previousStatus } : i
         ),
       }));
-      alert(`Chuyển trạng thái thất bại: ${err.message}`);
+      alert(t('sprint_board.status_change_fail') + err.message);
     } finally {
       setActionLoading(null);
       setDraggingKey(null);
@@ -144,10 +146,10 @@ export default function SprintBoardPanel({ isActive, projectId }) {
         setShowCompleteModal(false);
         loadBoard();
       } else {
-        alert(`Hoàn thành Sprint thất bại: ${result.error || 'Unknown error'}`);
+        alert(t('sprint_board.complete_fail') + (result.error || 'Unknown error'));
       }
     } catch (err) {
-      alert(`Hoàn thành Sprint thất bại: ${err.message}`);
+      alert(t('sprint_board.complete_fail') + err.message);
     } finally {
       setCompleteLoading(false);
     }
@@ -164,7 +166,7 @@ export default function SprintBoardPanel({ isActive, projectId }) {
   if (error) {
     return (
       <div className="p-4 bg-error-container text-on-error-container rounded-lg">
-        Lỗi tải Sprint Board: {error}
+        {t('sprint_board.load_error')} {error}
       </div>
     );
   }
@@ -173,13 +175,13 @@ export default function SprintBoardPanel({ isActive, projectId }) {
     return (
       <div className="text-center p-12 bg-surface-container-lowest rounded-2xl border border-outline-variant/30 text-on-surface-variant flex flex-col items-center justify-center gap-4">
         <span className="material-symbols-outlined text-4xl text-outline">calendar_month</span>
-        <p>Chưa có Sprint nào đang Active trên Jira. Vui lòng Start một Sprint trên Jira Board của bạn.</p>
+        <p>{t('sprint_board.no_active_sprint_desc')}</p>
         <button
           onClick={loadBoard}
           className="flex items-center gap-2 bg-primary/10 text-primary hover:bg-primary/20 px-4 py-2 rounded-full transition-colors"
         >
           <span className="material-symbols-outlined text-sm">sync</span>
-          Tải lại dữ liệu
+          {t('sprint_board.reload_data')}
         </button>
       </div>
     );
@@ -226,7 +228,7 @@ export default function SprintBoardPanel({ isActive, projectId }) {
                 ? 'border-primary/50 text-primary bg-primary/5'
                 : 'border-outline-variant/50 text-outline'
               }`}>
-              {dropTarget === targetDropId ? 'Thả vào đây' : ''}
+              {dropTarget === targetDropId ? t('sprint_board.drop_here') : ''}
             </div>
           )}
         </div>
@@ -282,23 +284,23 @@ export default function SprintBoardPanel({ isActive, projectId }) {
                 <button
                   onClick={() => handleDelete(issue.key)}
                   className="text-[11px] px-2 py-0.5 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
-                  title="Xác nhận xoá"
+                  title={t('sprint_board.confirm_delete')}
                 >
-                  Xoá
+                  {t('sprint_board.delete')}
                 </button>
                 <button
                   onClick={() => setConfirmDelete(null)}
                   className="text-[11px] px-2 py-0.5 bg-surface-container-high text-on-surface-variant rounded hover:bg-surface-container-highest transition-colors"
-                  title="Huỷ"
+                  title={t('sprint_board.cancel')}
                 >
-                  Huỷ
+                  {t('sprint_board.cancel')}
                 </button>
               </div>
             ) : (
               <button
                 onClick={() => setConfirmDelete(issue.key)}
                 className="opacity-0 group-hover:opacity-100 transition-opacity text-outline hover:text-red-500 p-0.5 rounded"
-                title="Xoá issue"
+                title={t('sprint_board.delete_issue')}
               >
                 <span className="material-symbols-outlined text-[16px]">delete</span>
               </button>
@@ -334,28 +336,28 @@ export default function SprintBoardPanel({ isActive, projectId }) {
             {sprint.name}
           </h2>
           <div className="flex items-center gap-4 text-on-surface-variant text-label-md mt-1">
-            <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">flag</span> Mục tiêu: {sprint.goal || 'Không có'}</span>
-            <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">calendar_today</span> Bắt đầu: {sprint.start_date ? new Date(sprint.start_date).toLocaleDateString() : 'N/A'}</span>
+            <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">flag</span> {t('sprint_board.goal')}: {sprint.goal || t('sprint_board.none')}</span>
+            <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">calendar_today</span> {t('sprint_board.start_date')}: {sprint.start_date ? new Date(sprint.start_date).toLocaleDateString() : 'N/A'}</span>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           <div className="flex items-center bg-surface rounded-full border border-outline-variant p-1">
-            <span className="text-xs font-medium text-on-surface-variant px-2">Group by:</span>
+            <span className="text-xs font-medium text-on-surface-variant px-2">{t('sprint_board.group_by')}</span>
             <select
               value={groupBy}
               onChange={(e) => setGroupBy(e.target.value)}
               className="text-sm bg-transparent border-none py-1 pr-6 focus:ring-0 cursor-pointer text-on-surface font-medium"
             >
-              <option value="None">None</option>
-              <option value="Subtask">Subtask</option>
+              <option value="None">{t('sprint_board.none_group')}</option>
+              <option value="Subtask">{t('sprint_board.subtask')}</option>
             </select>
           </div>
 
           <button
             onClick={loadBoard}
             className="flex items-center justify-center p-2 rounded-full bg-surface-container border border-outline-variant hover:bg-surface-container-high transition-colors text-on-surface-variant tooltip-trigger"
-            title="Đồng bộ Jira"
+            title={t('sprint_board.sync_jira')}
           >
             <span className="material-symbols-outlined text-xl">sync</span>
           </button>
@@ -365,7 +367,7 @@ export default function SprintBoardPanel({ isActive, projectId }) {
             className="flex items-center gap-2 bg-primary text-on-primary hover:bg-primary/90 px-4 py-2 rounded-full transition-colors shadow-sm font-medium text-sm"
           >
             <span className="material-symbols-outlined text-[18px]">done_all</span>
-            Complete sprint
+            {t('sprint_board.complete_sprint')}
           </button>
         </div>
       </div>
@@ -413,7 +415,7 @@ export default function SprintBoardPanel({ isActive, projectId }) {
                       {groupKey}
                     </span>
                     <span className="font-medium text-on-surface text-sm truncate max-w-xl">
-                      {data.parent?.summary || 'Other Issues'}
+                      {data.parent?.summary || t('sprint_board.other_issues')}
                     </span>
                   </div>
 
@@ -476,25 +478,25 @@ export default function SprintBoardPanel({ isActive, projectId }) {
 
             <div className="p-6 space-y-4">
               <h2 className="text-headline-sm font-bold text-on-surface">
-                Complete {sprint.name}
+                {t('sprint_board.complete_sprint')} {sprint.name}
               </h2>
 
               <p className="text-body-md text-on-surface-variant">
-                This sprint contains <strong>{completedCount} completed</strong> work items and <strong>{openCount} open</strong> work items.
+                {t('sprint_board.sprint_contains')} <strong>{completedCount} {t('sprint_board.completed')}</strong> {t('sprint_board.work_items_and')} <strong>{openCount} {t('sprint_board.open')}</strong> {t('sprint_board.work_items')}
               </p>
 
               {openCount > 0 && (
                 <div className="space-y-2">
                   <label className="text-label-md font-medium text-on-surface block">
-                    Move open work items to
+                    {t('sprint_board.move_open_to')}
                   </label>
                   <select
                     value={moveOpenTo}
                     onChange={(e) => setMoveOpenTo(e.target.value)}
                     className="w-full rounded-xl border-outline-variant bg-surface px-4 py-3 text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
                   >
-                    <option value="new_sprint">New sprint</option>
-                    <option value="backlog">Backlog</option>
+                    <option value="new_sprint">{t('sprint_board.new_sprint')}</option>
+                    <option value="backlog">{t('sprint_board.backlog')}</option>
                   </select>
                 </div>
               )}
@@ -505,7 +507,7 @@ export default function SprintBoardPanel({ isActive, projectId }) {
                   disabled={completeLoading}
                   className="px-5 py-2.5 rounded-full text-primary hover:bg-primary/10 font-medium transition-colors disabled:opacity-50"
                 >
-                  Cancel
+                  {t('sprint_board.cancel')}
                 </button>
                 <button
                   onClick={handleCompleteSprint}
@@ -513,7 +515,7 @@ export default function SprintBoardPanel({ isActive, projectId }) {
                   className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-on-primary hover:bg-primary/90 font-medium transition-colors shadow-sm disabled:opacity-50"
                 >
                   {completeLoading && <span className="material-symbols-outlined animate-spin text-[18px]">sync</span>}
-                  Complete sprint
+                  {t('sprint_board.complete_sprint')}
                 </button>
               </div>
             </div>

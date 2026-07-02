@@ -1,0 +1,705 @@
+{
+  "summary": {
+    "total_cases": 39,
+    "success_cases": 37,
+    "average_scores": {
+      "file_coverage_score": 1.32,
+      "task_categorization_score": 1.86,
+      "logic_alignment_score": 2.16,
+      "actionability_score": 2.0,
+      "rag_retrieval_score": 1.51
+    }
+  },
+  "details": [
+    {
+      "id": "VS-311118",
+      "scores": {
+        "file_coverage_score": 1,
+        "task_categorization_score": 1,
+        "logic_alignment_score": 1,
+        "actionability_score": 1,
+        "rag_retrieval_score": 2
+      },
+      "reasons": {
+        "file_coverage_reason": "The AI did not mention any of the files changed in the ground‑truth patch (e.g., agentHostModelPicker.ts, PermissionPickerActionItem, etc.) and only produced clarification questions.",
+        "task_categorization_reason": "No tasks were generated, so there is no evidence of correct assignment to frontend, backend, or QA workstreams.",
+        "logic_alignment_reason": "The AI did not describe the required functional change (reusing the existing auto‑approve picker widget) and instead asked for details that are already implied by the issue and the ground‑truth changes.",
+        "actionability_reason": "Without concrete tasks or acceptance criteria, developers cannot act on the output; the clarification approach is inappropriate given the sufficient information in the issue description.",
+        "rag_retrieval_reason": "The retrieved RAG snippets contain unrelated documentation about prompts and agent host infrastructure, not the UI picker components that were actually modified. Hence the relevant files were missing from the context."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-311121",
+      "scores": {
+        "file_coverage_score": 1,
+        "task_categorization_score": 2,
+        "logic_alignment_score": 1,
+        "actionability_score": 2,
+        "rag_retrieval_score": 1
+      },
+      "reasons": {
+        "file_coverage_reason": "The AI's tasks target the AskUserQuestion UI duplication, but the ground‑truth patch modifies schema files, state types, and makes SessionInputRequest.message optional. No relevant files from the actual change are mentioned.",
+        "task_categorization_reason": "Tasks are split into backend (be), frontend (fe), and QA, which is a reasonable structure, but the real change is purely a schema/type update (backend) and does not involve any frontend widget work.",
+        "logic_alignment_reason": "The described functional change (removing duplicated question text) does not match the actual change (making a message field optional). The AI hallucinated a different bug and missed the core logic of the patch.",
+        "actionability_reason": "While the tasks are written clearly, they are irrelevant to the required code modifications, so a developer could not implement the real fix based on them.",
+        "rag_retrieval_reason": "The retrieved RAG snippets discuss AskUserQuestion handling but do not include any of the files that are actually changed (schema JSON files, rust state.rs, types/state.ts). Hence the relevant context was not retrieved."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-308073",
+      "scores": {
+        "file_coverage_score": 1,
+        "task_categorization_score": 3,
+        "logic_alignment_score": 2,
+        "actionability_score": 2,
+        "rag_retrieval_score": 1
+      },
+      "reasons": {
+        "file_coverage_reason": "The generated tasks focus on agent host discovery and authentication, whereas the ground‑truth patch modifies UI components related to MCP list rendering (mcpListWidget.ts, CSS, fixture, and documentation). No mention of these files or their UI changes appears in the output.",
+        "task_categorization_reason": "Tasks are split into backend (be), frontend (fe), and QA groups, which is appropriate structurally, but the content of each group does not correspond to the actual code changes, limiting the usefulness of the categorization.",
+        "logic_alignment_reason": "The acceptance criteria and tasks describe a completely different feature (agent discovery, OAuth flow) that is not present in the real patch. This represents a hallucination and misses the core UI rendering logic introduced in the change.",
+        "actionability_reason": "While the tasks are phrased as actionable items, they are irrelevant to the required modifications. QA steps are generic and do not target the UI components that were actually updated.",
+        "rag_retrieval_reason": "The retrieved RAG context contains only authentication documentation excerpts and does not include any of the files that were changed in the patch, indicating a failure to surface the necessary source material."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-308080",
+      "scores": {
+        "file_coverage_score": 1,
+        "task_categorization_score": 2,
+        "logic_alignment_score": 1,
+        "actionability_score": 2,
+        "rag_retrieval_score": 1
+      },
+      "reasons": {
+        "file_coverage_reason": "The ground‑truth change is limited to `extensions/copilot/src/extension/chatSessions/copilotcli/node/copilotcliSessionService.ts`. The AI generated tasks reference unrelated paths such as `src/vs/sessions/`, showing no coverage of the actual file or component that needs modification.",
+        "task_categorization_reason": "Tasks are split into generic BE/FE/QA buckets, but the real change is purely backend logic inside the Copilot CLI session service. Introducing frontend UI work and session‑card updates is unnecessary and mis‑categorizes the effort.",
+        "logic_alignment_reason": "The AI describes implementing a generic “session uniqueness check” and UI filtering, whereas the true fix is to filter out *agent‑host‑owned* sessions from the CLI session list. This is a different piece of logic and the AI’s description is essentially a hallucination.",
+        "actionability_reason": "While the tasks are listed, they are not actionable for the required change because they target the wrong modules and include irrelevant UI work. QA tasks also do not reflect the specific behavior (filtering agent‑host sessions) that needs verification.",
+        "rag_retrieval_reason": "The retrieved RAG snippets discuss generic session architecture and unrelated documentation; none mention the `copilotcliSessionService.ts` file or the specific deduplication logic needed. Therefore the relevant source was not present in the context."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-311510",
+      "scores": {
+        "file_coverage_score": 1,
+        "task_categorization_score": 1,
+        "logic_alignment_score": 1,
+        "actionability_score": 1,
+        "rag_retrieval_score": 2
+      },
+      "reasons": {
+        "file_coverage_reason": "The AI did not mention the actual file that is changed (chatAgentHover.ts) nor any component related to the hover tooltip logic.",
+        "task_categorization_reason": "No tasks were generated, so there is nothing to evaluate for frontend/backend/devops categorization.",
+        "logic_alignment_reason": "The AI did not describe the required functional change (hiding the 'View Extension' action for core chat agents) and instead asked vague clarification questions, showing a lack of alignment with the known patch logic.",
+        "actionability_reason": "Without concrete tasks or acceptance criteria, developers cannot act on the output; the clarification questions are unnecessary because the needed change is already clear from the issue and ground‑truth patch.",
+        "rag_retrieval_reason": "The retrieved RAG documents do not contain the modified file or any direct information about the hover tooltip behavior, so the context was insufficient for the AI to infer the change, but the AI should have still attempted to deduce the likely fix from the issue description."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-311383",
+      "scores": {
+        "file_coverage_score": 1,
+        "task_categorization_score": 1,
+        "logic_alignment_score": 2,
+        "actionability_score": 1,
+        "rag_retrieval_score": 1
+      },
+      "reasons": {
+        "file_coverage_reason": "The ground‑truth patch modifies src/vs/sessions/contrib/workspace/browser/workspaceFolderManagement.ts, but the AI output does not mention this file or any related component, showing no coverage of the actual changed code.",
+        "task_categorization_reason": "No concrete tasks were generated for backend, frontend, or QA teams; the output only contains a high‑level story and clarification questions, so task assignment is absent.",
+        "logic_alignment_reason": "The story describes the symptom (Files tab empty) but does not capture the specific logic change (reverting a previous worktree addition). It is vague and includes hallucinated context unrelated to the actual fix.",
+        "actionability_reason": "Without concrete tasks, implementation steps, or test cases, developers cannot act on the output. The acceptance criteria are generic and do not guide the required code change.",
+        "rag_retrieval_reason": "The retrieved documents concern OpenProject/Nextcloud and VSCode AI SDK folders, which are unrelated to the modified workspaceFolderManagement.ts file. Relevant source files were not present in the RAG context."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-311504",
+      "scores": {
+        "file_coverage_score": 3,
+        "task_categorization_score": 5,
+        "logic_alignment_score": 5,
+        "actionability_score": 5,
+        "rag_retrieval_score": 2
+      },
+      "reasons": {
+        "file_coverage_reason": "The generated tasks address permission‑request deduplication but do not reference the concrete file path (src/vs/platform/agentHost/node/copilot/copilotToolDisplay.ts) that the ground‑truth patch modifies, so coverage is only partial.",
+        "task_categorization_reason": "Tasks are correctly split into backend (be), frontend (fe), and QA groups, matching the responsibilities needed for the change.",
+        "logic_alignment_reason": "The described logic (deduplication of permission.requested events, queue handling, UI rendering guard) aligns with the expected behavior of preventing duplicate \"Permission request\" notifications.",
+        "actionability_reason": "Tasks are specific, implementable, and QA scenarios provide concrete test steps, making the work straightforward for developers and testers.",
+        "rag_retrieval_reason": "The RAG context includes general permission system documentation but does not contain the actual file that was changed, so the retrieval missed the key source needed for precise implementation."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-311709",
+      "scores": {
+        "file_coverage_score": 1,
+        "task_categorization_score": 1,
+        "logic_alignment_score": 1,
+        "actionability_score": 1,
+        "rag_retrieval_score": 1
+      },
+      "reasons": {
+        "file_coverage_reason": "The AI did not reference the changed file (src/vs/workbench/contrib/terminal/browser/agentHostTerminalService.ts) at all; it only asked generic clarification questions.",
+        "task_categorization_reason": "No tasks were produced, so there is no evidence of correct assignment to backend, frontend, or QA workstreams.",
+        "logic_alignment_reason": "The output contains no description of the required logic (removing duplicate terminals, hiding tool‑created ones), thus it does not align with the actual code change.",
+        "actionability_reason": "Without concrete tasks or acceptance criteria, a developer cannot act on the output; the clarification questions are unnecessary given the clear bug description and known fix.",
+        "rag_retrieval_reason": "The retrieved RAG snippets do not include the terminal service file that needed modification, and the AI did not compensate for this missing context."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-311245",
+      "scores": {
+        "file_coverage_score": 1,
+        "task_categorization_score": 2,
+        "logic_alignment_score": 3,
+        "actionability_score": 2,
+        "rag_retrieval_score": 1
+      },
+      "reasons": {
+        "file_coverage_reason": "The ground‑truth patch modifies three specific backend files (agentHostTerminalManager.ts, copilotShellTools.ts, and a test file). The generated story does not mention any of these files or pinpoint the exact locations where the space‑prefix logic should be added, so coverage is essentially absent.",
+        "task_categorization_reason": "The tasks are split into generic BE, FE, and QA buckets, but the actual change is purely backend (Node) plus a unit test. No frontend UI work is required, yet the story assigns UI‑related tasks (e.g., “Update terminal/shell UI component”). This mis‑categorisation reduces the score.",
+        "logic_alignment_reason": "The acceptance criteria correctly capture the desired behaviour – prepend a leading space to commands shown via the up‑arrow history, matching VS Code’s terminal. However, the story adds unrelated assumptions (sub‑agent session integration) that are not part of the patch, indicating partial alignment with the real logic.",
+        "actionability_reason": "Tasks are high‑level and lack concrete implementation steps (e.g., which function to edit, how to prepend the space, where to update the test). QA steps are generic and do not reference the new test file. A developer would need to infer many details, making the output poorly actionable.",
+        "rag_retrieval_reason": "The retrieved RAG snippets do not contain any of the files that were actually changed. Consequently, the AI could not ground its story in the real code locations, leading to vague and inaccurate task definitions."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-312050",
+      "scores": {
+        "file_coverage_score": 1,
+        "task_categorization_score": 1,
+        "logic_alignment_score": 2,
+        "actionability_score": 1,
+        "rag_retrieval_score": 2
+      },
+      "reasons": {
+        "file_coverage_reason": "The AI output did not list any files or components; it only asked clarification questions, while the ground‑truth patch touches dozens of source files and package manifests.",
+        "task_categorization_reason": "No tasks were generated, so there is no categorization for backend, frontend, or QA work.",
+        "logic_alignment_reason": "The AI recognized that the requirement was ambiguous and asked for clarification, which is appropriate when the prompt truly lacks detail. However, the issue title and body together with the retrieved docs contain enough clues to infer that a CLI‑specific exit‑plan‑mode handler must be added, so the AI missed an opportunity to propose the needed logic.",
+        "actionability_reason": "Without concrete tasks or acceptance criteria, developers cannot act on the output; only vague questions were produced.",
+        "rag_retrieval_reason": "The RAG context included a reference to the production `exitPlanModeHandler.ts`, but it did not surface the specific CLI files that needed modification. The AI failed to leverage the retrieved information to generate concrete work items."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-312009",
+      "scores": {
+        "file_coverage_score": 2,
+        "task_categorization_score": 2,
+        "logic_alignment_score": 3,
+        "actionability_score": 2,
+        "rag_retrieval_score": 1
+      },
+      "reasons": {
+        "file_coverage_reason": "The generated tasks refer to \"AgentHost protocol handler\" and generic escaping logic but do not mention the actual file changed (src/vs/platform/agentHost/node/copilot/copilotShellTools.ts). Coverage of the specific component is minimal.",
+        "task_categorization_reason": "All work is backend‑only (escaping shell commands), yet the output creates separate frontend (fe) tasks that are irrelevant, indicating poor categorization.",
+        "logic_alignment_reason": "The description of the needed fix (escaping ‘!’ and other special characters) aligns with the issue, but the AI adds assumptions (JSON‑RPC payload changes, visual tooltip) that are not present in the ground‑truth patch, showing some hallucination.",
+        "actionability_reason": "Tasks are high‑level and lack concrete implementation steps (e.g., exact function to modify, import locations). QA steps are generic and not tied to the actual code change, making it hard for a developer to act on them directly.",
+        "rag_retrieval_reason": "The retrieved RAG snippets do not contain the file that is actually modified; none of the context sources reference copilotShellTools.ts, so the necessary information was not retrieved."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-311096",
+      "scores": {
+        "file_coverage_score": 0,
+        "task_categorization_score": 0,
+        "logic_alignment_score": 0,
+        "actionability_score": 0,
+        "rag_retrieval_score": 0
+      },
+      "reasons": {},
+      "status": "failed"
+    },
+    {
+      "id": "VS-312162",
+      "scores": {
+        "file_coverage_score": 2,
+        "task_categorization_score": 4,
+        "logic_alignment_score": 4,
+        "actionability_score": 3,
+        "rag_retrieval_score": 2
+      },
+      "reasons": {
+        "file_coverage_reason": "The generated tasks are high‑level and do not reference the extensive list of files/modules that the ground‑truth patch touches (e.g., copilotAgent, schema, session wrappers, test files). Coverage of the actual component changes is minimal.",
+        "task_categorization_reason": "Tasks are sensibly split into backend (be), frontend (fe), and QA groups, matching the typical responsibilities for implementing autopilot logic and CLI updates.",
+        "logic_alignment_reason": "The acceptance criteria and story correctly capture the core behavior described in the issue and the retrieved docs (auto‑approval, queuing tool calls, handling permission events). No obvious hallucinations are present.",
+        "actionability_reason": "While the tasks are clear enough to guide development, they remain fairly abstract (e.g., “Implement permission.requested event handler”) and lack concrete implementation steps or detailed test scenarios.",
+        "rag_retrieval_reason": "The RAG snippets about the permission system were used to shape the acceptance criteria, but the AI did not surface or reference the specific files that were actually modified, indicating limited utilization of the retrieved context."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-312869",
+      "scores": {
+        "file_coverage_score": 1,
+        "task_categorization_score": 1,
+        "logic_alignment_score": 2,
+        "actionability_score": 2,
+        "rag_retrieval_score": 1
+      },
+      "reasons": {
+        "file_coverage_reason": "The AI did not mention any of the files changed in the ground‑truth patch (agentHostSessionHandler.ts, agentHostChatContribution.test.ts). It only produced generic clarification questions, so component coverage is essentially absent.",
+        "task_categorization_reason": "No tasks were generated, therefore nothing could be assigned to backend, frontend, or QA. The output fails to provide any categorization.",
+        "logic_alignment_reason": "Recognizing that the issue description is ambiguous is appropriate, but the ground‑truth patch already defines the required behavior (dismiss the question widget on all clients). The AI could have inferred this from the title and bug description without needing clarification, so the alignment with the actual logic is weak.",
+        "actionability_reason": "The output consists solely of clarification questions, which are not actionable for developers. While asking for clarification can be valid when information is truly missing, the patch exists and the needed change is clear, so the response is not actionable.",
+        "rag_retrieval_reason": "The retrieved RAG snippets do not contain any reference to the modified files or the widget synchronization logic. Consequently, the relevant files were not present in the context, leading to the AI’s inability to generate concrete tasks."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-312052",
+      "scores": {
+        "file_coverage_score": 1,
+        "task_categorization_score": 1,
+        "logic_alignment_score": 1,
+        "actionability_score": 1,
+        "rag_retrieval_score": 1
+      },
+      "reasons": {
+        "file_coverage_reason": "The AI output did not reference any of the files that were actually modified in the ground‑truth patch (e.g., chat.contribution.ts, sessionTaskRunner.ts, agentHostSessionTaskRunner.ts, etc.). No coverage of the required components is demonstrated.",
+        "task_categorization_reason": "No tasks were generated, therefore no categorization (backend, frontend, QA) could be assessed. The output consists solely of clarification questions.",
+        "logic_alignment_reason": "The AI did not describe any functional changes, logic, or acceptance criteria related to fixing the toolbar ‘run task’ action, missing the core behavior required by the patch.",
+        "actionability_reason": "Without concrete tasks or acceptance criteria, developers have no actionable guidance. Asking for clarification when sufficient information existed is not actionable.",
+        "rag_retrieval_reason": "The retrieved RAG snippets do not contain any of the files or code areas that were changed. Relevant modules (e.g., sessionTaskRunner, agentHostSessionTaskRunner) were absent from the context."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-313160",
+      "scores": {
+        "file_coverage_score": 1,
+        "task_categorization_score": 1,
+        "logic_alignment_score": 2,
+        "actionability_score": 2,
+        "rag_retrieval_score": 2
+      },
+      "reasons": {
+        "file_coverage_reason": "The AI did not produce any tasks or description of changes, so it did not address any of the listed files (e.g., copilotShellTools.ts, agentHostTerminalManager.ts, etc.).",
+        "task_categorization_reason": "No tasks were generated, therefore no categorization to backend, frontend, or QA could be evaluated.",
+        "logic_alignment_reason": "The AI recognized ambiguity and asked clarification questions, which is appropriate when the issue is truly vague, but the ground‑truth patch already exists, indicating sufficient information was available. Hence the logic alignment is only marginally correct.",
+        "actionability_reason": "While asking clarification is a valid PM step, the AI did not provide actionable tasks or acceptance criteria, making it unusable for developers.",
+        "rag_retrieval_reason": "The retrieved RAG context contained some relevant documentation about configuration transport, but it did not include the specific files that were changed. The AI therefore could not generate concrete tasks."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-312922",
+      "scores": {
+        "file_coverage_score": 2,
+        "task_categorization_score": 2,
+        "logic_alignment_score": 4,
+        "actionability_score": 4,
+        "rag_retrieval_score": 2
+      },
+      "reasons": {
+        "file_coverage_reason": "The generated tasks refer generically to \"run_in_terminal tool\" and UI changes but do not mention any of the concrete files changed in the ground‑truth patch (e.g., agentHostHeadlessTerminal.ts, agentHostTerminalManager.ts, copilotShellTools.ts, and the associated test files). Consequently the coverage of the actual modified components is minimal.",
+        "task_categorization_reason": "The work is primarily backend (terminal handling, command parsing, logging) yet the output creates a sizable Front‑End (FE) bucket for UI rendering that is not part of the real change. QA tasks are present, but the split does not reflect the true distribution of effort.",
+        "logic_alignment_reason": "The acceptance criteria and described functional changes correctly capture the core problem—multiline commands being executed line‑by‑line and missing aggregated output. The suggested logic (detect \\n, execute as a single block, aggregate output, per‑line error handling) aligns well with the required fix and does not introduce unrelated functionality.",
+        "actionability_reason": "Tasks are concrete enough for a developer to start implementation (e.g., modify tool to parse multiline strings, add aggregation, update response schema). QA tasks list specific test scenarios, making them testable. Minor over‑specification of UI work does not hinder implementation of the core fix.",
+        "rag_retrieval_reason": "The retrieved RAG snippets are generic documentation excerpts and do not contain any of the files that were actually modified in the patch. Therefore the AI did not benefit from concrete code context when generating the story."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-313103",
+      "scores": {
+        "file_coverage_score": 1,
+        "task_categorization_score": 3,
+        "logic_alignment_score": 2,
+        "actionability_score": 3,
+        "rag_retrieval_score": 1
+      },
+      "reasons": {
+        "file_coverage_reason": "The ground‑truth patch modifies four specific source files related to session providers and management. The generated story and tasks never mention these files or the concrete classes/functions they contain, focusing instead on generic \"LocalSession\" and UI components.",
+        "task_categorization_reason": "The tasks are split into backend, frontend and QA groups, which is appropriate, but many backend tasks (e.g., adding a validation endpoint, changing IChatService) are not aligned with the actual code changes, indicating only partial correctness in categorization.",
+        "logic_alignment_reason": "The core requirement is deduplication of sessions across providers. The output mentions deduplication but adds unrelated actions (visual indicators, new validation middleware, ID generation changes) that are not part of the real fix, showing hallucination and missing the precise logic of the patch.",
+        "actionability_reason": "While the tasks are phrased as actionable items, they lack concrete references to the affected modules and specific implementation steps, making it harder for a developer to translate them directly into code changes.",
+        "rag_retrieval_reason": "The retrieved RAG context contains generic documentation about LocalSession and unrelated authentication flows; none of the actually modified files appear in the context, so the AI did not benefit from the relevant source material."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-313922",
+      "scores": {
+        "file_coverage_score": 1,
+        "task_categorization_score": 1,
+        "logic_alignment_score": 2,
+        "actionability_score": 2,
+        "rag_retrieval_score": 1
+      },
+      "reasons": {
+        "file_coverage_reason": "The AI did not mention any of the actual files changed in the ground‑truth patch (e.g., agentService.ts, copilotAgent.ts, UI provider files). It produced only clarification questions, so coverage is nonexistent.",
+        "task_categorization_reason": "No tasks were generated, therefore nothing could be assigned to backend, frontend, or QA teams. The output lacks any categorization.",
+        "logic_alignment_reason": "The AI correctly identified that the requirement is vague and asked for clarification, which is a reasonable response to an ambiguous issue. However, the ground‑truth shows a concrete change (adding model‑metadata multipliers), indicating that enough context existed to infer the work. Hence the alignment is only marginally acceptable.",
+        "actionability_reason": "While asking clarification questions is a valid step when the requirement is truly unclear, the AI’s response leaves no actionable tasks for developers or test steps for QA, making it unhelpful for immediate implementation.",
+        "rag_retrieval_reason": "The retrieved RAG documents are unrelated to the AHP model multiplier feature; none of the modified files appear in the context, so the retrieval failed to provide useful information."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-314184",
+      "scores": {
+        "file_coverage_score": 2,
+        "task_categorization_score": 4,
+        "logic_alignment_score": 4,
+        "actionability_score": 3,
+        "rag_retrieval_score": 2
+      },
+      "reasons": {
+        "file_coverage_reason": "The answer only mentions updating AgentHostSessionHandler._convertVariablesToAttachments and generic conversion logic. The ground‑truth patch touches many more files (agentService.ts, protocol state files, agentSideEffects, claudePromptResolver, copilotAgentSession, and several test files). The AI’s tasks do not reflect this breadth, so coverage is poor.",
+        "task_categorization_reason": "Tasks are split into backend (be), frontend (fe) and QA groups, which aligns with the typical division for this work. No devops or unrelated categories are introduced, so categorization is mostly correct.",
+        "logic_alignment_reason": "The described fix (preserving selected text and range in selection attachments, wiring through AgentHostSessionHandler and CopilotAgentSession) matches the intended functional change and does not contain hallucinated behavior. It captures the core logic needed.",
+        "actionability_reason": "While the high‑level tasks are understandable, they are vague and omit many concrete steps (e.g., updating IAgentAttachment definitions, handling protocol version changes, adding specific test cases). A developer would need to infer additional details, so the tasks are only moderately actionable.",
+        "rag_retrieval_reason": "The RAG context provided does not include any of the files that are actually modified in the ground‑truth patch. Consequently, the AI could not reference the specific code locations, indicating weak retrieval performance."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-314149",
+      "scores": {
+        "file_coverage_score": 1,
+        "task_categorization_score": 1,
+        "logic_alignment_score": 1,
+        "actionability_score": 1,
+        "rag_retrieval_score": 1
+      },
+      "reasons": {
+        "file_coverage_reason": "The AI did not mention any of the files changed in the ground‑truth patch (e.g., reducer.ts, agentSideEffects.ts, sessionPermissions.ts, test files, agentHostSessionHandler.ts). It only produced generic clarification questions.",
+        "task_categorization_reason": "No concrete tasks were created, so there is no evidence of correct assignment to backend, frontend, or QA teams. The output consists solely of clarification queries.",
+        "logic_alignment_reason": "The AI did not describe any functional changes, nor did it capture the core logic of fixing the approval bypass for Playwright code. It missed the actual behavior change required by the patch.",
+        "actionability_reason": "Without concrete tasks or acceptance criteria, developers cannot act on the output. The clarification questions do not translate into implementable steps or test cases.",
+        "rag_retrieval_reason": "The retrieved context was unrelated (OpenProject ClamAV documentation) and did not contain any of the modified files or relevant domain knowledge. Consequently, the AI could not leverage useful information."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-314809",
+      "scores": {
+        "file_coverage_score": 1,
+        "task_categorization_score": 1,
+        "logic_alignment_score": 1,
+        "actionability_score": 1,
+        "rag_retrieval_score": 2
+      },
+      "reasons": {
+        "file_coverage_reason": "The AI did not produce any tasks or description referencing the two files that were actually changed (terminalService.ts and its test). No coverage of those components is evident.",
+        "task_categorization_reason": "No tasks were generated, so there is nothing to evaluate for correct BE/FE/QA assignment.",
+        "logic_alignment_reason": "The output contains no functional description, acceptance criteria, or any mention of the required change (preventing custom pty title/icon updates from being sent to the pty host). It is completely missing the core logic.",
+        "actionability_reason": "Without any tasks or acceptance criteria, developers have no actionable guidance, and QA has no test steps to follow.",
+        "rag_retrieval_reason": "The RAG context did not surface the expected modified files; the AI failed to include them in its output, indicating poor retrieval or utilization of the provided context."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-314824",
+      "scores": {
+        "file_coverage_score": 1,
+        "task_categorization_score": 1,
+        "logic_alignment_score": 1,
+        "actionability_score": 1,
+        "rag_retrieval_score": 1
+      },
+      "reasons": {
+        "file_coverage_reason": "The AI did not mention any of the actual files changed (agentHostSessionHandler.ts, agentHostChatContribution.test.ts) and provided no tasks related to them.",
+        "task_categorization_reason": "No tasks were generated, so there is no evidence of correct categorization for backend, frontend, or QA work.",
+        "logic_alignment_reason": "The output consists solely of clarification questions and does not describe the required functional changes (syncing queued messages to the AHP log), resulting in a complete lack of alignment with the ground‑truth logic.",
+        "actionability_reason": "Without concrete tasks or acceptance criteria, developers have no actionable steps; the clarification questions are unnecessary given the available information.",
+        "rag_retrieval_reason": "The retrieved context only covered authentication rework and did not include the files or concepts related to the queued‑message bug, so the relevant components were not present in the RAG results."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-314807",
+      "scores": {
+        "file_coverage_score": 1,
+        "task_categorization_score": 1,
+        "logic_alignment_score": 2,
+        "actionability_score": 2,
+        "rag_retrieval_score": 2
+      },
+      "reasons": {
+        "file_coverage_reason": "The AI did not produce any tasks or story items referencing any of the ten files listed in the ground‑truth patch, so it shows no coverage of the actual components that need changes.",
+        "task_categorization_reason": "No tasks were generated, therefore there is no categorization into backend, frontend, or QA workstreams.",
+        "logic_alignment_reason": "The output consists only of clarification questions. While recognizing ambiguity can be appropriate, the issue description together with the retrieved documentation already indicated that the bug is about workspace skill discovery and that a fix exists (feat: completions for skills in agent host). The AI therefore missed an opportunity to infer the needed logic and produced a low alignment score.",
+        "actionability_reason": "Because no actionable tasks or acceptance criteria were created, a developer cannot proceed with implementation. The clarification questions are useful but insufficient for immediate work.",
+        "rag_retrieval_reason": "The RAG context returned relevant excerpts about slash‑command discovery and skill locations, but the AI did not incorporate that information into concrete tasks. Hence, the retrieved files were not effectively used."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-314385",
+      "scores": {
+        "file_coverage_score": 1,
+        "task_categorization_score": 1,
+        "logic_alignment_score": 1,
+        "actionability_score": 1,
+        "rag_retrieval_score": 2
+      },
+      "reasons": {
+        "file_coverage_reason": "The AI did not mention the actual file `src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostTerminalContribution.ts` that is changed in the ground‑truth patch, nor any of the logic that needed to be modified.",
+        "task_categorization_reason": "No concrete backend, frontend, or QA tasks were produced; only generic clarification questions were listed, so nothing can be judged as correctly categorized.",
+        "logic_alignment_reason": "The output contains no description of the functional change (avoiding an infinite loop in syncing agent host config) and introduces speculative assumptions that are not grounded in the actual patch.",
+        "actionability_reason": "Because no actionable tasks or test steps were generated, a developer cannot implement or verify the fix from the provided output.",
+        "rag_retrieval_reason": "The retrieved context includes general agent‑host documentation but does not contain the specific source file that was modified. Hence the RAG retrieved relevant domain material but missed the critical file."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-314867",
+      "scores": {
+        "file_coverage_score": 1,
+        "task_categorization_score": 2,
+        "logic_alignment_score": 1,
+        "actionability_score": 2,
+        "rag_retrieval_score": 1
+      },
+      "reasons": {
+        "file_coverage_reason": "The ground‑truth patch modifies only `src/vs/sessions/contrib/remoteAgentHost/browser/remoteAgentHostCustomizationHarness.ts`. The generated tasks talk about skill descriptor schemas, UI rendering components, and plugin prefixes, none of which map to that file or its responsibilities.",
+        "task_categorization_reason": "Tasks are split into BE, FE, QA, which is a reasonable structure, but the categories are mis‑aligned with the actual change (which is a backend/customization harness adjustment). The FE tasks about UI rendering are irrelevant.",
+        "logic_alignment_reason": "The acceptance criteria and tasks describe adding a plugin prefix to skill names in the Agent Host UI, whereas the real change likely concerns how the remote agent host customizes or registers skills internally. This is a hallucination of functionality that is not present in the patch.",
+        "actionability_reason": "While the tasks are written clearly enough to be acted upon, they target the wrong code area, making them unimplementable for the actual required change. QA steps are generic and do not reflect the real behavior to be verified.",
+        "rag_retrieval_reason": "The only RAG‑retrieved document is about authentication rework and does not contain the modified file or any relevant information about skill prefix handling. Hence the context was not useful for generating the correct tasks."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-314879",
+      "scores": {
+        "file_coverage_score": 1,
+        "task_categorization_score": 1,
+        "logic_alignment_score": 1,
+        "actionability_score": 1,
+        "rag_retrieval_score": 1
+      },
+      "reasons": {
+        "file_coverage_reason": "The AI output does not mention the actual file `src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationManagement.contribution.ts` that is modified in the ground‑truth patch, nor does it reference the UI change to hide plugin actions.",
+        "task_categorization_reason": "No concrete tasks were created for backend or frontend work; the output only lists clarification questions, leaving the work unassigned to any team.",
+        "logic_alignment_reason": "The generated content does not describe the required logic (hiding plugin actions for synced customization items) and introduces unrelated speculation about terminology, which is not part of the actual change.",
+        "actionability_reason": "Because the AI stopped at clarification questions despite the issue containing enough detail (the screenshot and known UI element), developers would not have actionable steps to implement the fix.",
+        "rag_retrieval_reason": "The relevant source file and the specific UI component were not present in the retrieved RAG snippets; the context only contains generic documentation about plugins, not the concrete code that needs modification."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-314278",
+      "scores": {
+        "file_coverage_score": 2,
+        "task_categorization_score": 3,
+        "logic_alignment_score": 4,
+        "actionability_score": 3,
+        "rag_retrieval_score": 2
+      },
+      "reasons": {
+        "file_coverage_reason": "The ground‑truth patch modifies four specific provider files, but the generated tasks talk about generic \"LocalSession\" class and generic backend/service code without mentioning any of the actual files (baseAgentHostSessionsProvider.ts, localAgentHostSessionsProvider.ts, remoteAgentHostSessionsProvider.ts, remoteAgentHostSessionsProvider.test.ts). Coverage of the changed components is therefore poor.",
+        "task_categorization_reason": "Tasks are split into BE, FE, and QA, which is reasonable, but the BE tasks refer to a generic \"backend/session service\" that does not exist in the changed code, and the FE tasks are vague about which UI component to edit. Categorization is acceptable but not precise.",
+        "logic_alignment_reason": "The acceptance criteria correctly capture the core requirement: removing the erroneous \"Local\" label and showing the proper provider ID and icon. No hallucinated functionality is introduced.",
+        "actionability_reason": "While the acceptance criteria are clear, the listed tasks are high‑level and lack concrete steps (e.g., file names, function names, exact UI component). A developer would need to infer the exact locations, reducing immediate actionability.",
+        "rag_retrieval_reason": "The RAG context provides documentation excerpts about provider identities but does not contain the actual source files that were modified. Hence the retrieval did not surface the concrete code needing changes."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-314887",
+      "scores": {
+        "file_coverage_score": 1,
+        "task_categorization_score": 1,
+        "logic_alignment_score": 2,
+        "actionability_score": 2,
+        "rag_retrieval_score": 2
+      },
+      "reasons": {
+        "file_coverage_reason": "The AI did not reference any of the many files listed in the ground‑truth patch (e.g., cli/src/commands/agent_host.rs, src/vs/platform/agentHost/... etc.). It only produced a high‑level clarification request, so no component coverage is demonstrated.",
+        "task_categorization_reason": "No concrete tasks were created for backend, frontend, or QA teams. The output only contains a list of clarification questions, so task categorization cannot be evaluated and is effectively absent.",
+        "logic_alignment_reason": "The issue description is indeed ambiguous about whether connections should share or isolate an Agent Host, and the AI correctly identified this ambiguity. However, the ground‑truth patch already implements a specific behavior (unify launching between surfaces). The AI failed to infer that behavior and instead stopped at clarification, missing the core logic change.",
+        "actionability_reason": "While asking clarification is appropriate when the requirement is truly vague, the presence of a concrete patch in the ground truth indicates that sufficient information existed to define actionable tasks. The AI’s output therefore lacks actionable implementation steps and test cases.",
+        "rag_retrieval_reason": "The retrieved RAG snippets discuss the sessions process and authentication but do not contain any of the files that are actually modified. Consequently, the relevant code artifacts were not present in the context, limiting the AI’s ability to generate concrete tasks."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-314880",
+      "scores": {
+        "file_coverage_score": 1,
+        "task_categorization_score": 1,
+        "logic_alignment_score": 1,
+        "actionability_score": 1,
+        "rag_retrieval_score": 1
+      },
+      "reasons": {
+        "file_coverage_reason": "The AI did not reference the actual file that is changed (src/vs/platform/agentHost/node/agentHostGitService.ts) and provided no tasks related to modifying it.",
+        "task_categorization_reason": "No tasks were created, so there is no evidence of correct assignment to backend, frontend, or QA work streams.",
+        "logic_alignment_reason": "The output contains only clarification questions and does not describe the required change (using origin/main for worktrees), resulting in a complete lack of alignment with the needed logic.",
+        "actionability_reason": "Without concrete tasks or acceptance criteria, developers have no actionable steps; the output is not testable or implementable.",
+        "rag_retrieval_reason": "The retrieved context snippets are unrelated to git worktree handling or the target file, so the relevant source was not present in the RAG results."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-314827",
+      "scores": {
+        "file_coverage_score": 0,
+        "task_categorization_score": 0,
+        "logic_alignment_score": 0,
+        "actionability_score": 0,
+        "rag_retrieval_score": 0
+      },
+      "reasons": {},
+      "status": "failed"
+    },
+    {
+      "id": "VS-314889",
+      "scores": {
+        "file_coverage_score": 1,
+        "task_categorization_score": 1,
+        "logic_alignment_score": 1,
+        "actionability_score": 1,
+        "rag_retrieval_score": 2
+      },
+      "reasons": {
+        "file_coverage_reason": "The AI did not mention any of the seven files that were actually changed in the ground‑truth patch, so there is no coverage of the required components.",
+        "task_categorization_reason": "No concrete tasks were generated, and therefore nothing could be assigned to backend, frontend, or QA groups.",
+        "logic_alignment_reason": "The output contains only clarification questions and no description of the functional change (preventing the alt‑buffer hang). It neither captures nor aligns with the real logic implemented in the patch.",
+        "actionability_reason": "Without any tasks or acceptance criteria, developers have no actionable guidance, and QA has no test steps to follow.",
+        "rag_retrieval_reason": "The retrieved RAG snippets are unrelated to terminal handling or the files that were modified; the relevant files are absent from the context, leading to an inability to generate appropriate output."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-315061",
+      "scores": {
+        "file_coverage_score": 1,
+        "task_categorization_score": 1,
+        "logic_alignment_score": 2,
+        "actionability_score": 1,
+        "rag_retrieval_score": 2
+      },
+      "reasons": {
+        "file_coverage_reason": "The AI did not mention any of the nine files that are modified in the ground‑truth patch, so component coverage is essentially zero.",
+        "task_categorization_reason": "No concrete tasks were produced, therefore nothing could be assigned to backend, frontend, or QA teams.",
+        "logic_alignment_reason": "The AI recognized ambiguity and asked clarification questions, which is appropriate for a vague issue, but the ground‑truth patch shows that sufficient information was available to infer the required changes. Hence the response missed the core logic of adding the `/act-on-feedback` skill and handling feedback attachments.",
+        "actionability_reason": "Without any actionable tasks or acceptance criteria, developers cannot proceed; the output is not actionable or testable.",
+        "rag_retrieval_reason": "The retrieved RAG snippets relate to generic Agents UI and chat handling but do not include any of the specific files that were actually changed. Relevant source files were not present in the context."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-315581",
+      "scores": {
+        "file_coverage_score": 4,
+        "task_categorization_score": 5,
+        "logic_alignment_score": 5,
+        "actionability_score": 4,
+        "rag_retrieval_score": 2
+      },
+      "reasons": {
+        "file_coverage_reason": "The generated tasks address backend response changes and frontend edit‑pill rendering, which correspond to the modified files (copilotAgentSession.ts, copilotToolDisplay.ts, and their tests). Specific filenames are not mentioned, but the scope is covered.",
+        "task_categorization_reason": "Tasks are correctly split into backend (be), frontend (fe), and quality assurance (qa) groups, matching the nature of the changes.",
+        "logic_alignment_reason": "The functional description (render diff numbers, make them clickable, propagate diff metadata) aligns with the ground‑truth requirement and contains no hallucinated features.",
+        "actionability_reason": "Tasks are concrete and implementable; QA tasks list specific test scenarios. Minor lack of detail on exact UI component names keeps it from a perfect score.",
+        "rag_retrieval_reason": "The RAG context provided only documentation excerpts and did not include the actual source files that are being changed, so the retrieval missed the concrete code references."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-314952",
+      "scores": {
+        "file_coverage_score": 2,
+        "task_categorization_score": 4,
+        "logic_alignment_score": 4,
+        "actionability_score": 4,
+        "rag_retrieval_score": 2
+      },
+      "reasons": {
+        "file_coverage_reason": "The output only produced high‑level user stories, acceptance criteria and generic task groups. It never referenced the concrete source files listed in the ground‑truth patch (e.g., claudeAgent.ts, claudeAgentSdkService.ts, etc.), so it does not demonstrate coverage of the actual components that need to be changed.",
+        "task_categorization_reason": "Tasks are reasonably split into backend (be), frontend (fe) and QA categories, matching the nature of the work (authentication refactor, UI changes, tests). No obvious mis‑assignments were observed.",
+        "logic_alignment_reason": "The acceptance criteria and story description correctly capture the core requirement: allowing Claude Agent to authenticate via Anthropic credentials and routing traffic accordingly. The logic aligns with the issue and does not contain major hallucinations.",
+        "actionability_reason": "The listed tasks are specific enough to guide implementation (e.g., refactor authentication layer, add provider dropdown, update error handling). QA tasks include concrete test scenarios, making the work actionable.",
+        "rag_retrieval_reason": "Although the RAG context contained information about model providers and UI behavior, the output did not surface any of the actual file names or code snippets from the retrieved documents. Hence the retrieval was not effectively leveraged."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-315059",
+      "scores": {
+        "file_coverage_score": 2,
+        "task_categorization_score": 4,
+        "logic_alignment_score": 3,
+        "actionability_score": 3,
+        "rag_retrieval_score": 2
+      },
+      "reasons": {
+        "file_coverage_reason": "The generated story and tasks do not reference any of the actual files changed in the ground‑truth patch (remoteAgentHostActions.ts, tunnelAgentHost.contribution.ts, webTunnelAgentHostService.ts, tunnelAgentHostServiceImpl.ts, and its test). The output stays at a high‑level description of pending sessions without tying it to the specific modules that need modification.",
+        "task_categorization_reason": "Tasks are reasonably split into backend (be), frontend (fe), and QA groups, matching typical ownership. No obvious mis‑assignments, though the backend tasks could be more granular.",
+        "logic_alignment_reason": "The acceptance criteria and tasks capture the overall intent (making tunnel sessions appear without sending a message) and mention a pending‑set mechanism, which aligns with the real change (caching tunnel inside connect()). However, the description introduces unrelated concepts (e.g., steering messages) and lacks concrete reference to the caching logic, indicating partial alignment with some hallucination.",
+        "actionability_reason": "The tasks are understandable but remain high‑level; developers would need to infer the exact code locations and implementation details. QA steps are generic and do not specify concrete test cases or mock setups.",
+        "rag_retrieval_reason": "The RAG context supplied does not contain the files that were actually modified. Consequently, the AI could not leverage the precise code changes, leading to a generic output."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-315160",
+      "scores": {
+        "file_coverage_score": 1,
+        "task_categorization_score": 1,
+        "logic_alignment_score": 4,
+        "actionability_score": 4,
+        "rag_retrieval_score": 2
+      },
+      "reasons": {
+        "file_coverage_reason": "The AI output did not reference any of the files that were actually modified in the ground‑truth patch, so no component coverage was demonstrated.",
+        "task_categorization_reason": "No tasks were produced, therefore there is no evidence of correct assignment to backend, frontend, or QA groups.",
+        "logic_alignment_reason": "The AI correctly identified that the issue description is ambiguous and that clarification is needed before any concrete implementation can be defined, which is appropriate given the vague wording of the original ticket.",
+        "actionability_reason": "By asking targeted clarification questions, the AI produced actionable next steps for a product manager to obtain the missing details, even though it did not generate implementation tasks.",
+        "rag_retrieval_reason": "The retrieved RAG snippets contain no information about credit‑usage reporting or the files changed in the PR, so the context was not useful for deriving the required work."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-315182",
+      "scores": {
+        "file_coverage_score": 1,
+        "task_categorization_score": 1,
+        "logic_alignment_score": 2,
+        "actionability_score": 1,
+        "rag_retrieval_score": 1
+      },
+      "reasons": {
+        "file_coverage_reason": "The AI output did not mention any of the actual files changed in the ground‑truth patch (stateToProgressAdapter.ts and its test), so coverage is nonexistent.",
+        "task_categorization_reason": "No tasks were produced, therefore nothing could be assigned to backend, frontend, or QA teams.",
+        "logic_alignment_reason": "The AI recognized ambiguity and asked clarification questions, which is reasonable, but the issue contained enough clues (tool names, reference files) to infer the required UI alignment without needing clarification, so the logic alignment is poor.",
+        "actionability_reason": "Because only clarification questions were generated, there are no actionable development or testing steps for developers.",
+        "rag_retrieval_reason": "The retrieved context consisted of generic documentation snippets and did not include the files that were actually modified in the patch."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-315588",
+      "scores": {
+        "file_coverage_score": 1,
+        "task_categorization_score": 1,
+        "logic_alignment_score": 1,
+        "actionability_score": 1,
+        "rag_retrieval_score": 1
+      },
+      "reasons": {
+        "file_coverage_reason": "The AI output did not reference any of the actual files changed in the ground‑truth patch (sshRemoteAgentHost.ts, sshRemoteAgentHostServiceImpl.ts, etc.), so file/component coverage is essentially nonexistent.",
+        "task_categorization_reason": "No concrete tasks were generated, let alone categorized for backend, frontend, or QA teams; the output only listed clarification questions.",
+        "logic_alignment_reason": "The output does not describe the required functional change (adding a keyboard‑interactive SSH auth fallback) and introduces unrelated speculation about authentication mechanisms, showing a complete mis‑alignment with the actual change.",
+        "actionability_reason": "Without concrete tasks or acceptance criteria, developers cannot act on the output; the clarification questions do not provide a clear implementation path or test steps.",
+        "rag_retrieval_reason": "The retrieved RAG snippets discuss generic authentication rework but do not contain any of the modified files or specific details about keyboard‑interactive auth, indicating a failure to surface the relevant context."
+      },
+      "status": "success"
+    }
+  ]
+}

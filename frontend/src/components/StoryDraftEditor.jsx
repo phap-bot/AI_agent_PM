@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { fetchJiraPriorities } from '../lib/api';
+import { useTranslation } from 'react-i18next';
 
 export default function StoryDraftEditor({ draft, evaluation, actions, actionExecution, isPushingJira, isRegenerating,  onChange,
   onPreviewJira,
@@ -10,6 +11,7 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
   onReset,
   projectId
 }) {
+  const { t } = useTranslation();
   const [clarificationInput, setClarificationInput] = useState('');
   const [answers, setAnswers] = useState({});
   const [chatHistory, setChatHistory] = useState([]);
@@ -126,7 +128,7 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
           </div>
           <div>
             <h3 className="font-headline-sm text-headline-sm font-bold text-primary">Human Approval</h3>
-            <p className="text-[12px] text-on-surface-variant font-medium">(Bản nháp cần duyệt trước khi đẩy lên Jira)</p>
+            <p className="text-[12px] text-on-surface-variant font-medium">{t('story_draft.draft_desc')}</p>
           </div>
         </div>
         <div className="flex items-center gap-stack-sm">
@@ -153,27 +155,27 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
           <div className="bg-white/80 rounded-2xl border-2 border-amber-300 p-container-padding shadow-sm relative space-y-6">
             <div className="flex items-center gap-2 mb-2">
               <span className="material-symbols-outlined text-amber-600 text-[24px]">warning</span>
-              <h3 className="text-title-lg font-bold text-amber-700">Yêu cầu quá lớn (Oversized Request)</h3>
+              <h3 className="text-title-lg font-bold text-amber-700">{t('story_draft.oversized_request')}</h3>
             </div>
             <p className="text-body-md text-on-surface-variant">
-              Yêu cầu này chứa quá nhiều tính năng để đưa vào một Ticket duy nhất. Hệ thống đề xuất phân tách (Story Splits) thành các Ticket nhỏ hơn.
+              {t('story_draft.oversized_request_desc')}
             </p>
 
             {draft.story_splits?.length > 0 ? (
               <div className="bg-amber-50 p-6 rounded-xl border border-amber-200 flex flex-col items-center text-center space-y-4">
-                <p className="text-amber-800 font-medium">Có {draft.story_splits.length} split được đề xuất cho yêu cầu này.</p>
+                <p className="text-amber-800 font-medium">{t('story_draft.splits_proposed').replace('{{count}}', draft.story_splits.length)}</p>
                 {onOpenSplitManager && (
                   <button 
                     onClick={onOpenSplitManager}
                     className="bg-primary text-on-primary px-6 py-3 rounded-xl font-bold hover:opacity-90 active:scale-95 shadow-lg flex items-center gap-2"
                   >
                     <span className="material-symbols-outlined">splitscreen</span>
-                    Mở Popup Quản Lý Splits
+                    {t('story_draft.open_split_manager')}
                   </button>
                 )}
               </div>
             ) : (
-              <p className="text-body-md italic text-outline">Chưa có đề xuất phân tách nào.</p>
+              <p className="text-body-md italic text-outline">{t('story_draft.no_split_proposed')}</p>
             )}
           </div>
         ) : (
@@ -181,7 +183,7 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
           <div className="bg-white/80 rounded-2xl border border-outline-variant/30 p-container-padding shadow-sm relative">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-gutter mb-stack-lg">
               <div className="md:col-span-2">
-                <label className="text-label-md font-bold text-on-surface-variant mb-unit block">Tiêu đề Ticket</label>
+                <label className="text-label-md font-bold text-on-surface-variant mb-unit block">{t('story_draft.ticket_title')}</label>
                 <input 
                   className="w-full bg-white/50 border border-outline-variant/50 rounded-xl px-4 py-3 font-headline-sm focus:ring-2 focus:ring-primary/20 outline-none" 
                   type="text" 
@@ -190,7 +192,7 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
                 />
               </div>
               <div>
-                <label className="text-label-md font-bold text-on-surface-variant mb-unit block">Story Points</label>
+                <label className="text-label-md font-bold text-on-surface-variant mb-unit block">{t('story_draft.story_points')}</label>
                 <input 
                   type="number"
                   className="w-full bg-white/50 border border-outline-variant/50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 outline-none" 
@@ -199,7 +201,7 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
                 />
               </div>
               <div>
-                <label className="text-label-md font-bold text-on-surface-variant mb-unit block">Độ ưu tiên</label>
+                <label className="text-label-md font-bold text-on-surface-variant mb-unit block">{t('story_draft.priority')}</label>
                 <select 
                   className="w-full bg-white/50 border border-outline-variant/50 rounded-xl px-4 py-3 font-bold text-red-600 focus:ring-2 focus:ring-primary/20 outline-none"
                   value={draft.priority || (priorities.length > 0 ? priorities[0].name : 'Medium')}
@@ -246,7 +248,7 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
                       <button onClick={() => handleRemoveArrayItem('acceptance_criteria', i)} className="text-red-400 hover:text-red-600 p-2"><span className="material-symbols-outlined text-[18px]">delete</span></button>
                     </div>
                   ))}
-                  <button onClick={() => handleAddArrayItem('acceptance_criteria')} className="text-primary text-[12px] font-bold flex items-center gap-1 hover:underline"><span className="material-symbols-outlined text-[16px]">add</span>Thêm Acceptance Criteria</button>
+                  <button onClick={() => handleAddArrayItem('acceptance_criteria')} className="text-primary text-[12px] font-bold flex items-center gap-1 hover:underline"><span className="material-symbols-outlined text-[16px]">add</span>{t('story_draft.add_ac')}</button>
                 </div>
               </div>
 
@@ -260,7 +262,7 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
                       <button onClick={() => handleRemoveTask('be', i)} className="text-red-400 hover:text-red-600 p-1"><span className="material-symbols-outlined text-[14px]">close</span></button>
                     </div>
                   ))}
-                  <button onClick={() => handleAddTask('be')} className="text-primary text-[12px] font-bold flex items-center gap-1 hover:underline"><span className="material-symbols-outlined text-[16px]">add</span>Thêm task BE</button>
+                  <button onClick={() => handleAddTask('be')} className="text-primary text-[12px] font-bold flex items-center gap-1 hover:underline"><span className="material-symbols-outlined text-[16px]">add</span>{t('story_draft.add_task_be')}</button>
                   
                   {draft.tasks?.fe?.map((task, i) => (
                     <div key={`fe-${i}`} className="flex items-center gap-2 p-2 bg-white/40 border border-outline-variant/20 rounded-lg">
@@ -269,7 +271,7 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
                       <button onClick={() => handleRemoveTask('fe', i)} className="text-red-400 hover:text-red-600 p-1"><span className="material-symbols-outlined text-[14px]">close</span></button>
                     </div>
                   ))}
-                  <button onClick={() => handleAddTask('fe')} className="text-green-600 text-[12px] font-bold flex items-center gap-1 hover:underline"><span className="material-symbols-outlined text-[16px]">add</span>Thêm task FE</button>
+                  <button onClick={() => handleAddTask('fe')} className="text-green-600 text-[12px] font-bold flex items-center gap-1 hover:underline"><span className="material-symbols-outlined text-[16px]">add</span>{t('story_draft.add_task_fe')}</button>
                   
                   {draft.tasks?.qa?.map((task, i) => (
                     <div key={`qa-${i}`} className="flex items-center gap-2 p-2 bg-white/40 border border-outline-variant/20 rounded-lg">
@@ -278,7 +280,7 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
                       <button onClick={() => handleRemoveTask('qa', i)} className="text-red-400 hover:text-red-600 p-1"><span className="material-symbols-outlined text-[14px]">close</span></button>
                     </div>
                   ))}
-                  <button onClick={() => handleAddTask('qa')} className="text-orange-600 text-[12px] font-bold flex items-center gap-1 hover:underline"><span className="material-symbols-outlined text-[16px]">add</span>Thêm task QA</button>
+                  <button onClick={() => handleAddTask('qa')} className="text-orange-600 text-[12px] font-bold flex items-center gap-1 hover:underline"><span className="material-symbols-outlined text-[16px]">add</span>{t('story_draft.add_task_qa')}</button>
                 </div>
               </div>
             </div>
@@ -291,10 +293,10 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
           <div className="bg-surface-container-low rounded-2xl p-stack-md border border-outline-variant/20">
             <div className="flex items-center gap-2 mb-stack-md">
               <span className="material-symbols-outlined text-primary" style={{fontVariationSettings: "'FILL' 1"}}>forum</span>
-              <h4 className="text-label-md font-bold text-primary uppercase tracking-wider">AI Clarification</h4>
+              <h4 className="text-label-md font-bold text-primary uppercase tracking-wider">{t('story_draft.ai_clarification')}</h4>
               {needsClarification && (
                 <span className="ml-auto bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-1 rounded-full border border-amber-300 uppercase tracking-wider animate-pulse">
-                  Cần làm rõ
+                  {t('story_draft.needs_clarification')}
                 </span>
               )}
             </div>
@@ -336,7 +338,7 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
               <div className="space-y-4 mb-stack-md px-2">
                 <p className="text-sm font-bold text-on-surface-variant flex items-center gap-2">
                   <span className="material-symbols-outlined text-primary text-[20px]">smart_toy</span>
-                  AI cần bạn làm rõ các câu hỏi sau để hoàn thiện Story:
+                  {t('story_draft.ai_needs_clarification')}
                 </p>
                 {unansweredQuestions.map((q, idx) => (
                   <div key={`q-${idx}`} className="bg-white p-4 rounded-xl border border-primary/20 shadow-sm space-y-3 relative overflow-hidden">
@@ -348,7 +350,7 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
                     <textarea
                       className="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-lg px-3 py-3 text-body-md focus:ring-2 focus:ring-primary/40 outline-none resize-none transition-all placeholder:text-outline-variant"
                       rows={2}
-                      placeholder="Nhập câu trả lời của bạn cho câu hỏi này..."
+                      placeholder={t('story_draft.input_answer')}
                       value={answers[idx] || ''}
                       onChange={(e) => setAnswers(prev => ({ ...prev, [idx]: e.target.value }))}
                       disabled={isRegenerating}
@@ -365,7 +367,7 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
                   <span className="material-symbols-outlined text-green-600 text-[18px]">check_circle</span>
                 </div>
                 <div className="bg-green-50 p-3 rounded-2xl rounded-tl-none shadow-sm text-body-md border border-green-100 max-w-[85%] text-green-800">
-                  Mọi thứ đã rõ ràng, bạn có thể duyệt để push lên Jira.
+                  {t('story_draft.all_clear')}
                 </div>
               </div>
             )}
@@ -381,7 +383,7 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
                     <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{animationDelay: '0ms'}}></span>
                     <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{animationDelay: '150ms'}}></span>
                     <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{animationDelay: '300ms'}}></span>
-                    AI đang phân tích lại với thông tin phản hồi của bạn...
+                    {t('story_draft.ai_analyzing')}
                   </span>
                 </div>
               </div>
@@ -393,7 +395,7 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
             <div className="flex gap-2 mt-4 px-2">
               <input 
                 className="flex-1 bg-white border border-outline-variant/50 rounded-xl px-4 py-2 font-body-md focus:ring-2 focus:ring-primary/20 outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-all" 
-                placeholder={isRegenerating ? "Đang xử lý..." : "Nhập thông tin bổ sung chung (nếu cần)..."} 
+                placeholder={isRegenerating ? t('requirement_input.processing') : t('story_draft.input_additional_info')} 
                 type="text"
                 value={clarificationInput}
                 onChange={(e) => setClarificationInput(e.target.value)}
@@ -410,7 +412,7 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
                 disabled={(!Object.keys(answers).some(k => answers[k].trim()) && !clarificationInput.trim()) || isRegenerating}
               >
                 <span className="material-symbols-outlined text-[20px]">send</span>
-                Gửi Phản Hồi
+                {t('story_draft.send_feedback')}
               </button>
             </div>
           </div>
@@ -465,10 +467,10 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="material-symbols-outlined text-blue-500" style={{fontVariationSettings: "'FILL' 1"}}>call_split</span>
-                <h4 className="text-label-md font-bold text-blue-700 uppercase tracking-wider">AI Gợi Ý Tách Ticket</h4>
+                <h4 className="text-label-md font-bold text-blue-700 uppercase tracking-wider">{t('story_draft.ai_split_suggestion')}</h4>
               </div>
               <p className="text-body-sm text-blue-800">
-                Yêu cầu của bạn có thể tách thành {draft.story_splits.length} ticket con (Epic).
+                {t('story_draft.split_suggestion_desc').replace('{{count}}', draft.story_splits.length)}
               </p>
             </div>
             <button 
@@ -476,7 +478,7 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
               className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-sm"
             >
               <span className="material-symbols-outlined text-[18px]">splitscreen</span>
-              Xử Lý Splits
+              {t('story_draft.process_splits')}
             </button>
           </div>
         )}
@@ -488,7 +490,7 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
               className="flex-1 py-4 border-2 border-primary text-primary font-bold text-label-md rounded-xl hover:bg-primary/5 transition-colors"
               onClick={onReset}
             >
-              + TẠO YÊU CẦU MỚI
+              {t('story_draft.create_new_request')}
             </button>
           ) : (
             <button 
@@ -496,7 +498,7 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
               onClick={onPreviewJira}
               disabled={isRegenerating}
             >
-              ↻ TẠO LẠI BẢN NHÁP (PREVIEW)
+              {t('story_draft.recreate_draft')}
             </button>
           )}
           <button
@@ -504,7 +506,7 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
             onClick={onPushToJira}
             className={`flex-[2] py-4 font-bold text-label-md rounded-xl shadow-lg transition-all ${(isPushingJira || !isApproved || (actions && !isJiraReady) || isRegenerating) ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-primary text-on-primary shadow-primary/20 hover:opacity-90 active:scale-95'}`}
           >
-            {isPushingJira ? '⏳ EXECUTING ACTIONS...' : '✅ EXECUTE ACTIONS (JIRA & SLACK)'}
+            {isPushingJira ? t('story_draft.executing_actions') : t('story_draft.execute_actions')}
           </button>
         </div>
         

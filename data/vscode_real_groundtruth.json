@@ -1,0 +1,2704 @@
+[
+  {
+    "id": "VS-307568",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/code/electron-utility/sharedProcess/sharedProcessMain.ts",
+      "src/vs/platform/agentHost/browser/nullWslRemoteAgentHostService.ts",
+      "src/vs/platform/agentHost/common/relayTransport.ts",
+      "src/vs/platform/agentHost/common/remoteAgentHostService.ts",
+      "src/vs/platform/agentHost/common/sshRemoteAgentHost.ts",
+      "src/vs/platform/agentHost/common/wslRemoteAgentHost.ts",
+      "src/vs/platform/agentHost/electron-browser/sshRelayTransport.ts",
+      "src/vs/platform/agentHost/electron-browser/wslRelayTransport.ts",
+      "src/vs/platform/agentHost/electron-browser/wslRemoteAgentHostService.ts",
+      "src/vs/platform/agentHost/electron-browser/wslRemoteAgentHostServiceImpl.ts",
+      "src/vs/platform/agentHost/node/sshRemoteAgentHostHelpers.ts",
+      "src/vs/platform/agentHost/node/sshRemoteAgentHostService.ts",
+      "src/vs/platform/agentHost/node/wslRemoteAgentHostHelpers.ts",
+      "src/vs/platform/agentHost/node/wslRemoteAgentHostService.ts",
+      "src/vs/platform/agentHost/test/electron-browser/sshRelayTransport.test.ts",
+      "src/vs/platform/agentHost/test/electron-browser/sshRemoteAgentHostService.test.ts",
+      "src/vs/platform/agentHost/test/node/wslRemoteAgentHostHelpers.test.ts",
+      "src/vs/sessions/common/agentHostSessionsProvider.ts",
+      "src/vs/sessions/contrib/chat/browser/sessionWorkspacePicker.ts",
+      "src/vs/sessions/contrib/providers/remoteAgentHost/browser/remoteAgentHost.contribution.ts",
+      "src/vs/sessions/contrib/providers/remoteAgentHost/browser/remoteAgentHostActions.ts",
+      "src/vs/sessions/contrib/providers/remoteAgentHost/browser/remoteAgentHostSessionsProvider.ts",
+      "src/vs/sessions/contrib/providers/remoteAgentHost/test/browser/remoteAgentHostSessionsProvider.test.ts",
+      "src/vs/sessions/sessions.desktop.main.ts",
+      "src/vs/sessions/sessions.web.main.ts"
+    ],
+    "expected_behaviors": [
+      "agent-host: add WSL connection support (PR #319971)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-308073",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/sessions/AI_CUSTOMIZATIONS.md",
+      "src/vs/workbench/contrib/chat/browser/aiCustomization/mcpListWidget.ts",
+      "src/vs/workbench/contrib/chat/browser/aiCustomization/media/aiCustomizationManagement.css",
+      "src/vs/workbench/test/browser/componentFixtures/sessions/aiCustomizationManagementEditor.fixture.ts"
+    ],
+    "expected_behaviors": [
+      "chat: show active session MCP status (PR #322606)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-308080",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "extensions/copilot/src/extension/chatSessions/copilotcli/node/copilotcliSessionService.ts"
+    ],
+    "expected_behaviors": [
+      "Filter out agent host-owned sessions from CLI session list to avoid duplicates (PR #320188)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-311096",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/common/agentService.ts",
+      "src/vs/platform/agentHost/electron-browser/agentHostService.ts",
+      "src/vs/platform/agentHost/node/agentService.ts",
+      "src/vs/platform/agentHost/node/protocolServerHandler.ts",
+      "src/vs/platform/agentHost/test/node/agentService.test.ts",
+      "src/vs/platform/agentHost/test/node/protocolServerHandler.test.ts",
+      "src/vs/sessions/contrib/agentHost/browser/baseAgentHostSessionsProvider.ts",
+      "src/vs/sessions/contrib/agentHost/test/browser/localAgentHostSessionsProvider.test.ts"
+    ],
+    "expected_behaviors": [
+      "Evict idle restored agent host sessions (PR #313275)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-311118",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/sessions/contrib/chat/browser/agentHost/agentHostModelPicker.ts",
+      "src/vs/sessions/contrib/chat/browser/agentHost/agentHostPermissionPickerActionItem.ts",
+      "src/vs/sessions/contrib/chat/browser/agentHost/agentHostPermissionPickerDelegate.ts",
+      "src/vs/sessions/contrib/chat/browser/agentHost/agentHostSessionConfigPicker.ts",
+      "src/vs/sessions/contrib/chat/browser/media/agentHostSessionConfigPicker.css",
+      "src/vs/sessions/contrib/chat/test/browser/agentHost/agentHostPermissionPickerDelegate.test.ts",
+      "src/vs/sessions/contrib/copilotChatSessions/browser/copilotChatSessionsActions.ts",
+      "src/vs/sessions/contrib/copilotChatSessions/browser/permissionPicker.ts",
+      "src/vs/sessions/contrib/remoteAgentHost/browser/remoteAgentHost.contribution.ts",
+      "src/vs/sessions/sessions.common.main.ts"
+    ],
+    "expected_behaviors": [
+      "Reuse PermissionPickerActionItem for agent host auto-approve picker (PR #311263)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-311121",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "clients/rust/crates/ahp-types/src/state.rs",
+      "schema/actions.schema.json",
+      "schema/commands.schema.json",
+      "schema/notifications.schema.json",
+      "schema/state.schema.json",
+      "types/state.ts"
+    ],
+    "expected_behaviors": [
+      "Make SessionInputRequest.message optional (PR #85)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-311245",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/agentHostTerminalManager.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotShellTools.ts",
+      "src/vs/platform/agentHost/test/node/copilotShellTools.test.ts"
+    ],
+    "expected_behaviors": [
+      "AgentHost: prevent agent shell commands from polluting user shell history (PR #311251)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-311383",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/sessions/contrib/workspace/browser/workspaceFolderManagement.ts"
+    ],
+    "expected_behaviors": [
+      "Revert \"Don't add agent-host worktree as workspace folder (#310888)\" (PR #311525)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-311504",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/copilot/copilotToolDisplay.ts"
+    ],
+    "expected_behaviors": [
+      "agentHost: add url permission request handling and refine confirmation titles (PR #312021)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-311510",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/chat/browser/widget/chatAgentHover.ts"
+    ],
+    "expected_behaviors": [
+      "Hide 'View Extension' hover action for core chat agents (PR #311526)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-311709",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/terminal/browser/agentHostTerminalService.ts"
+    ],
+    "expected_behaviors": [
+      "terminal: fix duplicate agent host terminals and hide tool-created ones (PR #311786)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-312009",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/copilot/copilotShellTools.ts"
+    ],
+    "expected_behaviors": [
+      "agentHost: improve shell tool descriptions for LLM clarity (PR #312035)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-312050",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "package-lock.json",
+      "package.json",
+      "remote/package-lock.json",
+      "remote/package.json",
+      "src/vs/platform/agentHost/common/agentHostSchema.ts",
+      "src/vs/platform/agentHost/common/agentService.ts",
+      "src/vs/platform/agentHost/common/sessionConfigKeys.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotAgent.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotAgentSession.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotSessionWrapper.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotToolDisplay.ts",
+      "src/vs/platform/agentHost/test/common/agentHostSchema.test.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgent.test.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgentSession.test.ts",
+      "src/vs/platform/agentHost/test/node/mockAgent.ts",
+      "src/vs/platform/agentHost/test/node/protocol/toolApprovalRealSdk.integrationTest.ts",
+      "src/vs/sessions/contrib/chat/browser/agentHost/agentHostModePicker.ts",
+      "src/vs/sessions/contrib/chat/browser/agentHost/agentHostPermissionPickerDelegate.ts",
+      "src/vs/sessions/contrib/chat/browser/agentHost/agentHostSessionConfigPicker.ts",
+      "src/vs/sessions/contrib/chat/test/browser/agentHost/agentHostPermissionPickerDelegate.test.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts"
+    ],
+    "expected_behaviors": [
+      "agentHost: implement plan and native autopilot modes (PR #313301)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-312052",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/sessions/contrib/chat/browser/chat.contribution.ts",
+      "src/vs/sessions/contrib/chat/browser/registerDefaultSessionTaskRunners.ts",
+      "src/vs/sessions/contrib/chat/browser/sessionTaskRunner.ts",
+      "src/vs/sessions/contrib/chat/browser/sessionsTasksService.ts",
+      "src/vs/sessions/contrib/chat/browser/taskCommand.ts",
+      "src/vs/sessions/contrib/chat/browser/workbenchSessionTaskRunner.ts",
+      "src/vs/sessions/contrib/chat/browser/worktreeCreatedTaskDispatcher.ts",
+      "src/vs/sessions/contrib/chat/test/browser/sessionTaskRunner.test.ts",
+      "src/vs/sessions/contrib/chat/test/browser/sessionsTaskService.test.ts",
+      "src/vs/sessions/contrib/chat/test/browser/taskCommand.test.ts",
+      "src/vs/sessions/contrib/chat/test/browser/workbenchSessionTaskRunner.test.ts",
+      "src/vs/sessions/contrib/chat/test/browser/worktreeCreatedTaskDispatcher.test.ts",
+      "src/vs/sessions/contrib/providers/copilotChatSessions/browser/copilotChatSessionsProvider.ts",
+      "src/vs/sessions/contrib/terminal/browser/agentHostSessionTaskRunner.ts",
+      "src/vs/sessions/contrib/terminal/browser/sessionsTerminalContribution.ts",
+      "src/vs/sessions/contrib/terminal/test/browser/agentHostSessionTaskRunner.test.ts",
+      "src/vs/sessions/services/sessions/common/session.ts"
+    ],
+    "expected_behaviors": [
+      "agentHost: support running tasks in remote workspaces (PR #317186)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-312162",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "package-lock.json",
+      "package.json",
+      "remote/package-lock.json",
+      "remote/package.json",
+      "src/vs/platform/agentHost/common/agentHostSchema.ts",
+      "src/vs/platform/agentHost/common/agentService.ts",
+      "src/vs/platform/agentHost/common/sessionConfigKeys.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotAgent.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotAgentSession.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotSessionWrapper.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotToolDisplay.ts",
+      "src/vs/platform/agentHost/test/common/agentHostSchema.test.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgent.test.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgentSession.test.ts",
+      "src/vs/platform/agentHost/test/node/mockAgent.ts",
+      "src/vs/platform/agentHost/test/node/protocol/toolApprovalRealSdk.integrationTest.ts",
+      "src/vs/sessions/contrib/chat/browser/agentHost/agentHostModePicker.ts",
+      "src/vs/sessions/contrib/chat/browser/agentHost/agentHostPermissionPickerDelegate.ts",
+      "src/vs/sessions/contrib/chat/browser/agentHost/agentHostSessionConfigPicker.ts",
+      "src/vs/sessions/contrib/chat/test/browser/agentHost/agentHostPermissionPickerDelegate.test.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts"
+    ],
+    "expected_behaviors": [
+      "agentHost: implement plan and native autopilot modes (PR #313301)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-312869",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostChatContribution.test.ts"
+    ],
+    "expected_behaviors": [
+      "agentHost: dismiss question widget on other clients when answered (PR #312919)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-312922",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/agentHostHeadlessTerminal.ts",
+      "src/vs/platform/agentHost/node/agentHostTerminalManager.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotShellTools.ts",
+      "src/vs/platform/agentHost/test/node/agentHostHeadlessTerminal.test.ts",
+      "src/vs/platform/agentHost/test/node/agentHostTerminalManager.test.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgent.test.ts",
+      "src/vs/platform/agentHost/test/node/copilotShellTools.test.ts"
+    ],
+    "expected_behaviors": [
+      "Enable bracketed paste mode for agent host terminal (PR #316098)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-313103",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/sessions/contrib/agentHost/browser/baseAgentHostSessionsProvider.ts",
+      "src/vs/sessions/services/sessions/browser/sessionsManagementService.ts",
+      "src/vs/sessions/services/sessions/common/session.ts",
+      "src/vs/sessions/services/sessions/test/browser/sessionsManagementService.test.ts"
+    ],
+    "expected_behaviors": [
+      "sessions: deduplicate sessions across providers (PR #313366)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-313160",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/common/agentHostCustomizationConfig.ts",
+      "src/vs/platform/agentHost/node/agentHostTerminalManager.ts",
+      "src/vs/platform/agentHost/node/agentService.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotAgent.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotShellTools.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgent.test.ts",
+      "src/vs/platform/agentHost/test/node/copilotShellTools.test.ts",
+      "src/vs/platform/terminal/common/terminal.ts",
+      "src/vs/platform/terminal/common/terminalPlatformConfiguration.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostTerminalContribution.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostTerminalContribution.test.ts",
+      "src/vs/workbench/contrib/terminal/browser/terminalProfileResolverService.ts",
+      "src/vs/workbench/contrib/terminal/common/terminal.ts"
+    ],
+    "expected_behaviors": [
+      "Copilot CLI with Agent Host should respect user shell from terminal profile when running shell commands  (PR #313679)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-313922",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/common/agentService.ts",
+      "src/vs/platform/agentHost/node/agentSideEffects.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotAgent.ts",
+      "src/vs/platform/agentHost/test/node/agentSideEffects.test.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgent.test.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostLanguageModelProvider.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/stateToProgressAdapter.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostChatContribution.test.ts"
+    ],
+    "expected_behaviors": [
+      "AgentHost: Add agent host model metadata multipliers (PR #314026)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-314149",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/common/state/protocol/channels-session/reducer.ts",
+      "src/vs/platform/agentHost/node/agentSideEffects.ts",
+      "src/vs/platform/agentHost/node/sessionPermissions.ts",
+      "src/vs/platform/agentHost/test/node/agentService.test.ts",
+      "src/vs/platform/agentHost/test/node/agentSideEffects.test.ts",
+      "src/vs/platform/agentHost/test/node/reducers.test.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostClientTools.test.ts"
+    ],
+    "expected_behaviors": [
+      "agentHost: fix client tool auto-approval (PR #320712)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-314184",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/common/agentService.ts",
+      "src/vs/platform/agentHost/common/state/protocol/.ahp-version",
+      "src/vs/platform/agentHost/common/state/protocol/state.ts",
+      "src/vs/platform/agentHost/common/state/sessionState.ts",
+      "src/vs/platform/agentHost/node/agentSideEffects.ts",
+      "src/vs/platform/agentHost/node/claude/claudePromptResolver.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotAgentSession.ts",
+      "src/vs/platform/agentHost/test/node/agentSideEffects.test.ts",
+      "src/vs/platform/agentHost/test/node/claudeAgent.test.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgentSession.test.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostChatContribution.test.ts"
+    ],
+    "expected_behaviors": [
+      "Allow agent host copilot cli to use selection text and range  (PR #314245)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-314278",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/sessions/contrib/providers/agentHost/browser/baseAgentHostSessionsProvider.ts",
+      "src/vs/sessions/contrib/providers/agentHost/browser/localAgentHostSessionsProvider.ts",
+      "src/vs/sessions/contrib/providers/remoteAgentHost/browser/remoteAgentHostSessionsProvider.ts",
+      "src/vs/sessions/contrib/providers/remoteAgentHost/test/browser/remoteAgentHostSessionsProvider.test.ts"
+    ],
+    "expected_behaviors": [
+      "Remove \"Local\" label from new agent host sessions (PR #319222)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-314385",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostTerminalContribution.ts"
+    ],
+    "expected_behaviors": [
+      "Avoid infinite loop in syncing agent host config (PR #314391)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-314807",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/agentHostCompletions.ts",
+      "src/vs/platform/agentHost/node/agentHostSkillCompletionProvider.ts",
+      "src/vs/platform/agentHost/node/agentHostSlashCompletion.ts",
+      "src/vs/platform/agentHost/node/agentService.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotSlashCommandCompletionProvider.ts",
+      "src/vs/platform/agentHost/test/node/agentHostSkillCompletionProvider.test.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts",
+      "src/vs/workbench/contrib/chat/browser/widget/input/editor/agentHostInputCompletions.ts",
+      "src/vs/workbench/contrib/chat/common/chatSessionsService.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostChatContribution.test.ts"
+    ],
+    "expected_behaviors": [
+      "feat: completions for skills in agent host (PR #316574)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-314809",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/terminal/browser/terminalService.ts",
+      "src/vs/workbench/contrib/terminal/test/browser/terminalService.test.ts"
+    ],
+    "expected_behaviors": [
+      "Don't propagate custom pty title/icon updates to the pty host (PR #316482)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-314824",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostChatContribution.test.ts"
+    ],
+    "expected_behaviors": [
+      "chat: sync queued agent host messages (PR #315130)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-314827",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/common/agentService.ts",
+      "src/vs/platform/agentHost/node/agentSideEffects.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotAgentSession.ts",
+      "src/vs/platform/agentHost/test/node/agentSideEffects.test.ts",
+      "src/vs/platform/agentHost/test/node/mockAgent.ts"
+    ],
+    "expected_behaviors": [
+      "agent host: drive subagent cleanup from SDK completion events (PR #315880)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-314867",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/sessions/contrib/remoteAgentHost/browser/remoteAgentHostCustomizationHarness.ts"
+    ],
+    "expected_behaviors": [
+      "AgentHost: Skills don't show plugin prefix (PR #315241)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-314879",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationManagement.contribution.ts"
+    ],
+    "expected_behaviors": [
+      "chat: hide plugin actions for synced customization items (PR #315320)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-314880",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/agentHostGitService.ts"
+    ],
+    "expected_behaviors": [
+      "Agent host: prefer origin/<default> as worktree base (PR #314861)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-314887",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "cli/src/commands/agent.rs",
+      "cli/src/commands/agent_host.rs",
+      "cli/src/commands/agent_kill.rs",
+      "cli/src/commands/args.rs",
+      "cli/src/commands/output.rs",
+      "cli/src/commands/tunnels.rs",
+      "cli/src/constants.rs",
+      "cli/src/state.rs",
+      "cli/src/tunnels.rs",
+      "cli/src/tunnels/agent_host.rs",
+      "cli/src/tunnels/agent_host_metadata.rs",
+      "cli/src/tunnels/code_server.rs",
+      "cli/src/tunnels/control_server.rs",
+      "cli/src/tunnels/service_windows.rs",
+      "cli/src/util/command.rs",
+      "extensions/vscode-test-resolver/package.json",
+      "extensions/vscode-test-resolver/src/extension.ts",
+      "src/vs/platform/agentHost/browser/agentHostIpcChannelTransport.ts",
+      "src/vs/platform/agentHost/common/agentHostUri.ts",
+      "src/vs/platform/agentHost/common/agentService.ts",
+      "src/vs/platform/agentHost/common/remoteAgentHostMetadata.ts",
+      "src/vs/platform/agentHost/electron-browser/localAgentHostService.ts",
+      "src/vs/platform/agentHost/node/agentHostLockfile.ts",
+      "src/vs/platform/agentHost/node/agentHostMain.ts",
+      "src/vs/platform/agentHost/node/sshRemoteAgentHostHelpers.ts",
+      "src/vs/platform/agentHost/node/sshRemoteAgentHostService.ts",
+      "src/vs/platform/agentHost/node/webSocketTransport.ts",
+      "src/vs/platform/agentHost/test/browser/agentHostIpcChannelTransport.test.ts",
+      "src/vs/platform/agentHost/test/node/agentHostLockfile.test.ts",
+      "src/vs/platform/agentHost/test/node/sshRemoteAgentHostHelpers.test.ts",
+      "src/vs/platform/agentHost/test/node/sshRemoteAgentHostService.test.ts",
+      "src/vs/server/node/agentHostChannel.ts",
+      "src/vs/server/node/serverEnvironmentService.ts",
+      "src/vs/server/node/serverServices.ts",
+      "src/vs/server/test/node/agentHostChannel.test.ts",
+      "src/vs/sessions/sessions.desktop.main.ts",
+      "src/vs/sessions/sessions.web.main.ts",
+      "src/vs/workbench/services/agentHost/browser/editorRemoteAgentHostServiceClient.ts",
+      "src/vs/workbench/services/agentHost/electron-browser/agentHostService.ts",
+      "src/vs/workbench/workbench.desktop.main.ts",
+      "src/vs/workbench/workbench.web.main.ts"
+    ],
+    "expected_behaviors": [
+      "agentHost: unify launching between surfaces (PR #316327)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-314889",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/agentHostHeadlessTerminal.ts",
+      "src/vs/platform/agentHost/node/agentHostTerminalManager.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotShellTools.ts",
+      "src/vs/platform/agentHost/test/node/agentHostHeadlessTerminal.test.ts",
+      "src/vs/platform/agentHost/test/node/agentHostTerminalManager.test.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgent.test.ts",
+      "src/vs/platform/agentHost/test/node/copilotShellTools.test.ts"
+    ],
+    "expected_behaviors": [
+      "Prevent alt-buffer hang in agent host terminals (PR #316177)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-314952",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/common/agentHostCustomizationConfig.ts",
+      "src/vs/platform/agentHost/node/claude/claudeAgent.ts",
+      "src/vs/platform/agentHost/node/claude/claudeAgentSdkService.ts",
+      "src/vs/platform/agentHost/node/claude/claudeAgentSession.ts",
+      "src/vs/platform/agentHost/node/claude/claudeProxyService.ts",
+      "src/vs/platform/agentHost/node/claude/claudeSdkOptions.ts",
+      "src/vs/platform/agentHost/node/claude/claudeSessionMetadataStore.ts",
+      "src/vs/platform/agentHost/node/claude/phase18-plan.md",
+      "src/vs/platform/agentHost/node/claude/phase19-plan.md",
+      "src/vs/platform/agentHost/node/claude/roadmap.md",
+      "src/vs/platform/agentHost/test/node/claudeAgent.integrationTest.ts",
+      "src/vs/platform/agentHost/test/node/claudeAgent.test.ts",
+      "src/vs/platform/agentHost/test/node/claudeSdkOptions.test.ts",
+      "src/vs/platform/agentHost/test/node/claudeSubagentResolver.test.ts"
+    ],
+    "expected_behaviors": [
+      "Claude agent host: native (BYOK) transport (Phases 18–19) (PR #323037)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-315059",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/sessions/contrib/remoteAgentHost/browser/remoteAgentHostActions.ts",
+      "src/vs/sessions/contrib/remoteAgentHost/browser/tunnelAgentHost.contribution.ts",
+      "src/vs/sessions/contrib/remoteAgentHost/browser/webTunnelAgentHostService.ts",
+      "src/vs/sessions/contrib/remoteAgentHost/electron-browser/tunnelAgentHostServiceImpl.ts",
+      "src/vs/sessions/contrib/remoteAgentHost/test/browser/tunnelAgentHost.contribution.test.ts"
+    ],
+    "expected_behaviors": [
+      "sessions: cache tunnel inside connect() so listSessions runs on first connect (PR #315897)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-315061",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/common/agentFeedbackAttachments.ts",
+      "src/vs/platform/agentHost/node/claude/claudePromptResolver.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotAgentSession.ts",
+      "src/vs/platform/agentHost/node/copilot/mapSessionEvents.ts",
+      "src/vs/platform/agentHost/test/node/claudeAgent.test.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgentSession.test.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/stateToProgressAdapter.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostChatContribution.test.ts"
+    ],
+    "expected_behaviors": [
+      "Support agent feedback attachments in Agent Host (PR #316894)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-315160",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/common/state/protocol/.ahp-version",
+      "src/vs/platform/agentHost/common/state/protocol/state.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotAgentSession.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgentSession.test.ts",
+      "src/vs/platform/agentHost/test/node/mockAgent.ts",
+      "src/vs/platform/agentHost/test/node/protocol/toolApprovalRealSdk.integrationTest.ts",
+      "src/vs/platform/agentHost/test/node/protocol/turnExecution.integrationTest.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/stateToProgressAdapter.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostChatContribution.test.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/stateToProgressAdapter.test.ts"
+    ],
+    "expected_behaviors": [
+      "chat: show agent host model pricing in turn details (PR #315159)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-315182",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/stateToProgressAdapter.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/stateToProgressAdapter.test.ts"
+    ],
+    "expected_behaviors": [
+      "Enable input/output UI for agent host tool calls (PR #316512)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-315581",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/copilot/copilotAgentSession.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotToolDisplay.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgentSession.test.ts",
+      "src/vs/platform/agentHost/test/node/copilotToolDisplay.test.ts"
+    ],
+    "expected_behaviors": [
+      "Render apply_patch as file edits (PR #315475)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-315588",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/common/sshRemoteAgentHost.ts",
+      "src/vs/platform/agentHost/electron-browser/sshRemoteAgentHostServiceImpl.ts",
+      "src/vs/platform/agentHost/node/sshRemoteAgentHostService.ts",
+      "src/vs/platform/agentHost/test/electron-browser/sshRemoteAgentHostService.test.ts",
+      "src/vs/platform/agentHost/test/node/sshRemoteAgentHostService.test.ts"
+    ],
+    "expected_behaviors": [
+      "agents: add keyboard-interactive SSH auth fallback (PR #315590)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-315947",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/copilot/copilotAgentSession.ts"
+    ],
+    "expected_behaviors": [
+      "agent-host: fix image detection in browser screenshot tool (PR #316753)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-316347",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/agentHostShellUtils.ts",
+      "src/vs/platform/agentHost/node/agentHostTerminalManager.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotShellTools.ts",
+      "src/vs/platform/agentHost/test/node/agentHostTerminalManager.test.ts",
+      "src/vs/platform/agentHost/test/node/copilotShellTools.test.ts"
+    ],
+    "expected_behaviors": [
+      "Port zsh terminal fixes: zsh pitfalls with shell options and steering text (PR #316359)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-316538",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/common/agentPluginManager.ts",
+      "src/vs/platform/agentHost/common/agentService.ts",
+      "src/vs/platform/agentHost/node/agentPluginManager.ts",
+      "src/vs/platform/agentHost/node/agentSideEffects.ts",
+      "src/vs/platform/agentHost/node/claude/claudeAgent.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotAgent.ts",
+      "src/vs/platform/agentHost/test/node/agentPluginManager.test.ts",
+      "src/vs/platform/agentHost/test/node/agentSideEffects.test.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgent.test.ts",
+      "src/vs/platform/agentHost/test/node/mockAgent.ts",
+      "src/vs/sessions/contrib/providers/remoteAgentHost/test/browser/remoteAgentHostCustomizationHarness.test.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentCustomizationItemProvider.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostChatContribution.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostChatContribution.test.ts"
+    ],
+    "expected_behaviors": [
+      "agent-host: stop redundant customization sync events (PR #317611)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-316541",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/base/test/browser/markdownRenderer.test.ts",
+      "src/vs/platform/agentHost/common/agentHostUri.ts",
+      "src/vs/platform/agentHost/node/agentHostGitService.ts",
+      "src/vs/platform/agentHost/node/gitDiffContent.ts",
+      "src/vs/platform/agentHost/test/common/agentHostFileSystemProvider.test.ts",
+      "src/vs/platform/agentHost/test/node/agentHostGitService.integrationTest.ts",
+      "src/vs/platform/agentHost/test/node/agentHostGitService.test.ts",
+      "src/vs/platform/agentHost/test/node/gitDiffContent.test.ts",
+      "src/vs/sessions/contrib/changes/browser/changesEditorLabels.ts",
+      "src/vs/sessions/contrib/changes/test/browser/changesEditorLabels.test.ts",
+      "src/vs/sessions/contrib/providers/agentHost/test/browser/localAgentHostSessionsProvider.test.ts",
+      "src/vs/sessions/contrib/providers/agentHost/test/browser/openSessionEventsFile.test.ts",
+      "src/vs/sessions/contrib/providers/remoteAgentHost/test/browser/remoteAgentHostCustomizationHarness.test.ts",
+      "src/vs/sessions/contrib/providers/remoteAgentHost/test/browser/remoteAgentHostSessionsProvider.test.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostChatContribution.test.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/stateToProgressAdapter.test.ts",
+      "src/vs/workbench/contrib/chat/test/browser/widget/chatContentParts/chatInlineAnchorWidget.test.ts",
+      "src/vs/workbench/services/dialogs/browser/simpleFileDialog.ts",
+      "src/vs/workbench/services/dialogs/test/browser/simpleFileDialog.test.ts"
+    ],
+    "expected_behaviors": [
+      "Make Agent Host git-blob URIs label friendly (PR #317450)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-316543",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/common/state/protocol/.ahp-version",
+      "src/vs/platform/agentHost/common/state/protocol/channels-session/reducer.ts"
+    ],
+    "expected_behaviors": [
+      "Sync AHP for reducer fix (PR #317908)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-316544",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts"
+    ],
+    "expected_behaviors": [
+      "agent-host: route long question text through detailedMessage (PR #317650)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-316554",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/sessions/contrib/providers/remoteAgentHost/browser/remoteAgentHost.contribution.ts",
+      "src/vs/sessions/contrib/providers/remoteAgentHost/browser/tunnelAgentHost.contribution.ts"
+    ],
+    "expected_behaviors": [
+      "agent host: clear sticky incompatible status after upgrade reconnect (PR #318428)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-316799",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts"
+    ],
+    "expected_behaviors": [
+      "Fix wide agent host share button (PR #316800)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-316802",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/chat/browser/widget/chatContentMarkdownRenderer.ts",
+      "src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatConfirmationWidget.ts",
+      "src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatToolInputOutputContentPart.ts",
+      "src/vs/workbench/contrib/chat/test/browser/widget/chatContentParts/chatInlineAnchorWidget.test.ts"
+    ],
+    "expected_behaviors": [
+      "Render agent host links in chat tool titles (PR #316804)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-316823",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/browser/remoteAgentHostProtocolClient.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotAgent.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotPluginConverters.ts",
+      "src/vs/platform/agentHost/node/protocolServerHandler.ts",
+      "src/vs/platform/agentHost/test/electron-browser/remoteAgentHostProtocolClient.test.ts",
+      "src/vs/platform/agentHost/test/node/copilotPluginConverters.test.ts",
+      "src/vs/platform/agentHost/test/node/protocolServerHandler.test.ts",
+      "src/vs/platform/agentPlugins/common/pluginParsers.ts",
+      "src/vs/sessions/contrib/providers/agentHost/browser/baseAgentHostSessionsProvider.ts",
+      "src/vs/sessions/contrib/providers/agentHost/browser/localAgentHostSessionsProvider.ts",
+      "src/vs/sessions/contrib/providers/agentHost/test/browser/localAgentHostSessionsProvider.test.ts",
+      "src/vs/sessions/contrib/providers/remoteAgentHost/browser/remoteAgentHost.contribution.ts",
+      "src/vs/sessions/contrib/providers/remoteAgentHost/browser/remoteAgentHostCustomizationHarness.ts",
+      "src/vs/sessions/contrib/providers/remoteAgentHost/browser/remoteAgentHostSessionsProvider.ts",
+      "src/vs/sessions/contrib/providers/remoteAgentHost/test/browser/remoteAgentHostSessionsProvider.test.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentCustomizationContentExpander.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostActiveClientService.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostChatContribution.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostLocalCustomizations.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostToolUtils.ts",
+      "src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationItemSource.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentHost/agentCustomizationContentExpander.test.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostChatContribution.test.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostClientTools.test.ts",
+      "src/vs/workbench/contrib/chat/test/browser/aiCustomization/aiCustomizationItemsModel.test.ts"
+    ],
+    "expected_behaviors": [
+      "Agent host instructions and customization tweaks (PR #318051)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-316905",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostEditingSession.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSnapshotController.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/stateToProgressAdapter.ts",
+      "src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatEditPillElement.ts",
+      "src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatExternalEditContentPart.ts",
+      "src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatMarkdownContentPart.ts",
+      "src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts",
+      "src/vs/workbench/contrib/chat/browser/widget/chatContentParts/media/chatCodeBlockPill.css",
+      "src/vs/workbench/contrib/chat/browser/widget/chatContentParts/media/chatThinkingContent.css",
+      "src/vs/workbench/contrib/chat/browser/widget/chatListRenderer.ts",
+      "src/vs/workbench/contrib/chat/common/actions/chatContextKeys.ts",
+      "src/vs/workbench/contrib/chat/common/chatArtifactExtraction.ts",
+      "src/vs/workbench/contrib/chat/common/chatService/chatService.ts",
+      "src/vs/workbench/contrib/chat/common/model/chatModel.ts",
+      "src/vs/workbench/contrib/chat/common/model/chatSessionOperationLog.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentHost/agentHostEditingSession.test.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentHost/agentHostSnapshotController.test.ts"
+    ],
+    "expected_behaviors": [
+      "agentHost: replace AgentHostEditingSession with direct externalEdit progress part (PR #318053)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-317038",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/common/changesetUri.ts",
+      "src/vs/platform/agentHost/node/agentService.ts",
+      "src/vs/platform/agentHost/test/node/agentService.test.ts"
+    ],
+    "expected_behaviors": [
+      "Add branch changeset description formatting and update session management (PR #317704)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-317113",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/common/agentService.ts",
+      "src/vs/platform/agentHost/node/agentHostChangesetOperationContributions.ts",
+      "src/vs/platform/agentHost/node/agentHostPullRequestOperationHandler.ts",
+      "src/vs/platform/agentHost/node/agentHostPullRequestOperationProvider.ts",
+      "src/vs/platform/agentHost/node/agentService.ts",
+      "src/vs/platform/agentHost/node/shared/agentHostOctoKitService.ts",
+      "src/vs/platform/agentHost/test/node/agentHostPullRequestOperationHandler.test.ts",
+      "src/vs/platform/agentHost/test/node/agentHostPullRequestOperationProvider.test.ts",
+      "src/vs/platform/agentHost/test/node/shared/agentHostOctoKitService.test.ts"
+    ],
+    "expected_behaviors": [
+      "feat: implement GitHub pull request operations in agent host (PR #318256)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-317289",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/chat/browser/chatSlashCommands.ts",
+      "src/vs/workbench/contrib/chat/common/chatSessionsService.ts"
+    ],
+    "expected_behaviors": [
+      "feat(chat): update session type for AgentHostCopilot to 'agent-host-copilotcli' and enhance slash command handling (PR #317725)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-317549",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/common/sshConfigParsing.ts",
+      "src/vs/platform/agentHost/common/sshRemoteAgentHost.ts",
+      "src/vs/platform/agentHost/node/sshRemoteAgentHostService.ts",
+      "src/vs/platform/agentHost/test/common/sshConfigParsing.test.ts",
+      "src/vs/platform/agentHost/test/electron-browser/sshRemoteAgentHostService.test.ts",
+      "src/vs/platform/agentHost/test/node/sshRemoteAgentHostService.test.ts",
+      "src/vs/sessions/contrib/providers/remoteAgentHost/REMOTE_AGENT_HOST_SESSIONS_PROVIDER.md",
+      "src/vs/sessions/contrib/providers/remoteAgentHost/browser/remoteAgentHostActions.ts"
+    ],
+    "expected_behaviors": [
+      "Fix SSH remote agent host passphrase auth (PR #318244)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-317567",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/sessions/contrib/providers/agentHost/browser/baseAgentHostSessionsProvider.ts",
+      "src/vs/sessions/contrib/providers/agentHost/test/browser/localAgentHostSessionsProvider.test.ts",
+      "src/vs/sessions/contrib/providers/copilotChatSessions/browser/copilotChatSessionsProvider.ts",
+      "src/vs/sessions/contrib/providers/copilotChatSessions/test/browser/copilotChatSessionsProvider.test.ts"
+    ],
+    "expected_behaviors": [
+      "Respect Folder for Agent Host Copilot CLI (PR #317581)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-317839",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/agentService.ts",
+      "src/vs/platform/agentHost/node/copilot/mapSessionEvents.ts",
+      "src/vs/platform/agentHost/node/sessionDatabase.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgentSession.test.ts",
+      "src/vs/platform/agentHost/test/node/sessionDatabase.test.ts",
+      "src/vs/sessions/contrib/providers/localChatSessions/browser/localChatSessions.contribution.ts",
+      "src/vs/workbench/contrib/chat/browser/actions/chatForkActions.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts"
+    ],
+    "expected_behaviors": [
+      "chat (sessions): fix forking AHP chats so the new session opens with a \"Forked: \" title (PR #319064)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-317907",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/sessions/contrib/chat/browser/agentHostInputCompletions.ts",
+      "src/vs/sessions/contrib/chat/browser/newChatContextAttachments.ts",
+      "src/vs/sessions/contrib/chat/browser/newChatInput.ts",
+      "src/vs/sessions/contrib/chat/test/browser/agentHostInputCompletions.test.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts",
+      "src/vs/workbench/contrib/chat/browser/widget/input/editor/agentHostInputCompletions.ts",
+      "src/vs/workbench/contrib/chat/common/attachments/chatVariableEntries.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostChatContribution.test.ts"
+    ],
+    "expected_behaviors": [
+      "chat: send agent host completion attachments (PR #320703)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-317921",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/browser/nullAgentHostService.ts",
+      "src/vs/platform/agentHost/browser/remoteAgentHostProtocolClient.ts",
+      "src/vs/platform/agentHost/common/agentService.ts",
+      "src/vs/platform/agentHost/common/changesetOperation.ts",
+      "src/vs/platform/agentHost/electron-browser/localAgentHostService.ts",
+      "src/vs/platform/agentHost/node/agentHostAuthenticationService.ts",
+      "src/vs/platform/agentHost/node/agentHostChangesetOperationContributionService.ts",
+      "src/vs/platform/agentHost/node/agentHostChangesetOperationContributions.ts",
+      "src/vs/platform/agentHost/node/agentHostCommitOperationHandler.ts",
+      "src/vs/platform/agentHost/node/agentHostCommitOperationProvider.ts",
+      "src/vs/platform/agentHost/node/agentHostGitService.ts",
+      "src/vs/platform/agentHost/node/agentHostMain.ts",
+      "src/vs/platform/agentHost/node/agentHostServerMain.ts",
+      "src/vs/platform/agentHost/node/agentHostSessionGitStateService.ts",
+      "src/vs/platform/agentHost/node/agentService.ts",
+      "src/vs/platform/agentHost/node/protocolServerHandler.ts",
+      "src/vs/platform/agentHost/test/common/sessionTestHelpers.ts",
+      "src/vs/platform/agentHost/test/node/agentHostChangesetOperationContributionService.test.ts",
+      "src/vs/platform/agentHost/test/node/agentHostCommitOperationHandler.test.ts",
+      "src/vs/platform/agentHost/test/node/agentHostCommitOperationProvider.test.ts",
+      "src/vs/platform/agentHost/test/node/agentHostGitService.integrationTest.ts",
+      "src/vs/platform/agentHost/test/node/agentService.test.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgent.test.ts",
+      "src/vs/platform/agentHost/test/node/copilotGitProject.test.ts",
+      "src/vs/platform/agentHost/test/node/protocolServerHandler.test.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostAuth.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostAuth.test.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostChatContribution.test.ts",
+      "src/vs/workbench/contrib/terminal/test/browser/agentHostPty.test.ts",
+      "src/vs/workbench/services/agentHost/browser/editorRemoteAgentHostServiceClient.ts"
+    ],
+    "expected_behaviors": [
+      "feat: Implement session Git state management and commit operations (PR #318734)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-317922",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/agentHostChangesetCoordinator.ts",
+      "src/vs/platform/agentHost/node/agentHostChangesetFileMonitorCoordinator.ts",
+      "src/vs/platform/agentHost/node/agentHostFileMonitorService.ts",
+      "src/vs/platform/agentHost/node/agentHostMain.ts",
+      "src/vs/platform/agentHost/node/agentHostServerMain.ts",
+      "src/vs/platform/agentHost/node/agentHostStateManager.ts",
+      "src/vs/platform/agentHost/node/agentService.ts",
+      "src/vs/platform/agentHost/test/node/agentHostChangesetCoordinator.test.ts",
+      "src/vs/platform/agentHost/test/node/agentHostFileMonitorService.test.ts",
+      "src/vs/platform/agentHost/test/node/agentHostStateManager.test.ts"
+    ],
+    "expected_behaviors": [
+      "feat: Introduce ChangesetFileMonitorCoordinator for session-specific file monitoring (PR #318284)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-317944",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts",
+      "src/vs/workbench/contrib/chat/common/chatModes.ts",
+      "src/vs/workbench/contrib/chat/test/common/mockChatModeService.ts"
+    ],
+    "expected_behaviors": [
+      "Agent Picker is not pre-selected when creating a new Agent Host session with specific Agent in Agent Window (PR #318506)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-318069",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/chat/browser/actions/chatAccessibilityHelp.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostChatInputPicker.contribution.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostChatInputPicker.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostFolderPickerActionItem.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostGenericConfigChips.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostNewSessionFolderService.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionListController.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostUntitledProvisionalSessionService.ts",
+      "src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostChatContribution.test.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostNewSessionFolderService.test.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostUntitledProvisionalSessionService.test.ts",
+      "src/vs/workbench/test/browser/componentFixtures/chat/chatFixtureUtils.ts",
+      "src/vs/workbench/test/browser/componentFixtures/editor/inlineChatZoneWidget.fixture.ts"
+    ],
+    "expected_behaviors": [
+      "Folder picker chip for Agent Host sessions in multi-root windows (PR #320681)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-318241",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/sessions/SESSIONS.md",
+      "src/vs/sessions/contrib/chat/browser/chat.contribution.ts",
+      "src/vs/sessions/contrib/chat/browser/worktreeCreatedTaskDispatcher.ts",
+      "src/vs/sessions/contrib/chat/test/browser/worktreeCreatedTaskDispatcher.test.ts",
+      "src/vs/sessions/services/sessions/browser/sessionsManagementService.ts",
+      "src/vs/sessions/services/sessions/common/sessionsManagement.ts",
+      "src/vs/sessions/services/sessions/test/browser/sessionNavigation.test.ts"
+    ],
+    "expected_behaviors": [
+      "Fix WorktreeCreatedTaskDispatcher overfiring (#318241) (PR #318880)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-318251",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSnapshotController.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentHost/agentHostSnapshotController.test.ts"
+    ],
+    "expected_behaviors": [
+      "agent host: hydrate snapshot controller for Restore Checkpoint (PR #319051)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-318265",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/copilot/copilotAgentSession.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgentSession.test.ts"
+    ],
+    "expected_behaviors": [
+      "agentHost: surface steering messages as their own user turn (PR #318456)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-318401",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      ".github/instructions/coding-guidelines.instructions.md",
+      "src/vs/sessions/SESSIONS.md",
+      "src/vs/sessions/common/contextkeys.ts",
+      "src/vs/sessions/contrib/chat/browser/chat.contribution.ts",
+      "src/vs/sessions/contrib/chat/browser/modelPicker.ts",
+      "src/vs/sessions/contrib/chat/test/browser/sessionWorkspacePicker.test.ts",
+      "src/vs/sessions/contrib/providers/agentHost/browser/agentHostModelPicker.ts",
+      "src/vs/sessions/contrib/providers/agentHost/browser/baseAgentHostSessionsProvider.ts",
+      "src/vs/sessions/contrib/providers/agentHost/browser/mobile/mobileChatInputConfigPicker.ts",
+      "src/vs/sessions/contrib/providers/copilotChatSessions/COPILOT_CHAT_SESSIONS_PROVIDER.md",
+      "src/vs/sessions/contrib/providers/copilotChatSessions/browser/copilotChatSessionsActions.ts",
+      "src/vs/sessions/contrib/providers/copilotChatSessions/browser/copilotChatSessionsProvider.ts",
+      "src/vs/sessions/contrib/providers/copilotChatSessions/browser/modelPicker.ts",
+      "src/vs/sessions/contrib/providers/copilotChatSessions/test/browser/modelPickerDelegate.test.ts",
+      "src/vs/sessions/contrib/providers/localChatSessions/LOCAL_CHAT_SESSIONS_PROVIDER.md",
+      "src/vs/sessions/contrib/providers/localChatSessions/browser/localChatSessionsProvider.ts",
+      "src/vs/sessions/contrib/providers/remoteAgentHost/REMOTE_AGENT_HOST_SESSIONS_PROVIDER.md",
+      "src/vs/sessions/contrib/providers/remoteAgentHost/browser/remoteAgentHost.contribution.ts",
+      "src/vs/sessions/services/sessions/common/sessionsProvider.ts",
+      "src/vs/sessions/services/sessions/test/browser/sessionsManagementService.test.ts"
+    ],
+    "expected_behaviors": [
+      "sessions: unify model picker into core via provider getModels API (PR #319980)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-318458",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/stateToProgressAdapter.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/stateToProgressAdapter.test.ts"
+    ],
+    "expected_behaviors": [
+      "Fix terminal progress for built-in SDK bash tool (PR #320251)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-318693",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/copilot/copilotAgent.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgent.test.ts"
+    ],
+    "expected_behaviors": [
+      "Forward GitHub token in createSession/resumeSession RPC (PR #319029)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-318891",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/common/fileEditDiff.ts",
+      "src/vs/platform/agentHost/test/common/fileEditDiff.test.ts",
+      "src/vs/sessions/contrib/providers/agentHost/browser/agentHostDiffs.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostResponseFileChanges.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/stateToProgressAdapter.ts",
+      "src/vs/workbench/contrib/chat/browser/chat.shared.contribution.ts",
+      "src/vs/workbench/contrib/chat/browser/chatResponseFileChangesService.ts",
+      "src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatChangesSummaryPart.ts",
+      "src/vs/workbench/contrib/chat/browser/widget/chatListRenderer.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentHost/agentHostResponseFileChanges.test.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostChatContribution.test.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostClientTools.test.ts"
+    ],
+    "expected_behaviors": [
+      "Show per-turn file changes summary for agent host chat responses (PR #323215)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-319314",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/agentService.ts",
+      "src/vs/platform/agentHost/test/node/agentService.test.ts"
+    ],
+    "expected_behaviors": [
+      "agentHost: avoid rewriting attachment URIs that exist on the agent host (PR #319452)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-319381",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/browser/remoteAgentHostServiceImpl.ts",
+      "src/vs/platform/agentHost/common/remoteAgentHostService.ts",
+      "src/vs/platform/agentHost/electron-browser/sshRemoteAgentHostServiceImpl.ts",
+      "src/vs/platform/agentHost/test/electron-browser/remoteAgentHostService.test.ts",
+      "src/vs/platform/agentHost/test/electron-browser/sshRemoteAgentHostService.test.ts",
+      "src/vs/sessions/contrib/providers/remoteAgentHost/browser/webTunnelAgentHostService.ts",
+      "src/vs/sessions/contrib/providers/remoteAgentHost/electron-browser/tunnelAgentHostServiceImpl.ts"
+    ],
+    "expected_behaviors": [
+      "agentHost: keep SSH connection registered after incompatible handshake (PR #319455)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-319516",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "cli/src/tunnels/agent_host.rs",
+      "cli/src/util/command.rs"
+    ],
+    "expected_behaviors": [
+      "Kill full server process tree in agent host kill_running_server (PR #320631)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-319641",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/common/agentService.ts",
+      "src/vs/platform/agentHost/common/pendingRequestRegistry.ts",
+      "src/vs/platform/agentHost/node/activeClientState.ts",
+      "src/vs/platform/agentHost/node/agentSideEffects.ts",
+      "src/vs/platform/agentHost/node/claude/claudeAgent.ts",
+      "src/vs/platform/agentHost/node/claude/clientTools/claudeSessionClientToolsModel.ts",
+      "src/vs/platform/agentHost/node/codex/codexAgent.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotAgent.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotAgentSession.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotSessionLauncher.ts",
+      "src/vs/platform/agentHost/node/protocolServerHandler.ts",
+      "src/vs/platform/agentHost/test/common/pendingRequestRegistry.test.ts",
+      "src/vs/platform/agentHost/test/node/clientTools/claudeSessionClientToolsModel.test.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgent.test.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgentSession.test.ts",
+      "src/vs/platform/agentHost/test/node/protocolServerHandler.test.ts"
+    ],
+    "expected_behaviors": [
+      "agentHost: fix orphaned client tool calls after window reload (PR #320672)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-319764",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/browser/nullAgentHostService.ts",
+      "src/vs/platform/agentHost/browser/remoteAgentHostProtocolClient.ts",
+      "src/vs/platform/agentHost/common/agentService.ts",
+      "src/vs/platform/agentHost/common/state/agentSubscription.ts",
+      "src/vs/platform/agentHost/electron-browser/localAgentHostService.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostChatContribution.test.ts",
+      "src/vs/workbench/contrib/terminal/test/browser/agentHostPty.test.ts",
+      "src/vs/workbench/services/agentHost/browser/editorRemoteAgentHostServiceClient.ts"
+    ],
+    "expected_behaviors": [
+      "Fix race condition involving eager createSession in chat sessions pro… (PR #321526)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-319769",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/agentHostCompletions.ts",
+      "src/vs/platform/agentHost/node/agentHostFileCompletionProvider.ts",
+      "src/vs/platform/agentHost/test/node/agentHostFileCompletionProvider.test.ts"
+    ],
+    "expected_behaviors": [
+      "agentHost: support '#' as a file completion trigger in addition to '@' (PR #319827)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-319771",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/copilot/copilotAgentSession.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgentSession.test.ts"
+    ],
+    "expected_behaviors": [
+      "Propagate Copilot usage from SDK to agent session (PR #320897)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-319802",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/browser/remoteAgentHostProtocolClient.ts",
+      "src/vs/platform/agentHost/common/agentClientUri.ts",
+      "src/vs/platform/agentHost/common/agentHostClientResourceChannel.ts",
+      "src/vs/platform/agentHost/common/agentHostPermissionService.ts",
+      "src/vs/platform/agentHost/common/agentHostResourceService.ts",
+      "src/vs/platform/agentHost/electron-browser/localAgentHostService.ts",
+      "src/vs/platform/agentHost/node/agentService.ts",
+      "src/vs/platform/agentHost/test/common/agentClientUri.test.ts",
+      "src/vs/platform/agentHost/test/common/agentHostClientResourceChannel.test.ts",
+      "src/vs/platform/agentHost/test/electron-browser/localAhpJsonlLogging.test.ts",
+      "src/vs/platform/agentHost/test/electron-browser/remoteAgentHostProtocolClient.test.ts",
+      "src/vs/sessions/contrib/providers/remoteAgentHost/browser/remoteAgentHost.contribution.ts",
+      "src/vs/sessions/sessions.common.main.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostPermissionUiContribution.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostChatContribution.test.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostPermissionUiContribution.test.ts",
+      "src/vs/workbench/services/agentHost/common/agentHostResourceService.ts",
+      "src/vs/workbench/services/agentHost/electron-browser/agentHostService.ts",
+      "src/vs/workbench/services/agentHost/test/common/agentHostResourceService.test.ts",
+      "src/vs/workbench/workbench.common.main.ts"
+    ],
+    "expected_behaviors": [
+      "agentHost: support attaching virtual resources (untitled, notebook cells) (PR #320040)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-319812",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/sessions/contrib/aiCustomizationTreeView/browser/aiCustomizationOverviewView.ts",
+      "src/vs/sessions/contrib/chat/browser/aiCustomizationWorkspaceService.ts",
+      "src/vs/sessions/contrib/sessions/browser/customizationsToolbar.contribution.ts",
+      "src/vs/sessions/contrib/sessions/test/browser/aiCustomizationShortcutsWidget.fixture.ts",
+      "src/vs/workbench/contrib/browserView/electron-browser/tools/browserTools.contribution.ts",
+      "src/vs/workbench/contrib/chat/browser/actions/chatToolPicker.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostActiveClientService.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostChatContribution.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostToolSetEnablementService.ts",
+      "src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationIcons.ts",
+      "src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationManagementEditor.ts",
+      "src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWelcomePagePromptLaunchers.ts",
+      "src/vs/workbench/contrib/chat/browser/aiCustomization/aiCustomizationWorkspaceService.ts",
+      "src/vs/workbench/contrib/chat/browser/aiCustomization/media/aiCustomizationManagement.css",
+      "src/vs/workbench/contrib/chat/browser/aiCustomization/toolsListWidget.ts",
+      "src/vs/workbench/contrib/chat/browser/chat.shared.contribution.ts",
+      "src/vs/workbench/contrib/chat/browser/tools/clientToolSetsContribution.ts",
+      "src/vs/workbench/contrib/chat/browser/tools/languageModelToolsService.ts",
+      "src/vs/workbench/contrib/chat/browser/tools/toolSetsContribution.ts",
+      "src/vs/workbench/contrib/chat/common/aiCustomizationWorkspaceService.ts",
+      "src/vs/workbench/contrib/chat/common/constants.ts",
+      "src/vs/workbench/contrib/chat/common/customizationHarnessService.ts",
+      "src/vs/workbench/contrib/chat/common/tools/languageModelToolsContribution.ts",
+      "src/vs/workbench/contrib/chat/common/tools/languageModelToolsService.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostChatContribution.test.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostClientTools.test.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostToolSetEnablementService.test.ts",
+      "src/vs/workbench/contrib/chat/test/common/tools/mockLanguageModelToolsService.ts",
+      "src/vs/workbench/contrib/mcp/common/mcpLanguageModelToolContribution.ts",
+      "src/vs/workbench/contrib/terminalContrib/chatAgentTools/test/electron-browser/runInTerminalTool.test.ts"
+    ],
+    "expected_behaviors": [
+      "Add Tools to Chat Customizations (PR #322620)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-319814",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/agentHostRenameCommand.ts",
+      "src/vs/platform/agentHost/node/agentService.ts",
+      "src/vs/platform/agentHost/node/agentSideEffects.ts",
+      "src/vs/platform/agentHost/test/node/agentHostRenameCommand.test.ts",
+      "src/vs/platform/agentHost/test/node/agentSideEffects.test.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentSessionsActions.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentSessionsModel.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentSessionsPicker.ts",
+      "src/vs/workbench/contrib/chat/browser/chatSessions/chatSessions.contribution.ts",
+      "src/vs/workbench/contrib/chat/common/actions/chatContextKeys.ts",
+      "src/vs/workbench/contrib/chat/common/chatSessionsService.ts",
+      "src/vs/workbench/contrib/chat/test/common/mockChatSessionsService.ts"
+    ],
+    "expected_behaviors": [
+      "agentHost: add generic /rename slash command for agent sessions (PR #319826)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-319819",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      ".github/skills/sessions/SKILL.md",
+      "src/vs/platform/agentHost/test/node/copilotAgentSession.test.ts",
+      "src/vs/sessions/SESSIONS.md",
+      "src/vs/sessions/contrib/chat/browser/agentHostDelegation.ts",
+      "src/vs/sessions/contrib/chat/browser/chat.contribution.ts",
+      "src/vs/sessions/contrib/providers/agentHost/browser/agentHostAgentPicker.ts",
+      "src/vs/sessions/contrib/providers/agentHost/browser/agentHostSessionConfigPicker.ts",
+      "src/vs/sessions/contrib/providers/remoteAgentHost/browser/remoteAgentHost.contribution.ts",
+      "src/vs/workbench/contrib/chat/browser/actions/chatContinueInAction.ts",
+      "src/vs/workbench/contrib/chat/browser/actions/chatExecuteActions.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostChatContribution.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/stateToProgressAdapter.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentSessions.ts",
+      "src/vs/workbench/contrib/chat/browser/chatSessions/chatSessions.contribution.ts",
+      "src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts",
+      "src/vs/workbench/contrib/chat/browser/widget/input/delegationSessionPickerActionItem.ts",
+      "src/vs/workbench/contrib/chat/common/actions/chatContextKeys.ts",
+      "src/vs/workbench/contrib/chat/common/attachments/chatVariableEntries.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostChatContribution.test.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentSessionViewModel.test.ts",
+      "src/vs/workbench/contrib/chat/test/browser/chatContinueInAction.test.ts"
+    ],
+    "expected_behaviors": [
+      "chat: delegate agent-host sessions (PR #321702)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-319820",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/sessions/contrib/providers/agentHost/browser/agentHostClaudePermissionModePicker.ts",
+      "src/vs/sessions/contrib/providers/agentHost/browser/agentHostModePicker.ts",
+      "src/vs/sessions/contrib/providers/agentHost/browser/agentHostPermissionPickerActionItem.ts",
+      "src/vs/sessions/contrib/providers/agentHost/browser/agentHostSessionConfigPicker.ts",
+      "src/vs/sessions/contrib/providers/agentHost/browser/mobile/mobileAgentHostModePicker.ts",
+      "src/vs/sessions/contrib/providers/agentHost/test/browser/agentHostClaudePermissionModePicker.test.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostChatInputPicker.ts",
+      "src/vs/workbench/contrib/chat/browser/widget/input/permissionPickerActionItem.ts"
+    ],
+    "expected_behaviors": [
+      "Add tooltips to agent host session config pickers (PR #320542)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-319824",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/agentHostGitService.ts",
+      "src/vs/platform/agentHost/test/node/agentHostGitService.test.ts"
+    ],
+    "expected_behaviors": [
+      "fix: surface missing Git LFS git errors (PR #319973)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-320011",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/common/agentHostCustomizationConfig.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotAgent.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotAgentSession.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgent.test.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostTerminalContribution.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostTerminalContribution.test.ts"
+    ],
+    "expected_behaviors": [
+      "chat: stop agent host config update loop across windows (PR #320015)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-320114",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/sessions/LAYOUT.md",
+      "src/vs/sessions/contrib/tunnelHost/electron-browser/tunnelHost.contribution.ts",
+      "src/vs/sessions/contrib/tunnelHost/test/electron-browser/tunnelHost.contribution.test.ts",
+      "src/vs/workbench/contrib/chat/common/tunnelHost.ts",
+      "src/vs/workbench/contrib/chat/electron-browser/media/tunnelHost.css",
+      "src/vs/workbench/contrib/chat/electron-browser/toggleRemoteConnectionsActionViewItem.ts",
+      "src/vs/workbench/contrib/chat/electron-browser/tunnelHost.contribution.ts",
+      "src/vs/workbench/contrib/chat/electron-browser/tunnelHostService.ts",
+      "src/vs/workbench/workbench.desktop.main.ts"
+    ],
+    "expected_behaviors": [
+      "sessions: move remote connections toggle to titlebar (PR #322592)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-320122",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/chat/common/chatSessionsService.ts",
+      "src/vs/workbench/contrib/chat/electron-browser/chat.contribution.ts",
+      "src/vs/workbench/contrib/chat/electron-browser/chatLifecycle.ts",
+      "src/vs/workbench/contrib/chat/test/electron-browser/chatLifecycle.test.ts"
+    ],
+    "expected_behaviors": [
+      "chat: fix Agent Host shutdown warning (PR #320305)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-320152",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/copilot/copilotAgentSession.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgentSession.test.ts"
+    ],
+    "expected_behaviors": [
+      "agent-host: complete the turn when `/compact` finishes (PR #320544)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-320245",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/files/node/watcher/nodejs/nodejsWatcherLib.ts"
+    ],
+    "expected_behaviors": [
+      "Fix disposable leak warning from in-process node.js file watcher (PR #320246)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-320247",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/common/commandLineHelpers.ts",
+      "src/vs/platform/agentHost/test/common/commandLineHelpers.test.ts"
+    ],
+    "expected_behaviors": [
+      "Strip redundant cd prefix from multi-line shell commands (PR #320252)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-320303",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostChatContribution.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionListController.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostChatContribution.test.ts"
+    ],
+    "expected_behaviors": [
+      "Implement CoalescingAgentHostSessionListConnection to optimize session list retrieval (PR #322030)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-320454",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/copilot/copilotAgent.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgent.test.ts"
+    ],
+    "expected_behaviors": [
+      "Use a temp subdirectory for createSession when workingDirectory is omitted (PR #321244)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-320509",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/base/browser/ui/hover/hover.ts",
+      "src/vs/platform/hover/browser/hoverService.ts",
+      "src/vs/platform/hover/test/browser/hoverService.test.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentSessionHoverWidget.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentSessionsControl.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentSessionsViewer.ts",
+      "src/vs/workbench/contrib/chat/browser/widgetHosts/viewPane/chatViewPane.ts"
+    ],
+    "expected_behaviors": [
+      "Fix session list hovers to avoid warnings and updates while a hover is active (PR #321596)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-320522",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/agentService.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotAgent.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgent.test.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionListController.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentSessionsActions.ts",
+      "src/vs/workbench/contrib/chat/browser/chatSessions/chatSessions.contribution.ts",
+      "src/vs/workbench/contrib/chat/common/chatSessionsService.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostChatContribution.test.ts",
+      "src/vs/workbench/contrib/chat/test/common/mockChatSessionsService.ts"
+    ],
+    "expected_behaviors": [
+      "Enable `Delete` command on Agent Host sessions (PR #320889)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-320531",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/chat/browser/widget/input/editor/agentHostInputCompletions.ts"
+    ],
+    "expected_behaviors": [
+      "Skills contributed by VS Code Client do not contain descriptions (PR #320644)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-320784",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/stateToProgressAdapter.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/stateToProgressAdapter.test.ts"
+    ],
+    "expected_behaviors": [
+      "Fix empty terminal command for terminal tools without input (PR #320782)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-320824",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/base/common/numbers.ts",
+      "src/vs/base/test/common/numbers.test.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotAgent.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotAgentSession.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotSessionLauncher.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgent.test.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostLanguageModelProvider.ts",
+      "src/vs/workbench/contrib/chat/browser/chatManagement/chatModelsWidget.ts",
+      "src/vs/workbench/contrib/chat/browser/widget/input/chatModelPicker.ts",
+      "src/vs/workbench/contrib/chat/test/browser/widget/input/chatModelPicker.test.ts"
+    ],
+    "expected_behaviors": [
+      "Propagate context window options from Copilot models to the picker (PR #320905)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-320924",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/copilot/copilotAgent.ts"
+    ],
+    "expected_behaviors": [
+      "Revert \"add env var to AH to tag our CAPI traffic (#320814)\" (PR #320923)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-321021",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/sessions/contrib/chat/browser/sessionTaskRunner.ts",
+      "src/vs/sessions/contrib/chat/browser/sessionsTasksService.ts",
+      "src/vs/sessions/contrib/chat/browser/workbenchSessionTaskRunner.ts",
+      "src/vs/sessions/contrib/chat/browser/worktreeCreatedTaskDispatcher.ts",
+      "src/vs/sessions/contrib/chat/test/browser/workbenchSessionTaskRunner.test.ts",
+      "src/vs/sessions/contrib/chat/test/browser/worktreeCreatedTaskDispatcher.test.ts",
+      "src/vs/sessions/contrib/terminal/browser/agentHostSessionTaskRunner.ts",
+      "src/vs/sessions/contrib/terminal/test/browser/agentHostSessionTaskRunner.test.ts"
+    ],
+    "expected_behaviors": [
+      "Stop worktreeCreated tasks when a session is marked done (PR #322153)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-321030",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/common/state/protocol/.ahp-version",
+      "src/vs/platform/agentHost/common/state/protocol/channels-session/reducer.ts",
+      "src/vs/platform/agentHost/common/state/protocol/common/state.ts",
+      "src/vs/platform/agentHost/node/agentSideEffects.ts",
+      "src/vs/platform/agentHost/node/claude/claudeMapSessionEvents.ts",
+      "src/vs/platform/agentHost/node/claude/claudeProxyService.ts",
+      "src/vs/platform/agentHost/node/codex/codexAgent.ts",
+      "src/vs/platform/agentHost/node/codex/codexMapAppServerEvents.ts",
+      "src/vs/platform/agentHost/node/codex/codexProxyService.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotAgentSession.ts",
+      "src/vs/platform/agentHost/node/shared/forwardedChatError.ts",
+      "src/vs/platform/agentHost/test/node/claudeMapSessionEvents.test.ts",
+      "src/vs/platform/agentHost/test/node/claudeMapSessionEventsTestUtils.ts",
+      "src/vs/platform/agentHost/test/node/claudeProxyService.test.ts",
+      "src/vs/platform/agentHost/test/node/forwardedChatError.test.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/stateToProgressAdapter.ts",
+      "src/vs/workbench/contrib/chat/common/chatErrorMessages.ts",
+      "src/vs/workbench/contrib/chat/common/chatService/chatServiceImpl.ts",
+      "src/vs/workbench/contrib/chat/common/chatSessionsService.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostChatContribution.test.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostClientTools.test.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/stateToProgressAdapter.test.ts",
+      "src/vs/workbench/contrib/chat/test/common/chatErrorMessages.test.ts"
+    ],
+    "expected_behaviors": [
+      "Agent host rich error handling (PR #321220)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-321032",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/stateToProgressAdapter.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostChatContribution.test.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/stateToProgressAdapter.test.ts"
+    ],
+    "expected_behaviors": [
+      "Improve turn details for Auto model in the context of free accounts (PR #323220)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-321390",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/copilot/copilotAgentSession.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotToolDisplay.ts",
+      "src/vs/platform/agentHost/node/copilot/mapSessionEvents.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgentSession.test.ts",
+      "src/vs/platform/agentHost/test/node/historyRecordFixtures.test.ts"
+    ],
+    "expected_behaviors": [
+      "agentHost: render task_complete summaries as markdown (PR #321422)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-321399",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentPlugins/common/pluginParsers.ts"
+    ],
+    "expected_behaviors": [
+      "Enhance skill file parsing to include name extraction (PR #321525)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-321410",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentSessions.ts",
+      "src/vs/workbench/contrib/chat/common/chatSessionsService.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentSessionViewModel.test.ts"
+    ],
+    "expected_behaviors": [
+      "feat: add new agent session providers for Claude and Codex (PR #321606)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-321411",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionListController.ts"
+    ],
+    "expected_behaviors": [
+      "Use provider-specific icons for agent host sessions (PR #322597)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-321426",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/common/agentModelPricing.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotAgent.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgent.test.ts",
+      "src/vs/platform/extensions/common/extensionsApiProposals.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostLanguageModelProvider.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostChatContribution.test.ts"
+    ],
+    "expected_behaviors": [
+      "Implement model pricing metadata handling for Agent Host (PR #321592)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-321453",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostChatInputPicker.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostFolderPickerActionItem.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostGenericConfigChips.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostNewSessionFolderService.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionListController.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostChatContribution.test.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostNewSessionFolderService.test.ts"
+    ],
+    "expected_behaviors": [
+      "Persist multi-root folder picker choice to new agent-host chats (PR #322855)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-321675",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/common/claudeSessionConfigKeys.ts",
+      "src/vs/platform/agentHost/node/claude/claudeAgent.ts",
+      "src/vs/platform/agentHost/node/claude/claudeSessionPermissionMode.ts",
+      "src/vs/platform/agentHost/test/node/claudeAgent.test.ts",
+      "src/vs/sessions/contrib/providers/agentHost/browser/agentHostClaudePermissionModePicker.ts",
+      "src/vs/sessions/contrib/providers/agentHost/browser/agentHostSessionConfigPicker.ts",
+      "src/vs/sessions/contrib/providers/agentHost/test/browser/agentHost/agentHostPermissionPickerDelegate.test.ts",
+      "src/vs/sessions/contrib/providers/agentHost/test/browser/agentHostClaudePermissionModePicker.test.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostChatInputPicker.ts"
+    ],
+    "expected_behaviors": [
+      "Polish Claude agent's permission label, descriptions, icons (PR #321673)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-321707",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/common/agentService.ts",
+      "src/vs/platform/agentHost/common/state/protocol/channels-root/state.ts",
+      "src/vs/platform/agentHost/common/state/protocol/common/state.ts",
+      "src/vs/platform/agentHost/node/agentSideEffects.ts",
+      "src/vs/platform/agentHost/node/claude/claudeAgent.ts",
+      "src/vs/platform/agentHost/node/codex/codexAgent.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotAgent.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotSessionLauncher.ts",
+      "src/vs/platform/agentHost/test/node/agentSideEffects.test.ts",
+      "src/vs/platform/agentHost/test/node/claudeAgent.test.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgent.test.ts",
+      "src/vs/sessions/contrib/providers/agentHost/browser/agentHostModePicker.ts",
+      "src/vs/sessions/contrib/providers/agentHost/browser/agentHostPermissionPickerDelegate.ts",
+      "src/vs/sessions/contrib/providers/agentHost/browser/agentHostSessionConfigPicker.ts",
+      "src/vs/sessions/contrib/providers/agentHost/browser/mobile/mobileChatInputConfigPicker.ts",
+      "src/vs/sessions/contrib/providers/agentHost/browser/mobile/mobileChatPhoneInputPresenter.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostChatInputPicker.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostLanguageModelProvider.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts",
+      "src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts",
+      "src/vs/workbench/contrib/chat/browser/widgetHosts/viewPane/chatContextUsageWidget.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostChatContribution.test.ts"
+    ],
+    "expected_behaviors": [
+      "Fix context size handling for Agent Host (PR #322470)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-321743",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/sessions/contrib/providers/agentHost/browser/agentHostChangesetConstants.ts",
+      "src/vs/sessions/contrib/providers/agentHost/browser/agentHostDiffs.ts",
+      "src/vs/sessions/contrib/providers/agentHost/browser/agentHostSessionChangesets.ts",
+      "src/vs/sessions/contrib/providers/agentHost/browser/baseAgentHostSessionsProvider.ts",
+      "src/vs/sessions/contrib/providers/agentHost/test/browser/localAgentHostSessionsProvider.test.ts"
+    ],
+    "expected_behaviors": [
+      "fix: improve changeset reconciliation performance in Agents window (PR #321744)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-321778",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/common/agentModelPricing.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotAgent.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostLanguageModelProvider.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostLanguageModelProvider.test.ts"
+    ],
+    "expected_behaviors": [
+      "Render Auto model discount and tooltip in the agent-host model picker (PR #322458)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-321781",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/chat/browser/widgetHosts/viewPane/chatContextUsageWidget.ts",
+      "src/vs/workbench/contrib/chat/test/browser/widgetHosts/viewPane/chatContextUsageWidget.test.ts"
+    ],
+    "expected_behaviors": [
+      "Resolve context window for Auto in Agent Host (PR #323017)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-321797",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/copilot/copilotToolDisplay.ts",
+      "src/vs/platform/agentHost/test/node/copilotToolDisplay.test.ts",
+      "src/vs/platform/extensions/common/extensionsApiProposals.ts",
+      "src/vs/workbench/contrib/chat/browser/widget/chatContentParts/toolInvocationParts/chatModifiedFilesConfirmationSubPart.ts"
+    ],
+    "expected_behaviors": [
+      "chat: fix tool call confirmation message rendering (PR #322039)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-321801",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/agentHostMain.ts",
+      "src/vs/platform/agentHost/node/agentHostServerMain.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotAgent.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotBranchNameGenerator.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgent.test.ts"
+    ],
+    "expected_behaviors": [
+      "agentHost: generate Copilot worktree branch names (PR #321866)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-321805",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "extensions/copilot/package.json",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostChatContribution.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/sessionTypeAvailability.ts",
+      "src/vs/workbench/contrib/chat/browser/chatSessions/chatSessions.contribution.ts",
+      "src/vs/workbench/contrib/chat/common/chatSessionsService.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/sessionTypeAvailability.test.ts",
+      "src/vs/workbench/contrib/chat/test/common/mockChatSessionsService.ts"
+    ],
+    "expected_behaviors": [
+      "Show session types as disabled with `Sign in` button when user is offline (PR #321861)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-321810",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/claude/claudeAgent.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotAgent.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgent.test.ts"
+    ],
+    "expected_behaviors": [
+      "Enhance logging for model refresh and update CopilotClient integration to pass GitHub token during model retrieval (PR #322045)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-321816",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/copilot/copilotAgent.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgent.test.ts"
+    ],
+    "expected_behaviors": [
+      "Avoid offering worktree isolation for folders with no commits (PR #323303)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-321827",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/copilot/copilotAgentSession.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgentSession.test.ts"
+    ],
+    "expected_behaviors": [
+      "agentHost: handle no-op Copilot compaction errors (PR #321875)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-321891",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/chat/browser/actions/chatPluginActions.ts",
+      "src/vs/workbench/contrib/chat/browser/aiCustomization/pluginListWidget.ts"
+    ],
+    "expected_behaviors": [
+      "chat: fix Plugins customizations tab stuck on marketplace (#321891) (PR #322849)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-321960",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/copilot/copilotAgentSession.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgentSession.test.ts"
+    ],
+    "expected_behaviors": [
+      "agentHost: ignore subagent mode changes so the session mode picker doesn't reset to Plan (PR #322841)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-322014",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/server/node/agentHostChannel.ts",
+      "src/vs/server/node/serverAgentHostManager.ts",
+      "src/vs/server/node/serverServices.ts",
+      "src/vs/server/test/node/agentHostChannel.test.ts",
+      "src/vs/server/test/node/serverAgentHostManager.test.ts"
+    ],
+    "expected_behaviors": [
+      "agent host: fix remote auto-shutdown with renderer proxy (PR #322461)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-322112",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/browser/remoteAgentHostProtocolClient.ts",
+      "src/vs/platform/agentHost/common/agentHostSchema.ts",
+      "src/vs/platform/agentHost/electron-browser/localAgentHostService.ts",
+      "src/vs/platform/agentHost/node/commandAutoApprover.ts",
+      "src/vs/platform/agentHost/node/sessionPermissions.ts",
+      "src/vs/platform/agentHost/test/common/agentHostSchema.test.ts",
+      "src/vs/platform/agentHost/test/electron-browser/remoteAgentHostProtocolClient.test.ts",
+      "src/vs/platform/agentHost/test/node/commandAutoApprover.test.ts",
+      "src/vs/platform/agentHost/test/node/sessionPermissions.test.ts"
+    ],
+    "expected_behaviors": [
+      "Respect chat.tools.terminal.autoApprove for agent host (PR #322774)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-322139",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostFolderPickerActionItem.ts"
+    ],
+    "expected_behaviors": [
+      "chat: add full path + branch tooltip to agent-host folder picker chip (PR #322502)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-322155",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/agentHostSkillCompletionProvider.ts",
+      "src/vs/platform/agentHost/test/node/agentHostSkillCompletionProvider.test.ts"
+    ],
+    "expected_behaviors": [
+      "Skills from plugins have wrong name (PR #322292)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-322180",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/sessions/AI_CUSTOMIZATIONS.md",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostLocalCustomizations.ts",
+      "src/vs/workbench/contrib/chat/browser/chat.shared.contribution.ts",
+      "src/vs/workbench/contrib/chat/common/enablement.ts",
+      "src/vs/workbench/contrib/chat/common/plugins/AGENTS_PLUGINS.md",
+      "src/vs/workbench/contrib/chat/common/plugins/agentPluginEnablement.ts",
+      "src/vs/workbench/contrib/chat/common/plugins/agentPluginService.ts",
+      "src/vs/workbench/contrib/chat/common/plugins/agentPluginServiceImpl.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/resolveCustomizationRefs.test.ts",
+      "src/vs/workbench/contrib/chat/test/common/plugins/agentPluginEnablement.test.ts",
+      "src/vs/workbench/contrib/chat/test/common/plugins/agentPluginFormatDetection.test.ts",
+      "src/vs/workbench/contrib/mcp/common/mcpService.ts"
+    ],
+    "expected_behaviors": [
+      "chat: handle duplicate agent plugin enablement (PR #322446)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-322193",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/claude/CONTEXT.md",
+      "src/vs/platform/agentHost/node/copilot/copilotAgent.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgent.test.ts",
+      "src/vs/sessions/contrib/providers/agentHost/AGENT_HOST_SESSIONS_PROVIDER.md",
+      "src/vs/sessions/contrib/providers/agentHost/browser/baseAgentHostSessionsProvider.ts",
+      "src/vs/sessions/contrib/providers/agentHost/browser/localAgentHostSessionsProvider.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostChatContribution.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentSessions.ts",
+      "src/vs/workbench/contrib/chat/browser/chatSessions/chatSessions.contribution.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostChatContribution.test.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentSessionViewModel.test.ts"
+    ],
+    "expected_behaviors": [
+      "chat: simplify Agent Host Copilot label (PR #322179)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-322387",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/chat/browser/agentSessions/localAgentDisabledInputTipContribution.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/localAgentDisabledInputTipContribution.test.ts"
+    ],
+    "expected_behaviors": [
+      "Add mute button for local agent host continuation tip (PR #322599)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-322429",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/copilot/copilotAgent.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgent.test.ts"
+    ],
+    "expected_behaviors": [
+      "agentHost: cancel pending model-refresh retry on shutdown (PR #322498)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-322442",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/protocolServerHandler.ts",
+      "src/vs/platform/agentHost/test/node/protocolServerHandler.test.ts"
+    ],
+    "expected_behaviors": [
+      "Fix premature disconnect force-fail of a live client tool call (PR #322175)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-322453",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts",
+      "src/vs/workbench/contrib/chat/test/browser/widget/input/chatInputNotificationWidget.test.ts"
+    ],
+    "expected_behaviors": [
+      "Hide agent host tip if user manual selects via picker (PR #322667)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-322527",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/copilot/copilotAgent.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgent.test.ts"
+    ],
+    "expected_behaviors": [
+      "Implement rebaseUnder function and enhance customization anchoring in CopilotAgent (PR #322661)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-322797",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/chat/browser/chatSessions/chatSessions.contribution.ts",
+      "src/vs/workbench/contrib/chat/common/chatService/chatServiceImpl.ts",
+      "src/vs/workbench/contrib/chat/common/chatSessionsService.ts",
+      "src/vs/workbench/contrib/chat/test/browser/chatSessions/chatSessionsService.test.ts",
+      "src/vs/workbench/contrib/chat/test/common/chatService/chatService.test.ts",
+      "src/vs/workbench/contrib/chat/test/common/mockChatSessionsService.ts"
+    ],
+    "expected_behaviors": [
+      "Implement session resource aliasing for untitled and real chat sessions (PR #322875)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-323283",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/node/copilot/mapSessionEvents.ts",
+      "src/vs/platform/agentHost/test/node/copilotTestEvents.ts",
+      "src/vs/platform/agentHost/test/node/mapSessionEvents.test.ts"
+    ],
+    "expected_behaviors": [
+      "agentHost: restore history using user turn boundaries (PR #323284)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-323305",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/platform/agentHost/common/agentService.ts",
+      "src/vs/platform/agentHost/node/agentSideEffects.ts",
+      "src/vs/platform/agentHost/node/claude/claudeAgent.ts",
+      "src/vs/platform/agentHost/node/codex/codexAgent.ts",
+      "src/vs/platform/agentHost/node/copilot/copilotAgent.ts",
+      "src/vs/platform/agentHost/test/node/agentSideEffects.test.ts",
+      "src/vs/platform/agentHost/test/node/claudeAgent.test.ts",
+      "src/vs/platform/agentHost/test/node/copilotAgent.test.ts",
+      "src/vs/platform/agentHost/test/node/mockAgent.ts"
+    ],
+    "expected_behaviors": [
+      "Route default-chat client tool completions by session URI (PR #323302)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-323381",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/sessions/browser/actions/vscodeActions.ts",
+      "src/vs/sessions/browser/openInVSCodeUtils.ts",
+      "src/vs/sessions/electron-browser/actions/vscodeActions.ts",
+      "src/vs/sessions/test/browser/resolveRemoteAuthority.test.ts"
+    ],
+    "expected_behaviors": [
+      "Agent host: open sessions in editor windows (PR #323316)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-323428",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/sessions/contrib/providers/agentHost/browser/baseAgentHostSessionsProvider.ts",
+      "src/vs/sessions/contrib/providers/agentHost/test/browser/localAgentHostSessionsProvider.test.ts"
+    ],
+    "expected_behaviors": [
+      "Enhance agent handling: rebase selected agent on worktree relocation and restore from draft on session resume (PR #323548)"
+    ],
+    "expected_questions": []
+  },
+  {
+    "id": "VS-323634",
+    "labels": [
+      "bug",
+      "agent-host"
+    ],
+    "expected_modules": [
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostSessionHandler.ts",
+      "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/stateToProgressAdapter.ts",
+      "src/vs/workbench/contrib/chat/test/browser/agentSessions/agentHostChatContribution.test.ts"
+    ],
+    "expected_behaviors": [
+      "Fix restored Agent Host workspace context (PR #323648)"
+    ],
+    "expected_questions": []
+  }
+]

@@ -1,4 +1,7 @@
+import { useTranslation } from 'react-i18next';
+
 export default function ProcessingStatusPanel({ isLoading, context, storyDraft, evaluation }) {
+  const { t } = useTranslation();
   // Determine state of Researcher
   const isResearcherDone = !!context;
   const isResearcherEmpty = context && (context.retrieval_status === 'empty' || context.retrieval_status === 'failed');
@@ -26,31 +29,31 @@ export default function ProcessingStatusPanel({ isLoading, context, storyDraft, 
         </div>
         {isResearcherDone ? (
           isResearcherEmpty ? (
-            <p className="font-body-md text-on-surface font-semibold">Không tìm thấy context</p>
+            <p className="font-body-md text-on-surface font-semibold">{t('processing_status.researcher_empty')}</p>
           ) : (
             <div className="font-body-sm text-on-surface">
-              <div className="font-semibold mb-1">Retrieved Context:</div>
+              <div className="font-semibold mb-1">{t('processing_status.retrieved_context')}</div>
               <ul className="list-decimal pl-4 mb-2 space-y-1">
                 {context?.retrieved_sources?.map((src, idx) => (
                   <li key={idx} className="text-xs text-gray-700">
                     <span className="font-medium">{src.source} <span className="text-gray-400 font-normal">(Chunk {src.chunk_index !== undefined ? src.chunk_index : '?'})</span></span>
                     <span className="text-gray-500">
                       {' '}– score: {src.score != null ? Number(src.score).toFixed(2) : 'N/A'} 
-                      {' '}– {src.score < 0.5 ? 'low relevance' : 'high relevance'}
+                      {' '}– {src.score < 0.5 ? t('processing_status.low_relevance') : t('processing_status.high_relevance')}
                     </span>
                   </li>
                 ))}
               </ul>
               {context?.warnings?.length > 0 && (
                 <div className="text-orange-600 text-xs mt-2 bg-orange-50 p-2 rounded border border-orange-100">
-                  <span className="font-bold">Warning:</span> {context.warnings.join(' ')}
+                  <span className="font-bold">{t('processing_status.warning')}</span> {context.warnings.join(' ')}
                 </div>
               )}
             </div>
           )
         ) : (
           <p className="font-body-md text-on-surface font-semibold">
-            {isLoading ? 'Đang tìm kiếm context...' : 'Chờ bắt đầu...'}
+            {isLoading ? t('processing_status.researching') : t('processing_status.waiting')}
           </p>
         )}
         <div className={`mt-2 text-[10px] font-bold ${isResearcherDone ? 'text-blue-400' : 'text-gray-400'}`}>
@@ -72,8 +75,8 @@ export default function ProcessingStatusPanel({ isLoading, context, storyDraft, 
         </div>
         <p className="font-body-md text-on-surface font-semibold">
           {isPlannerDone 
-            ? 'Đã viết User Story'
-            : (isPlannerWorking ? 'Đang viết User Story...' : 'Chờ bắt đầu...')}
+            ? t('processing_status.planner_done')
+            : (isPlannerWorking ? t('processing_status.planner_working') : t('processing_status.waiting'))}
         </p>
         <div className="mt-2 flex gap-1">
           {isPlannerWorking ? (
@@ -105,8 +108,8 @@ export default function ProcessingStatusPanel({ isLoading, context, storyDraft, 
         </div>
         <p className="font-body-md text-on-surface font-semibold">
           {isEvaluatorDone 
-            ? `Đánh giá ${evaluatorStatus === 'APPROVED' ? 'Pass (Score: 5/5)' : 'Cần sửa (Score: thấp)'}`
-            : (isLoading && isPlannerDone && !isEvaluatorDone ? 'Đang đánh giá...' : 'Chờ bắt đầu...')}
+            ? (evaluatorStatus === 'APPROVED' ? t('processing_status.evaluator_pass') : t('processing_status.evaluator_fail'))
+            : (isLoading && isPlannerDone && !isEvaluatorDone ? t('processing_status.evaluator_working') : t('processing_status.waiting'))}
         </p>
         <div className={`mt-2 text-[10px] font-bold ${isEvaluatorDone ? (evaluatorStatus === 'APPROVED' ? 'text-green-500' : 'text-orange-500') : 'text-gray-400'}`}>
           {isEvaluatorDone ? (evaluatorStatus === 'APPROVED' ? 'SUCCESS' : 'REVISION REQUIRED') : 'PENDING'}

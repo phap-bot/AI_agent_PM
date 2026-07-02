@@ -49,6 +49,7 @@ def calculate_classification_metrics(y_true, y_pred):
     }
 
 def run():
+    os.environ["ENABLE_LLM_LOGGING"] = "1"
     data_path = Path(__file__).parent / DATA_FILE
     with open(data_path, "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -132,16 +133,22 @@ Example output:
 Tổng số mẫu đánh giá: {total_to_run}
 
 ✅ TYPE (Bug/Feature/Maintenance)
-   - Accuracy : {acc_type:.2f}%
-   - F1-Score : {metrics_type['macro_f1']*100:.2f}% (Macro Avg)
+   - Accuracy  : {acc_type:.2f}%
+   - F1-Score  : {metrics_type['macro_f1']*100:.2f}% (Macro Avg)
+   - Precision : {metrics_type['macro_precision']*100:.2f}% (Macro Avg)
+   - Recall    : {metrics_type['macro_recall']*100:.2f}% (Macro Avg)
 
 ✅ DOMAIN
-   - Accuracy : {acc_domain:.2f}%
-   - F1-Score : {metrics_domain['macro_f1']*100:.2f}% (Macro Avg)
+   - Accuracy  : {acc_domain:.2f}%
+   - F1-Score  : {metrics_domain['macro_f1']*100:.2f}% (Macro Avg)
+   - Precision : {metrics_domain['macro_precision']*100:.2f}% (Macro Avg)
+   - Recall    : {metrics_domain['macro_recall']*100:.2f}% (Macro Avg)
 
 ✅ COMPLEXITY
-   - Accuracy : {acc_comp:.2f}%
-   - F1-Score : {metrics_comp['macro_f1']*100:.2f}% (Macro Avg)
+   - Accuracy  : {acc_comp:.2f}%
+   - F1-Score  : {metrics_comp['macro_f1']*100:.2f}% (Macro Avg)
+   - Precision : {metrics_comp['macro_precision']*100:.2f}% (Macro Avg)
+   - Recall    : {metrics_comp['macro_recall']*100:.2f}% (Macro Avg)
 
 --------------------------------------
 🚨 CÁC TRƯỜNG HỢP DỰ ĐOÁN SAI:

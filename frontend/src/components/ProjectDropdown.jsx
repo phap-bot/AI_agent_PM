@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export default function ProjectDropdown({ 
   projects, 
@@ -8,6 +9,7 @@ export default function ProjectDropdown({
   onEdit, 
   onDelete 
 }) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -33,7 +35,7 @@ export default function ProjectDropdown({
           className="flex items-center justify-between min-w-[200px] px-3 py-2 text-sm font-medium focus:outline-none"
         >
           <span className="truncate max-w-[160px]">
-            {activeProject ? activeProject.name : '-- Chọn dự án --'}
+            {activeProject ? activeProject.name : t('project_dropdown.select_project')}
           </span>
           <span className={`material-symbols-outlined text-[18px] text-outline transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
             expand_more
@@ -45,14 +47,14 @@ export default function ProjectDropdown({
             <button 
               onClick={(e) => { e.stopPropagation(); onEdit(); setIsOpen(false); }}
               className="p-1.5 text-on-surface-variant hover:text-primary transition-colors hover:bg-primary/10 rounded-md"
-              title="Đổi tên dự án"
+              title={t('project_dropdown.rename_project')}
             >
               <span className="material-symbols-outlined text-[16px]">edit</span>
             </button>
             <button 
               onClick={(e) => { e.stopPropagation(); onDelete(); setIsOpen(false); }}
               className="p-1.5 text-on-surface-variant hover:text-error transition-colors hover:bg-error/10 rounded-md"
-              title="Xóa dự án"
+              title={t('project_dropdown.delete_project')}
             >
               <span className="material-symbols-outlined text-[16px]">delete</span>
             </button>
@@ -85,7 +87,7 @@ export default function ProjectDropdown({
             
             {projects.length === 0 && (
               <div className="px-4 py-3 text-sm text-outline text-center">
-                Chưa có dự án nào
+                {t('project_dropdown.no_projects')}
               </div>
             )}
           </div>
@@ -99,7 +101,7 @@ export default function ProjectDropdown({
               className="w-full text-left px-3 py-2 text-sm font-bold text-primary hover:bg-primary/10 transition-colors rounded-lg flex items-center gap-2"
             >
               <span className="material-symbols-outlined text-[18px]">add</span>
-              Tạo dự án mới
+              {t('project_dropdown.create_new_project')}
             </button>
           </div>
         </div>

@@ -1,0 +1,182 @@
+[
+  {
+    "requirement": "Address collaborative document presence change detection and debounce Two latent bugs in the collaborative-document presence controller (`live-events.controller.ts`), which renders connected-user avatars from the Yjs awareness protocol. The change-detector keyed its presence map by array index instead of `state.clientId`, so it only noticed when the user *count* changed and missed same-count membership swaps (one peer leaving as another joins) — leaving stale avatars; and the refresh debounce named a non-existent method (`triggerUpdateUI` vs the real `triggerUpdateUsersUI`), so every awareness frame fetched immediately instead of throttling to 1s. Both fixed by keying on the real client id and pointing the debounce at the correct method.",
+    "ai_ground_truth": {
+      "type": "bug",
+      "domain": "collaboration",
+      "complexity": "medium",
+      "team": "fullstack"
+    }
+  },
+  {
+    "requirement": "Adds upsell template and behaviour. Update tests to reflect changes. Related Work Package: [OP#XWI-81](https://community.openproject.org/projects/XWI/work_packages/XWI-81)",
+    "ai_ground_truth": {
+      "type": "feature",
+      "domain": "ui/ux",
+      "complexity": "medium",
+      "team": "fe"
+    }
+  },
+  {
+    "requirement": "Update op-blocknote-extensions to 0.1.3 This includes: - [BNE-93] Semantic ID and markdown support for copy-paste - [BNE-108] Dragging a work package link reloads the data via the network - [#74978] split surrounding sentence when promoting inline chip to block - New translations - [BNE-84] Remove getSideMenuExtension workaround # Ticket https://community.openproject.org/projects/STC/work_packages/BNE-93 amongst others",
+    "ai_ground_truth": {
+      "type": "feature",
+      "domain": "ui/ux",
+      "complexity": "medium",
+      "team": "fe"
+    }
+  },
+  {
+    "requirement": "[OP-19205] Build User Card View for Resource Management # Ticket https://community.openproject.org/wp/OP-19205 # What are you trying to accomplish? ## Screenshots # What approach did you choose and why?",
+    "ai_ground_truth": {
+      "type": "feature",
+      "domain": "ui/ux",
+      "complexity": "medium",
+      "team": "fe"
+    }
+  },
+  {
+    "requirement": "Code maintenance/STC-834: Bump Hocuspocus client & server to v4.2.0 (lockstep) # Ticket https://community.openproject.org/wp/STC-834 Server-side follow-up to the `@hocuspocus/provider` v4 client bump in #23570. # What are you trying to accomplish? #23570 moves the frontend client `@hocuspocus/provider` to v4. The collaboration server in `op-blocknote-hocuspocus` was still on v3. The two talk over a versioned wire protocol and ship as independent artifacts — the server is the separately built `openproject/hocuspocus` image — so a one-major skew is tolerated, but the goal is to bring the server up to v4 as well so both halves run the current major. This PR bumps `@hocuspocus/server` and `@hocuspocus/extension-logger` to v4 and applies the API changes the major introduces. ## What v4 changes, and how it's applied here v4 is a cross-runtime release that standardizes the server hook payloads on web-standard primitives and restructures a couple of hook shapes ([v4.0.0 release notes](https://github.com/ueberdosis/hocuspocus/releases/tag/v4.0.0), [full diff](https://github.com/ueberdosis/hocuspocus/compare/v3.4.4...v4.0.0)). Three of those touch our `OpenProjectApi` extension: - **Request headers are now a web-standard `Headers` object** — upgrade guide §2 *Request and Headers (Breaking)*. `onAuthenticate` previously read the request origin off a plain object (`data.request.headers.origin`). v4 exposes it as `Headers`, accessed with `.get()`: ```ts // before (v3) const requestOrigin = data.request?.headers?.origin; // after (v4) const requestOrigin = data.requestHeaders?.get(\"origin\") ?? undefined; ``` This matters beyond a rename: against v4 the old plain-object access would silently return `undefined`, quietly weakening the origin check passed to `decryptAndValidateToken`. - **The store hook's context is renamed `context` → `lastContext`** — upgrade guide §3 *`onStoreDocument` Payload (Breaking)*. `onStoreDocument` reads the resource URL, readonly flag, and token from the snapshot of the last connection context: ```ts // before (v3): data.context // after (v4): data.lastContext const { resourceUrl, readonly } = data.lastContext; ``` - **Broadcasting to connected clients goes through `Document#broadcastStateless`.** In v4 `Document.connections` is a `Map`, so the old `connections.forEach(({ connection }) => connection.sendStateless(...))` no longer typechecks. `broadcastStateless` is the supported helper for this ([CHANGELOG, client-initiated broadcastStateless #1103](https://github.com/ueberdosis/hocuspocus/blob/main/CHANGELOG.md)): ```ts // before (v3) data.document.connections.forEach(({ connection }) => connection.sendStateless(\"storeEvent\")); // after (v4) data.document.broadcastStateless(\"storeEvent\"); ``` The rest of the extension is unchanged: `onTokenSync`, `connection.close({ code, reason })`, `connectionConfig.readOnly`, and the ad-hoc `context` writes all compile and behave the same under v4. `@hocuspocus/common` resolves to v4 transitively; `closeEvents.ts` already uses the v4-narrowed `{ code, reason }` CloseEvent shape (upgrade guide §11 *`CloseEvent` Shape*), so no change was needed there. ### References - v4.0.0 release notes & v3→v4 upgrade guide: https://github.com/ueberdosis/hocuspocus/releases/tag/v4.0.0 - Full changelog: https://github.com/ueberdosis/hocuspocus/blob/main/CHANGELOG.md - v3.4.4 → v4.0.0 diff: https://github.com/ueberdosis/hocuspocus/compare/v3.4.4...v4.0.0 A standing assertion of the client/server compatibility, plus a CI guard against future major drift, lands in the follow-up #23755.",
+    "ai_ground_truth": {
+      "type": "maintenance",
+      "domain": "collaboration",
+      "complexity": "medium",
+      "team": "be"
+    }
+  },
+  {
+    "requirement": "Add development and test log rotation Noticed this after my laptop cried about no remaining disk space and there were 350+ gigs of logs somehow",
+    "ai_ground_truth": {
+      "type": "feature",
+      "domain": "devops",
+      "complexity": "low",
+      "team": "be"
+    }
+  },
+  {
+    "requirement": "Bug/op 19472 custom actions rejected for conflicting change if clicked after changing something # Ticket https://community.openproject.org/wp/OP-19472 # What are you trying to accomplish? Fix clicking a custom action after modifications on the work package page have already been done (e.g., clicking another custom action or any other attribute change). The action before would sent the patch to the backend updating the work package and its lockVersion. That response is correctly returned to the frontend. But the change is not correctly listened to by the subscription in WorkPackageSingleViewBase. The subscription will always be registered using the semantic identifier (if it is active) but the api's response will update the cache using the canonical id. The fact that `this.workPackageId` gets the canonical id assigned does not change the subscription being with the semantic identifier. This problem then propagates down to components having `workPackage` as their input like WpCustomActionComponent. The fix is to only take the first value (possibly listening to the semantic identifiers there) and only then subscribing after the id listened to (`this.workPackageId`) has been set to the canonical id.",
+    "ai_ground_truth": {
+      "type": "bug",
+      "domain": "ui/ux",
+      "complexity": "medium",
+      "team": "fe"
+    }
+  },
+  {
+    "requirement": "feat: Add numeric ID into work package show UI # Ticket # What are you trying to accomplish? ## Screenshots New menu item: # What approach did you choose and why?",
+    "ai_ground_truth": {
+      "type": "feature",
+      "domain": "ui/ux",
+      "complexity": "low",
+      "team": "fe"
+    }
+  },
+  {
+    "requirement": "[OP-19553] Type `ElementRef` generics > [!NOTE] > This should not result in changes to production (transpiled) code. Typing improvements are for Dx. # Ticket https://community.openproject.org/wp/OP-19553 # What are you trying to accomplish? Parameterizes `inject(ElementRef)`, `@ViewChild` refs, and related declarations across the Angular views with concrete element types (`ElementRef` and specific subtypes such as `HTMLInputElement`/`HTMLCanvasElement`), so `nativeElement` is no longer `any`. # What approach did you choose and why? Narrowing the generics lets redundant `as HTMLElement` casts drop out and surfaces several previously `any`-hidden holes where `querySelector` results were used without a null check or as the wrong element type. Pure typing change, no runtime behaviour change.",
+    "ai_ground_truth": {
+      "type": "maintenance",
+      "domain": "ui/ux",
+      "complexity": "medium",
+      "team": "fe"
+    }
+  },
+  {
+    "requirement": "[OP-19549] Remove Webpack remnants from docs and code # Ticket https://community.openproject.org/wp/OP-19549 # What are you trying to accomplish? Cleanup of Webpack remnants missed in [OP-17301](https://community.openproject.org/work_packages/OP-17301): stale references in docs and code comments (now naming Vite/esbuild), unsupported magic comments on dynamic imports, and dead webpack-only files (the Karma test bootstrap, the `webpack-watch` Docker script, and an obsolete ESLint override). Also replaces the Webpack-only `__webpack_public_path__` global — still read by the image/video path helpers — with an own `publicAssetPath` declaration, which fixes a typecheck break left by dropping `@types/webpack-env`.",
+    "ai_ground_truth": {
+      "type": "maintenance",
+      "domain": "devops",
+      "complexity": "medium",
+      "team": "be"
+    }
+  },
+  {
+    "requirement": "Fix Rubocop offenses in backlogs module # Ticket n/a # What are you trying to accomplish? Fixes autocorrectable Rubocop offenses via `rubocop -A modules/backlogs` ## Screenshots no visual changes # What approach did you choose and why? Same reasons as #23717",
+    "ai_ground_truth": {
+      "type": "maintenance",
+      "domain": "backend",
+      "complexity": "low",
+      "team": "be"
+    }
+  },
+  {
+    "requirement": "Sortable Lists controller restructure with outlets > [!NOTE] > This PR is based on #23218. Please review that PR first. # Ticket # What are you trying to accomplish? ## Screenshots # What approach did you choose and why?",
+    "ai_ground_truth": {
+      "type": "maintenance",
+      "domain": "ui/ux",
+      "complexity": "medium",
+      "team": "fe"
+    }
+  },
+  {
+    "requirement": "Drop deprecated @stylistic overrides.arrow option # Ticket # What are you trying to accomplish? `@stylistic/type-annotation-spacing` deprecated its `overrides.arrow` option, so every ESLint run printed a deprecation warning. # What approach did you choose and why? The deprecation message suggests `arrow-spacing`, but that rule only covers arrow *expressions* (`(x) => x`), not type-level `() => void`. The config needs tight colons (`x:any`) combined with spaced type arrows, which previously relied on `overrides.arrow`. Moving the tight-colon rule into the non-deprecated `overrides.colon` and letting the base options carry the spaced `=>` style preserves the exact existing formatting while removing the deprecated option.",
+    "ai_ground_truth": {
+      "type": "maintenance",
+      "domain": "devops",
+      "complexity": "low",
+      "team": "fullstack"
+    }
+  },
+  {
+    "requirement": "[STC-820/STC-828] Update Hocuspocus to TypeScript 6.0 # Ticket https://community.openproject.org/wp/STC-820 https://community.openproject.org/wp/STC-828 # What are you trying to accomplish? Update the Hocuspocus extension to the same Node baseline as OpenProject core and make the OpenProject API extension compile cleanly with TypeScript 6. Related core upgrade: https://github.com/opf/openproject/pull/23588 ## Screenshots No visible changes. # What approach did you choose and why? The runtime metadata, Docker base images, and Hocuspocus test workflow now use the core Node range/version. TypeScript is an explicit dev dependency, the extension tsconfig keeps bundler-style imports while satisfying TypeScript 6, and the stale BlockNote suppression in openProjectApi.ts was removed.",
+    "ai_ground_truth": {
+      "type": "maintenance",
+      "domain": "backend",
+      "complexity": "medium",
+      "team": "be"
+    }
+  },
+  {
+    "requirement": "[OP-19547] Remove lodash global and dependency > [!WARNING] > **Merge last.** This PR removes the global `_` and the `lodash` dependency, so every other bucket must be merged first: > #23728, #23729, #23730, #23731, #23732, #23733. Rebase onto `dev` after they land — until then CI is expected to fail (the branch is cut from `dev`, which still contains the `_.` usages this PR's prerequisites remove). # Ticket https://community.openproject.org/wp/OP-19547 # What are you trying to accomplish? Final step of removing lodash from the frontend (parent: OP-17486 / WP 65621). Once every helper bucket has dropped its global `_.` usage (in both `frontend/src` **and** the linked-plugin module frontends), this removes the global itself and the `lodash` package. - Removes `window._ = lodash` from `init-vendors.ts` and the mirrored assignment in `test-setup.ts`. - Removes the ambient `_` type declarations (`init-vendors.ts` `Window` augmentation, `shims.d.ts` global). - Drops `lodash` and `@types/lodash` from `package.json`. `lodash-es` (and `@types/lodash-es`) remain — they back the handful of helpers with no native equivalent (`isEqual`, `merge`, `debounce`, …). ## Screenshots No visual changes. # What approach did you choose and why? Cleanup only — no behavioural change. Draft until the prerequisite PRs merge and this is rebased onto a `dev` with no remaining `_.` usage.",
+    "ai_ground_truth": {
+      "type": "maintenance",
+      "domain": "general",
+      "complexity": "medium",
+      "team": "fe"
+    }
+  },
+  {
+    "requirement": "[STC-222] Update text on Notification settings for clarity # Ticket https://community.openproject.org/work_packages/STC-222 # What are you trying to accomplish? Users reported that the helper text under each section header in **Account settings → Notifications** was unclear and had not been updated since the Date alerts feature was introduced. This PR updates the five affected strings in the English locale file to be more accurate and user-friendly: ## Screenshots Before: After: # What approach did you choose and why? All five changes are confined to a single place: `config/locales/en.yml` under `my_account.notifications`. Because all components (`participating_form.rb`, `date_alerts_form.rb`, `non_participating_form.rb`, and the show-page template) reference these keys dynamically, no Ruby, ERB, or TypeScript files required modification.",
+    "ai_ground_truth": {
+      "type": "feature",
+      "domain": "ui/ux",
+      "complexity": "low",
+      "team": "fe"
+    }
+  },
+  {
+    "requirement": "[STC-645] Properly handle unsupported upload file types in CKEditor ### Merge pre-requirement: https://github.com/opf/commonmark-ckeditor-build/pull/120 # Ticket https://community.openproject.org/work_packages/STC-645 # What are you trying to accomplish? When a user drags or pastes an image of an unsupported type (e.g. WebP) into the CKEditor description field on an instance where WebP is not on the attachment allowlist, the backend already returns a clear 422 error: > \"The file was rejected by an automatic filter. 'image/webp' is not allowed for upload.\" However, that message was silently discarded by the frontend. The upload progress toast dismissed itself on failure without ever surfacing the error text, and a generic CKEditor indicator was shown instead — leaving the user with no actionable explanation. This PR ensures the specific backend error message is shown to the user in an OpenProject error toast whenever an attachment upload is rejected (by file-type filter or any other server-side validation). ## Screenshots N/A # What approach did you choose and why? **Root cause:** `toast.component.html` bound the `(uploadError)` output of `UploadProgressComponent` to `remove()`. The `HttpErrorResponse` carrying the backend message was emitted but never passed to `ToastService.addError()`, so the only thing that happened on failure was that the upload toast silently disappeared. **Fix — two-part:** 1. **`ToastComponent` (`toast.component.ts` + `toast.component.html`):** Added an `onUploadError(error: HttpErrorResponse)` method that calls `this.toastService.addError(error)` — which already knows how to extract HAL error messages — and then removes the upload toast. The template binding was changed from `(uploadError)=\"remove()\"` to `(uploadError)=\"onUploadError($event)\"`. 2. **`AttachmentsResourceService` (`attachments.service.ts`):** Added a `catchError` pipe in `uploadAttachments()` that converts the opaque `HttpErrorResponse` into a plain `Error` with the human-readable message before re-throwing. This ensures that callers further up the chain (such as the CKEditor upload plugin) receive a meaningful string rather than an unreadable object when calling `loader.reject()`. **Why not only fix the service layer?** The `ToastService.addUpload()` and the `UploadProgressComponent` are the natural point where per-file upload errors are observed; fixing the component handler is the minimal, targeted change that guarantees the message is shown exactly once without interfering with other callers. The service-layer `catchError` is a complementary improvement for CKEditor's own error path and does not duplicate the toast display. No backend changes are required — the error message (`not_allowlisted`) already exists and is translated in all supported locales.",
+    "ai_ground_truth": {
+      "type": "bug",
+      "domain": "ui/ux",
+      "complexity": "medium",
+      "team": "fe"
+    }
+  },
+  {
+    "requirement": "[OP-19545] Replace lodash equality/clone helpers > [!NOTE] > Please review and merge #23732 before this PR (lodash-removal series, parent #65621). Also merge #23729 first — both add `lodash-es`. # Ticket https://community.openproject.org/wp/OP-19545 # What are you trying to accomplish? Continues removing lodash from the frontend (parent: OP-17486 / WP 65621). This is the **equality / clone** bucket: `clone`, `cloneDeep`, `isEqual`, `isEqualWith` (~27 call sites) move off the global `_`. The global `_` deliberately stays — `lodash` is still required by the remaining buckets and is removed only in the final cleanup ticket. ## Screenshots No visual changes. # What approach did you choose and why? - **`clone`** → native shallow copy chosen per type: `{ ...obj }`, `[...arr]`, and a no-op for the one `clone(string)` case. - **`cloneDeep`** → `lodash-es` `cloneDeep` (**not** `structuredClone`). The three sites deep-clone a HAL `$source`. It is usually plain JSON, but a query filter's `$source` can hold live `HalLink` instances (set via the UI when filtering by project/user), and those carry a `requestMethod` **function** — so `structuredClone` throws `DataCloneError` when a query is saved (`cloneFilters()` → `$copy()` → `$plain()`). `lodash-es` `cloneDeep` reproduces the original `_.cloneDeep` behaviour exactly while still dropping the global `_`. - **`isEqual` / `isEqualWith`** → `lodash-es` named imports. There is no safe native deep-equality, and reimplementing one is riskier than keeping the exact lodash implementation; this matches the lodash-es bucket's approach for helpers with no native equivalent. Adds `lodash-es` + `@types/lodash-es` (the same dependency that PR introduces — trivial rebase if it merges first). - Three `expect(_.isEqual(a, b)).toBeTruthy()` spec assertions become idiomatic `expect(a).toEqual(b)`. `tsc --noEmit` passes; the full vitest suite passes (including `hal-resource.spec`, which covers the `cloneDeep` path, and `url-params-helper.spec`, whose assertions were upgraded here).",
+    "ai_ground_truth": {
+      "type": "maintenance",
+      "domain": "general",
+      "complexity": "medium",
+      "team": "fe"
+    }
+  },
+  {
+    "requirement": "[OP-19544] Replace lodash set/dedup helpers with native > [!NOTE] > Please review and merge #23731 before this PR (lodash-removal series, parent #65621). # Ticket https://community.openproject.org/wp/OP-19544 # What are you trying to accomplish? Continues removing lodash from the frontend (parent: OP-17486 / WP 65621). This is the **set / dedup / difference** bucket: `flatten`, `uniq`, `without`, `uniqBy`, `difference`, `differenceBy` (~33 call sites) move from the global `_` to native operations. The global `_` deliberately stays — `lodash` is still required by the remaining buckets and is removed only in the final cleanup ticket. ## Screenshots No visual changes. # What approach did you choose and why? - `flatten(a)` → `a.flat()` (lodash `flatten` is one-level, matching `flat()`). - `uniq(a)` → `Array.from(new Set(a))`. - `without(a, ...vals)` → `a.filter(x => x !== val)` / `!… .includes(x)`. - `difference(a, b)` → `a.filter(x => !b.includes(x))`. - `uniqBy(a, key)` → `a.filter((x, i, self) => i === self.findIndex(y => key(y) === key(x)))`. - `differenceBy(a, b, key)` → `a.filter(x => !b.some(y => key(y) === key(x)))`. The one behavioural subtlety: `uniqBy` keeps the **first** occurrence of each key, which the `findIndex` form preserves — a `Map`-based dedup would keep the last. `tsc --noEmit` passes; the full vitest suite passes (including `wp-view-hierarchy-indentation.service.spec`, which covers one of the `difference` conversions). No dedicated spec added — these conversions live in DI-heavy services/HAL resources with no clean pure seam, and are exercised by the existing suite.",
+    "ai_ground_truth": {
+      "type": "maintenance",
+      "domain": "ui/ux",
+      "complexity": "medium",
+      "team": "fe"
+    }
+  },
+  {
+    "requirement": "[OP-19543] Replace lodash null/empty helpers with native > [!NOTE] > Please review and merge #23730 before this PR (lodash-removal series, parent #65621). # Ticket https://community.openproject.org/wp/OP-19543 # What are you trying to accomplish? Continues removing lodash from the frontend (parent: OP-17486 / WP 65621). This is the **null / empty / type-predicate** bucket: `isNil`, `isNaN`, `defaultTo`, `compact`, `isEmpty`, `castArray`, `isObject`, `reject` (~72 call sites) move from the global `_` to native expressions. The global `_` deliberately stays — `lodash` is still required by the remaining buckets and is removed only in the final cleanup ticket. ## Screenshots No visual changes. # What approach did you choose and why? The bulk are exact 1:1 swaps: `isNil(x)` → `x == null`, `isNaN` → `Number.isNaN` (same NaN-only semantics, unlike the global `isNaN`), `defaultTo(x, d)` → `x ?? d` (call sites only default on `null`/`undefined`), `compact(a)` → `a.filter(Boolean)`. The type-aware predicates are handled per call site against the concrete collection type: - `isEmpty` → `.length === 0` / `Object.keys(...).length === 0` for known arrays/objects; for the few `any`/HAL-typed values the faithful general form `x == null || (Array.isArray(x) ? x.length === 0 : Object.keys(x).length === 0)`. - `castArray(x)` → `Array.isArray(x) ? x : [x]`. - `isObject(x)` → `typeof x === 'object' && x !== null`. - `reject(c, p)` → `c.filter((…) => !p(…))`. `compact` results that feed a non-nullable type use a narrowing `(x): x is NonNullable` predicate, because `filter(Boolean)` does not narrow in TypeScript. `tsc --noEmit` drove these; the full vitest suite passes. No dedicated spec was added: unlike the lodash-es bucket (which had the pure `ApiV3FilterBuilder` to lock down), these conversions live in DI-heavy services with no clean pure seam, and are already exercised by the existing suite (`current-user`, `edit-form`, `op-autocompleter`, `url-params`, …).",
+    "ai_ground_truth": {
+      "type": "maintenance",
+      "domain": "general",
+      "complexity": "medium",
+      "team": "fe"
+    }
+  }
+]

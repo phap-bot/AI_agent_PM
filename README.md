@@ -1,134 +1,146 @@
-# 🚀 AI Scrum Master Agent (Next-Gen Architecture)
+# 🚀 AI Scrum Master Agent
 
-AI Scrum Master Agent là một hệ thống tự động hoá thông minh, giúp chuyển đổi các yêu cầu thô (raw requirements) từ các bên liên quan (stakeholders) thành các Jira work items (sprint-ready) thông qua một quy trình hoàn chỉnh. 
+> **Hệ Thống Quản Lý Sản Phẩm Tự Động Hóa (Next-Generation Product Management System)**
 
-Hệ thống đã được nâng cấp toàn diện sang kiến trúc Bất đồng bộ (Asynchronous) với Celery, lưu trữ vector bằng Qdrant và sử dụng các mô hình AI chuyên biệt (Qwen 2.5 Coder) được Fine-tune riêng cho tác vụ Product Management.
+**AI Scrum Master Agent** là một hệ thống đa tác tử (Multi-Agent) thông minh, được thiết kế để giải quyết điểm nghẽn lớn nhất trong quy trình Agile: Chuyển đổi các yêu cầu thô (raw requirements) từ các bên liên quan thành các Jira work items chi tiết, sẵn sàng cho Sprint (sprint-ready).
 
-**Quy trình hoạt động (Multi-Agent Pipeline):**
-`User Request ➔ FastAPI ➔ Redis Queue ➔ Celery Worker ➔ CrewAI (Researcher ➔ Planner ➔ Evaluator) ➔ Human Approval ➔ Jira/Slack Action`
+Bằng việc kết hợp kiến trúc **Bất đồng bộ (Asynchronous)** cấp doanh nghiệp và các mô hình **Local LLM (Ollama)**, hệ thống không chỉ tối ưu hóa hiệu suất làm việc mà còn đảm bảo bảo mật dữ liệu tuyệt đối (Zero Data Leakage).
 
 ---
 
-## 🛠️ Tech Stack & Architecture
+## 🌟 Tổng Quan Giải Pháp & Giá Trị Cốt Lõi
 
-- **Agent Framework:** CrewAI (Researcher, Planner, Evaluator)
-- **Backend API:** FastAPI
+- **Bảo Mật Tối Đa:** Vận hành 100% nội bộ (On-premise/Local) thông qua Ollama. Không có bất kỳ dữ liệu dự án nào bị gửi ra các API bên ngoài.
+- **Kiến Trúc Multi-Agent Chuyên Sâu:** Sử dụng LangGraph để điều phối các AI Agents (Researcher, Planner, Evaluator) hoạt động độc lập và tự kiểm tra chéo, đảm bảo đầu ra đạt chuẩn.
+- **Hiệu Năng & Khả Năng Mở Rộng:** Xử lý các tác vụ AI nặng dưới nền (Background Tasks) thông qua Celery và Redis, giúp giao diện (UI) luôn phản hồi mượt mà ngay cả khi có nhiều yêu cầu cùng lúc.
+- **Mô Hình AI Chuyên Biệt:** Tích hợp mô hình `pm_planner_7b` đã được huấn luyện riêng biệt (Fine-tuned) trên bộ dữ liệu chuẩn mực của Product Manager.
+
+---
+
+## 🏗️ Kiến Trúc Hệ Thống (Architecture)
+
+Hệ thống hoạt động theo một quy trình tự động khép kín (Pipeline):
+
+```text
+[ Yêu cầu từ Stakeholder ] 
+       │
+       ▼
+[ FastAPI Gateway ] ──► [ Redis Message Queue ] ──► [ Celery Background Worker ]
+                                                             │
+                                                             ▼
+                                                ╔═════════════════════════════╗
+                                                ║ 🧠 Multi-Agent Orchestrator ║
+                                                ║  1. Researcher Agent        ║
+                                                ║  2. Planner Agent           ║
+                                                ║  3. Evaluator Agent         ║
+                                                ╚═════════════════════════════╝
+                                                             │
+       ┌─────────────────────────────────────────────────────┘
+       ▼
+[ Phê duyệt từ con người ] ──► [ Tích hợp tự động Jira / Slack ]
+```
+
+### 🛠️ Technology Stack
+- **AI & Orchestration:** LangGraph, Ollama, Qwen 2.5 Coder (7B)
+- **Backend API:** FastAPI (Python 3.10+)
 - **Frontend UI:** React (Vite)
-- **Background Tasks:** Celery + Redis (Message Queue)
-- **Database:** MongoDB (Lưu trữ lịch sử)
-- **Vector Store:** Qdrant (Lưu trữ tài liệu dự án RAG)
-- **LLM Runtime:** Ollama (Chạy 100% Local, bảo mật dữ liệu)
-- **AI Models:**
-  - `qwen2.5-coder:7b`: Tác vụ Research (Hỗ trợ Tool Calling, trích xuất tài liệu)
-  - `pm_planner_7b`: Tác vụ Planning (Mô hình Qwen 2.5 Coder được Fine-tune chuyên biệt bằng Unsloth)
-  - `qwen-embed`: Tác vụ Embedding nhúng dữ liệu tài liệu
+- **Background Tasks:** Celery + Redis (Message Broker & Result Backend)
+- **Database (Lịch sử):** MongoDB
+- **Vector Database (RAG):** Qdrant
+- **Deployment:** Docker & Docker Compose
 
 ---
 
-## 🤖 1. Thiết lập Mô hình AI (Ollama)
+## 🚀 Hướng Dẫn Cài Đặt & Khởi Chạy (Deployment Guide)
 
-Hệ thống yêu cầu 3 mô hình AI chạy local thông qua Ollama.
+Hệ thống đã được Docker hóa hoàn toàn, mang lại trải nghiệm cài đặt "Plug-and-Play". Bạn không cần cấu hình thủ công Database hay Redis trên máy chủ.
 
-**1. Cài đặt các mô hình gốc:**
+### 1. Yêu Cầu Hệ Thống (Prerequisites)
+- Đã cài đặt **Docker** và **Docker Compose**.
+- Đã cài đặt **Ollama** trên máy chủ (Host machine).
+- **Phần cứng khuyến nghị:** RAM tối thiểu 16GB, GPU có VRAM ≥ 8GB (để chạy mượt mà các mô hình 7B).
+
+### 2. Khởi Tạo Mô Hình AI (Ollama)
+
+Mở Terminal trên máy Host và tải các mô hình cơ sở:
 ```bash
 ollama pull qwen2.5-coder:7b
 ollama pull qwen-embed
 ```
 
-**2. Khởi tạo mô hình Planner đã được Fine-tune:**
-Mô hình `pm_planner_7b` là linh hồn của hệ thống, được huấn luyện riêng biệt từ Data Vàng của PM. 
-- Sau khi chạy file [Google Colab/Kaggle Fine-tune](project_colab.zip), bạn sẽ nhận được một file `.gguf`.
-- Chép file `.gguf` đó vào thư mục `src/Models/`.
-- Mở Terminal tại thư mục `src/Models/` và chạy lệnh sau để đưa mô hình vào Ollama:
-```powershell
-ollama create pm_planner_7b -f Modelfile.txt
-```
+**Cài đặt mô hình Planner (đã Fine-tune):**
+Mô hình `pm_planner_7b` là "linh hồn" của hệ thống.
+1. Lấy file `.gguf` (được tạo ra từ pipeline Fine-tune trên Colab/Kaggle).
+2. Đặt file `.gguf` vào thư mục `src/Models/`.
+3. Mở Terminal tại thư mục `src/Models/` và chạy lệnh sau để đăng ký mô hình vào Ollama:
+   ```bash
+   ollama create pm_planner_7b -f Modelfile.txt
+   ```
 
----
+### 3. Cấu Hình Biến Môi Trường (Environment Variables)
 
-## 🐳 2. Khởi chạy Hệ thống bằng Docker Compose
-
-Hệ thống đã được Docker hóa hoàn toàn. Bạn không cần tự cài đặt DB hay Redis.
-
-**1. Copy file cấu hình:**
-Đảm bảo bạn đã sao chép `src/ai_scrum_master/.env.example` thành `src/ai_scrum_master/.env` và cấu hình các biến cơ bản.
-
-**2. Chạy toàn bộ hệ thống:**
-Mở Terminal tại thư mục gốc của project và gõ lệnh:
+Nhân bản file cấu hình mẫu và thiết lập các thông số dự án:
 ```bash
-docker-compose up -d
+cp src/ai_scrum_master/.env.example src/ai_scrum_master/.env
 ```
-Lệnh này sẽ tự động tải các base image và khởi động 6 Containers:
-1. `api_local` (FastAPI chạy ở port 8000)
-2. `ui_local` (React chạy ở port 5173)
-3. `worker_local` (Celery Worker xử lý AI ngầm)
-4. `mongodb_local` (Database cổng 27017)
-5. `qdrant_local` (Vector DB cổng 6333)
-6. `redis_local` (Message Broker cổng 6379)
 
-**Truy cập ứng dụng:**
-- **Giao diện người dùng:** [http://localhost:5173](http://localhost:5173)
-- **Tài liệu API Swagger:** [http://localhost:8000/docs](http://localhost:8000/docs)
-
----
-
-## 💻 3. Quy trình Local Development (Code Nhàn Tênh)
-
-Hệ thống đã được cấu hình **Hot-Reload thông qua Docker Volumes** và tối ưu hoá `.dockerignore`. 
-
-- **KHÔNG CẦN CHẠY LẠI `--build`:** Trừ khi bạn sửa file `requirements.txt` hoặc `package.json`, bạn tuyệt đối không cần dùng lệnh `--build`.
-- **Sửa API (Python) hoặc UI (React):** Hệ thống sử dụng `uvicorn --reload` và `vite`. Bạn chỉ cần gõ code, ấn Save (Ctrl+S), ứng dụng sẽ tự cập nhật ngay lập tức.
-- **Sửa Worker (Celery Task):** Do đặc thù của Celery, mỗi khi sửa code liên quan đến agent hoặc pipeline trong Worker, bạn hãy nạp lại code mới bằng đúng một lệnh siêu tốc:
-  ```bash
-  docker-compose restart worker
-  ```
-
----
-
-## ⚙️ 4. Cấu hình Biến Môi Trường (.env)
-
-Các biến quan trọng cần lưu ý trong file `src/ai_scrum_master/.env`:
-
+**Các biến quan trọng cần lưu ý trong file `.env`:**
 ```env
-# Ollama LLM Config
+# Cấu hình kết nối Ollama trên máy Host
 OLLAMA_BASE_URL=http://host.docker.internal:11434
+
+# Cấu hình Mô hình phân nhiệm
 OLLAMA_REASONING_MODEL=pm_planner_7b
 OLLAMA_RESEARCHER_MODEL=qwen2.5-coder:7b
 OLLAMA_EMBED_MODEL=qwen-embed
 
-# Database Config
-MONGODB_URI=mongodb://mongodb:27017
-QDRANT_URL=http://qdrant:6333
-RAG_BACKEND=direct_qdrant
-
-# Background Worker
-CELERY_BROKER_URL=redis://redis:6379/0
-CELERY_RESULT_BACKEND=redis://redis:6379/0
-
-# Integrations (Tuỳ chọn để test Action)
+# Cấu hình Tích hợp (Tùy chọn)
 JIRA_BASE_URL=https://your-company.atlassian.net
 JIRA_PROJECT_KEY=SCRUM
-JIRA_API_TOKEN=xxx
-SLACK_WEBHOOK_URL=https://hooks.slack.com/services/xxx
+JIRA_API_TOKEN=your_jira_api_token
 ```
+
+### 4. Khởi Động Hệ Thống
+
+Tại thư mục gốc của dự án, chạy lệnh sau để khởi động toàn bộ cụm dịch vụ (Microservices):
+```bash
+docker-compose up -d
+```
+
+Lệnh này sẽ tự động khởi tạo 6 Containers:
+1. 🌐 **`api_local`**: API Gateway & Backend (Cổng `8000`)
+2. 💻 **`ui_local`**: Giao diện người dùng (Cổng `5173`)
+3. ⚙️ **`worker_local`**: Celery Worker (Xử lý AI bất đồng bộ)
+4. 🗄️ **`mongodb_local`**: Lưu trữ dữ liệu hệ thống (Cổng `27017`)
+5. 🧠 **`qdrant_local`**: Vector DB cho RAG (Cổng `6333`)
+6. 📨 **`redis_local`**: Message Queue (Cổng `6379`)
+
+**Điểm Truy Cập (Endpoints):**
+- **Giao diện Người dùng:** [http://localhost:5173](http://localhost:5173)
+- **Tài liệu API (Swagger UI):** [http://localhost:8000/docs](http://localhost:8000/docs)
 
 ---
 
-## ⚠️ 5. Gỡ Lỗi Thường Gặp (Troubleshooting)
+## 👨‍💻 Quy Trình Phát Triển (Developer Workflow)
 
-### ❌ Lỗi: `pm_planner_7b does not support tools`
-- **Nguyên nhân:** Mô hình tự tạo thông qua `Modelfile` không hỗ trợ gọi hàm Python (Function Calling). Mà con `Researcher Agent` bắt buộc phải xài Tool để tìm tài liệu.
-- **Giải pháp:** Kiểm tra lại file `.env` xem biến `OLLAMA_RESEARCHER_MODEL` đã được cấu hình đúng là `qwen2.5-coder:7b` chưa. Sau đó chạy lệnh `docker-compose restart worker`.
+Hệ thống hỗ trợ **Hot-Reload thông qua Docker Volumes**, giúp tăng tốc quá trình phát triển (Development) mà không cần build lại liên tục.
 
-### ⏳ Hệ thống treo / Chạy rất lâu khi ấn Generate
-- **Nguyên nhân:** Đây không phải lỗi. API đã đẩy lệnh xuống cho Worker xử lý ngầm (Asynchronous). Model LLM chạy local nên thời gian phân tích có thể tốn từ 2-5 phút tuỳ độ mạnh của Card đồ hoạ (VRAM).
-- **Giải pháp:** Bạn có thể xem dòng suy nghĩ (Brainwaves) của hệ thống AI theo thời gian thực bằng cách xem log của Worker:
+- **Sửa API (FastAPI) hoặc UI (React):** Mã nguồn sẽ tự động cập nhật ngay khi bạn lưu file (`Ctrl+S`). KHÔNG cần khởi động lại container.
+- **Sửa Logic AI (Celery Worker):** Do đặc thù của Celery nạp code vào bộ nhớ, mỗi khi bạn thay đổi luồng LangGraph hoặc code của Worker, hãy nạp lại cấu hình bằng lệnh:
   ```bash
-  docker-compose logs -f worker
+  docker-compose restart worker
   ```
+- **Chỉ sử dụng cờ `--build`** khi có sự thay đổi về thư viện hệ thống (`requirements.txt` hoặc `package.json`).
 
-### 💥 Lỗi bộ nhớ / Unable to allocate CPU buffer (OOM)
-- **Nguyên nhân:** Máy không đủ RAM hoặc Card đồ họa thiếu VRAM.
-- **Giải pháp:** 
-  1. Đảm bảo bạn chỉ cài các model 4-bit (q4_k_m)
-  2. Giảm giá trị `OLLAMA_NUM_CTX` trong file `.env` xuống (VD: `4096` hoặc `2048`).
+---
+
+## 🩺 Cẩm Nang Khắc Phục Sự Cố (Troubleshooting)
+
+| Hiện Tượng / Lỗi | Nguyên Nhân Cốt Lõi | Cách Khắc Phục |
+| :--- | :--- | :--- |
+| **`pm_planner_7b does not support tools`** | Mô hình tự custom không hỗ trợ Tool Calling. (Trong khi Agent Researcher bắt buộc phải dùng công cụ). | Kiểm tra lại `.env` đảm bảo `OLLAMA_RESEARCHER_MODEL=qwen2.5-coder:7b`. Sau đó chạy `docker-compose restart worker`. |
+| **Hệ thống tải rất lâu khi "Generate"** | (Đây không phải là lỗi). Tác vụ phân tích AI đang chạy dưới nền (Background). Thời gian phụ thuộc 100% vào tốc độ của GPU. | Theo dõi tiến độ suy luận thực tế (Brainwaves) của AI thông qua log: `docker-compose logs -f worker` |
+| **Lỗi bộ nhớ / Unable to allocate CPU buffer (OOM)** | Máy Host không đủ RAM hoặc Card đồ họa bị tràn VRAM. | 1. Đảm bảo bạn chỉ tải các mô hình định dạng 4-bit (`q4_k_m`).<br>2. Giảm ngữ cảnh tối đa bằng cách chỉnh `OLLAMA_NUM_CTX` trong `.env` xuống mức `2048` hoặc `4096`. |
+
+---
+*Powered by AI Multi-Agent Architecture • Built for Agile Excellence*

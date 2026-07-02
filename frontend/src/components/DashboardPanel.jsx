@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { fetchManagementDashboard } from '../lib/api';
+import { useTranslation } from 'react-i18next';
 
 // ── Helpers ──
 
@@ -25,6 +26,7 @@ function priorityBadge(priority) {
 }
 
 export default function DashboardPanel({ projectId }) {
+  const { t } = useTranslation();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -61,25 +63,25 @@ export default function DashboardPanel({ projectId }) {
       {/* Welcome Header */}
       <section className="mb-stack-lg flex justify-between items-end">
         <div>
-          <h3 className="font-display-lg text-display-lg text-on-surface mb-2">Welcome back, Scrum Lead</h3>
+          <h3 className="font-display-lg text-display-lg text-on-surface mb-2">{t('dashboard.welcome')}</h3>
           <div className="flex items-center gap-3">
-            <span className="px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full font-label-md">{data?.sprintName || 'No Active Sprint'}</span>
+            <span className="px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full font-label-md">{data?.sprintName || t('dashboard.no_active_sprint')}</span>
             {data?.jiraConnected && (
               <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-[10px] font-bold border border-green-200 flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                JIRA LIVE
+                {t('dashboard.jira_live')}
               </span>
             )}
             <div className="flex items-center gap-2">
               <div className="w-48 h-2 bg-surface-container-highest rounded-full overflow-hidden">
                 <div className="bg-primary h-full transition-all duration-1000 ease-out" style={{ width: `${data?.sprintProgress || 0}%` }}></div>
               </div>
-              <span className="font-label-md text-on-surface-variant">{data?.sprintProgress || 0}% Complete</span>
+              <span className="font-label-md text-on-surface-variant">{data?.sprintProgress || 0}% {t('dashboard.complete')}</span>
             </div>
           </div>
         </div>
         <div className="text-right">
-          <p className="font-label-md text-on-surface-variant">Estimated Finish</p>
+          <p className="font-label-md text-on-surface-variant">{t('dashboard.estimated_finish')}</p>
           <p className="font-headline-sm text-headline-sm text-on-surface">{data?.sprintEndDate || '--'}</p>
         </div>
       </section>
@@ -89,7 +91,7 @@ export default function DashboardPanel({ projectId }) {
         {/* Total Tickets */}
         <div className="bg-surface border border-outline-variant p-4 rounded-xl flex flex-col justify-between">
           <div>
-            <p className="font-label-md text-on-surface-variant mb-1">Total Tickets Created</p>
+            <p className="font-label-md text-on-surface-variant mb-1">{t('dashboard.total_tickets')}</p>
             <p className="font-display-lg text-display-lg text-on-surface">{data?.totalTickets || 0}</p>
           </div>
           <div className="mt-4 flex items-center gap-1 text-tertiary font-label-md">
@@ -101,27 +103,27 @@ export default function DashboardPanel({ projectId }) {
         {/* AI Confidence */}
         <div className="bg-surface border border-outline-variant p-4 rounded-xl flex flex-col justify-between">
           <div>
-            <p className="font-label-md text-on-surface-variant mb-1">AI Confidence Score</p>
+            <p className="font-label-md text-on-surface-variant mb-1">{t('dashboard.ai_confidence')}</p>
             <p className="font-display-lg text-display-lg text-primary">{data?.aiConfidenceScore || 0}%</p>
           </div>
           <div className="mt-4 flex items-center gap-1 text-on-surface-variant font-label-md">
             <span className="material-symbols-outlined text-sm">verified</span>
-            <span>High Precision Active</span>
+            <span>{t('dashboard.high_precision')}</span>
           </div>
         </div>
 
         {/* Team Velocity (with sprint points) */}
         <div className="bg-surface border border-outline-variant p-4 rounded-xl flex flex-col justify-between">
           <div>
-            <p className="font-label-md text-on-surface-variant mb-1">Team Velocity</p>
-            <p className="font-display-lg text-display-lg text-on-surface">{data?.teamVelocity || 0}<span className="text-label-md text-on-surface-variant font-normal">pts</span></p>
+            <p className="font-label-md text-on-surface-variant mb-1">{t('dashboard.team_velocity')}</p>
+            <p className="font-display-lg text-display-lg text-on-surface">{data?.teamVelocity || 0}<span className="text-label-md text-on-surface-variant font-normal">{t('dashboard.pts')}</span></p>
           </div>
           <div className="mt-4 flex items-center gap-1 text-tertiary font-label-md">
             <span className="material-symbols-outlined text-sm">bolt</span>
             {data?.jiraConnected ? (
-              <span>{data?.doneSprintPoints?.toFixed(0) || 0}/{data?.totalSprintPoints?.toFixed(0) || 0} SP done</span>
+              <span>{data?.doneSprintPoints?.toFixed(0) || 0}/{data?.totalSprintPoints?.toFixed(0) || 0} {t('dashboard.sp_done')}</span>
             ) : (
-              <span>Optimal Performance</span>
+              <span>{t('dashboard.optimal_performance')}</span>
             )}
           </div>
         </div>
@@ -129,7 +131,7 @@ export default function DashboardPanel({ projectId }) {
         {/* Sprint Burndown (real data) */}
         <div className="bg-surface border border-outline-variant p-4 rounded-xl flex flex-col justify-between overflow-hidden relative">
           <div>
-            <p className="font-label-md text-on-surface-variant mb-1">Sprint Burndown</p>
+            <p className="font-label-md text-on-surface-variant mb-1">{t('dashboard.sprint_burndown')}</p>
           </div>
           {totalIssues > 0 ? (
             <div className="flex gap-2 mt-2 h-20 w-full">
@@ -142,7 +144,7 @@ export default function DashboardPanel({ projectId }) {
                     style={{ height: `${(sb.todo / burndownMax) * 100}%`, minHeight: sb.todo > 0 ? '4px' : '0px' }}
                   ></div>
                 </div>
-                <span className="text-[8px] text-on-surface-variant h-3 mt-1">To Do</span>
+                <span className="text-[8px] text-on-surface-variant h-3 mt-1">{t('dashboard.todo')}</span>
               </div>
               {/* In Progress bar */}
               <div className="flex-1 h-full flex flex-col items-center">
@@ -153,7 +155,7 @@ export default function DashboardPanel({ projectId }) {
                     style={{ height: `${(sb.in_progress / burndownMax) * 100}%`, minHeight: sb.in_progress > 0 ? '4px' : '0px' }}
                   ></div>
                 </div>
-                <span className="text-[8px] text-on-surface-variant h-3 mt-1">WIP</span>
+                <span className="text-[8px] text-on-surface-variant h-3 mt-1">{t('dashboard.wip')}</span>
               </div>
               {/* Done bar */}
               <div className="flex-1 h-full flex flex-col items-center">
@@ -164,7 +166,7 @@ export default function DashboardPanel({ projectId }) {
                     style={{ height: `${(sb.done / burndownMax) * 100}%`, minHeight: sb.done > 0 ? '4px' : '0px' }}
                   ></div>
                 </div>
-                <span className="text-[8px] text-on-surface-variant h-3 mt-1">Done</span>
+                <span className="text-[8px] text-on-surface-variant h-3 mt-1">{t('dashboard.done')}</span>
               </div>
             </div>
           ) : (
@@ -186,20 +188,20 @@ export default function DashboardPanel({ projectId }) {
         {/* Active Tickets Table (8/12) */}
         <div className="col-span-12 lg:col-span-8 bg-surface border border-outline-variant rounded-xl overflow-hidden">
           <div className="px-gutter py-4 border-b border-outline-variant flex justify-between items-center">
-            <h4 className="font-headline-sm text-headline-sm text-on-surface">Active Sprint Tickets</h4>
+            <h4 className="font-headline-sm text-headline-sm text-on-surface">{t('dashboard.active_tickets')}</h4>
             <button className="text-primary font-label-md flex items-center gap-1">
-              View All <span className="material-symbols-outlined text-sm">chevron_right</span>
+              {t('dashboard.view_all')} <span className="material-symbols-outlined text-sm">chevron_right</span>
             </button>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left font-body-md">
               <thead className="bg-surface-container-low text-on-surface-variant">
                 <tr>
-                  <th className="px-gutter py-3 font-label-md">Ticket Title</th>
-                  <th className="px-gutter py-3 font-label-md">AI Agents</th>
-                  <th className="px-gutter py-3 font-label-md">Priority</th>
-                  <th className="px-gutter py-3 font-label-md">SP</th>
-                  <th className="px-gutter py-3 font-label-md">Status</th>
+                  <th className="px-gutter py-3 font-label-md">{t('dashboard.ticket_title')}</th>
+                  <th className="px-gutter py-3 font-label-md">{t('dashboard.ai_agents')}</th>
+                  <th className="px-gutter py-3 font-label-md">{t('dashboard.priority')}</th>
+                  <th className="px-gutter py-3 font-label-md">{t('dashboard.sp')}</th>
+                  <th className="px-gutter py-3 font-label-md">{t('dashboard.status')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant">
@@ -241,7 +243,7 @@ export default function DashboardPanel({ projectId }) {
                 ) : (
                   <tr>
                     <td colSpan={5} className="px-gutter py-8 text-center text-on-surface-variant">
-                      No active sprint tickets found
+                      {t('dashboard.no_tickets_found')}
                     </td>
                   </tr>
                 )}
@@ -258,43 +260,43 @@ export default function DashboardPanel({ projectId }) {
             </div>
             <div className="flex items-center gap-2 text-secondary mb-4">
               <span className="material-symbols-outlined">auto_awesome</span>
-              <h4 className="font-headline-sm text-headline-sm">AI Agent Insight</h4>
+              <h4 className="font-headline-sm text-headline-sm">{t('dashboard.ai_insight')}</h4>
             </div>
             <p className="font-body-lg text-body-lg text-on-surface mb-6">
-              {data?.agentInsight || "Loading insights..."}
+              {data?.agentInsight || t('dashboard.loading_insights')}
             </p>
             <div className="space-y-3">
               <button className="w-full py-2 px-4 bg-secondary text-on-secondary rounded-lg font-label-md flex justify-between items-center group transition-all">
-                Review Suggested Tasks
+                {t('dashboard.review_tasks')}
                 <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
               </button>
               <button className="w-full py-2 px-4 border border-outline-variant text-on-surface-variant rounded-lg font-label-md hover:bg-surface-container-low">
-                Dismiss Suggestion
+                {t('dashboard.dismiss_suggestion')}
               </button>
             </div>
           </div>
 
           <div className="bg-surface border border-outline-variant rounded-xl p-container-padding">
-            <h4 className="font-label-md text-on-surface-variant uppercase tracking-wider mb-4">Agent System Health</h4>
+            <h4 className="font-label-md text-on-surface-variant uppercase tracking-wider mb-4">{t('dashboard.system_health')}</h4>
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
                   <div className={`w-2 h-2 rounded-full ${data?.agentHealth?.researcher === 'Active' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-amber-500 animate-pulse'}`}></div>
-                  <span className="font-body-md">Researcher Agent</span>
+                  <span className="font-body-md">{t('dashboard.researcher_agent')}</span>
                 </div>
                 <span className="font-mono-sm text-on-surface-variant">{data?.agentHealth?.researcher || '...'}</span>
               </div>
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
                   <div className={`w-2 h-2 rounded-full ${data?.agentHealth?.planner === 'Active' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-amber-500 animate-pulse'}`}></div>
-                  <span className="font-body-md">Planner Agent</span>
+                  <span className="font-body-md">{t('dashboard.planner_agent')}</span>
                 </div>
                 <span className="font-mono-sm text-on-surface-variant">{data?.agentHealth?.planner || '...'}</span>
               </div>
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
                   <div className={`w-2 h-2 rounded-full ${data?.agentHealth?.evaluator === 'Active' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-amber-500 animate-pulse'}`}></div>
-                  <span className="font-body-md">Evaluator Agent</span>
+                  <span className="font-body-md">{t('dashboard.evaluator_agent')}</span>
                 </div>
                 <span className="font-mono-sm text-on-surface-variant">{data?.agentHealth?.evaluator || '...'}</span>
               </div>
