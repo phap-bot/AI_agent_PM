@@ -91,6 +91,8 @@ cp src/ai_scrum_master/.env.example src/ai_scrum_master/.env
 **Các biến quan trọng cần lưu ý trong file `.env`:**
 ```env
 # Cấu hình kết nối Ollama trên máy Host
+# - Windows/macOS: Dùng http://host.docker.internal:11434
+# - Linux: Dùng http://172.17.0.1:11434 (nếu host.docker.internal không được hỗ trợ)
 OLLAMA_BASE_URL=http://host.docker.internal:11434
 
 # Cấu hình Mô hình phân nhiệm
@@ -104,12 +106,21 @@ JIRA_PROJECT_KEY=SCRUM
 JIRA_API_TOKEN=your_jira_api_token
 ```
 
-### 4. Khởi Động Hệ Thống
+### 4. Khởi Động Hệ Thống (Run Application)
 
-Tại thư mục gốc của dự án, chạy lệnh sau để khởi động toàn bộ cụm dịch vụ (Microservices):
-```bash
-docker-compose up -d
-```
+Tại thư mục gốc của dự án, chạy lệnh sau để khởi động toàn bộ cụm dịch vụ (Microservices).
+Tùy vào hệ điều hành của bạn, hãy sử dụng lệnh phù hợp:
+
+- 🪟 **Windows / 🍏 macOS:**
+  ```bash
+  docker-compose up -d
+  ```
+
+- 🐧 **Linux:**
+  Khuyến nghị sử dụng Docker Compose V2 (có thể cần quyền `sudo`):
+  ```bash
+  sudo docker compose up -d
+  ```
 
 Lệnh này sẽ tự động khởi tạo 6 Containers:
 1. 🌐 **`api_local`**: API Gateway & Backend (Cổng `8000`)
