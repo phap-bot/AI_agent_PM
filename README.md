@@ -1,161 +1,196 @@
-# 🚀 AI Scrum Master Agent
+# AI Scrum Master Agent
 
-> **Hệ Thống Quản Lý Sản Phẩm Tự Động Hóa (Next-Generation Product Management System)**
+AI Scrum Master Agent là hệ thống đa tác tử chạy cục bộ, dùng để chuyển yêu cầu thô từ stakeholder thành các hạng mục công việc sẵn sàng đưa vào sprint. Dự án kết hợp FastAPI, Celery, LangGraph, Ollama, MongoDB, Redis, Qdrant và giao diện React/Vite để hỗ trợ quy trình vận hành sản phẩm.
 
-**AI Scrum Master Agent** là một hệ thống đa tác tử (Multi-Agent) thông minh, được thiết kế để giải quyết điểm nghẽn lớn nhất trong quy trình Agile: Chuyển đổi các yêu cầu thô (raw requirements) từ các bên liên quan thành các Jira work items chi tiết, sẵn sàng cho Sprint (sprint-ready).
+## Chức Năng Chính
 
-Bằng việc kết hợp kiến trúc **Bất đồng bộ (Asynchronous)** cấp doanh nghiệp và các mô hình **Local LLM (Ollama)**, hệ thống không chỉ tối ưu hóa hiệu suất làm việc mà còn đảm bảo bảo mật dữ liệu tuyệt đối (Zero Data Leakage).
+- Nhận yêu cầu thô từ giao diện web hoặc API.
+- Truy xuất ngữ cảnh dự án từ thư viện tài liệu đã ingest.
+- Điều phối yêu cầu qua pipeline nhiều tác tử:
+  - `RouterAgent`
+  - `ResearcherAgent`
+  - `PlannerAgent`
+  - `EvaluatorAgent`
+- Sinh bản nháp story có cấu trúc, gồm:
+  - user story
+  - acceptance criteria
+  - story points
+  - task BE/FE/QA
+  - definition of done
+  - phản hồi từ evaluator
+- Xem trước hoặc thực thi hành động downstream trên Jira, Slack và GitHub.
 
----
-
-## 🌟 Tổng Quan Giải Pháp & Giá Trị Cốt Lõi
-
-- **Bảo Mật Tối Đa:** Vận hành 100% nội bộ (On-premise/Local) thông qua Ollama. Không có bất kỳ dữ liệu dự án nào bị gửi ra các API bên ngoài.
-- **Kiến Trúc Multi-Agent Chuyên Sâu:** Sử dụng LangGraph để điều phối các AI Agents (Researcher, Planner, Evaluator) hoạt động độc lập và tự kiểm tra chéo, đảm bảo đầu ra đạt chuẩn.
-- **Hiệu Năng & Khả Năng Mở Rộng:** Xử lý các tác vụ AI nặng dưới nền (Background Tasks) thông qua Celery và Redis, giúp giao diện (UI) luôn phản hồi mượt mà ngay cả khi có nhiều yêu cầu cùng lúc.
-- **Mô Hình AI Chuyên Biệt:** Tích hợp mô hình `pm_planner_7b` đã được huấn luyện riêng biệt (Fine-tuned) trên bộ dữ liệu chuẩn mực của Product Manager.
-
----
-
-## 🏗️ Kiến Trúc Hệ Thống (Architecture)
-
-Hệ thống hoạt động theo một quy trình tự động khép kín (Pipeline):
+## Kiến Trúc
 
 ```text
-[ Yêu cầu từ Stakeholder ] 
-       │
-       ▼
-[ FastAPI Gateway ] ──► [ Redis Message Queue ] ──► [ Celery Background Worker ]
-                                                             │
-                                                             ▼
-                                                ╔═════════════════════════════╗
-                                                ║ 🧠 Multi-Agent Orchestrator ║
-                                                ║  1. Researcher Agent        ║
-                                                ║  2. Planner Agent           ║
-                                                ║  3. Evaluator Agent         ║
-                                                ╚═════════════════════════════╝
-                                                             │
-       ┌─────────────────────────────────────────────────────┘
-       ▼
-[ Phê duyệt từ con người ] ──► [ Tích hợp tự động Jira / Slack ]
+Frontend (React/Vite)
+        |
+        v
+FastAPI API
+        |
+        v
+Celery + Redis
+        |
+        v
+LangGraph Pipeline
+  -> Router
+  -> Researcher (RAG qua Qdrant)
+  -> Planner (LLM)
+  -> Evaluator (rules + LLM tùy chọn)
+        |
+        +--> MongoDB lưu lịch sử/job
+        +--> Jira / Slack / GitHub actions
 ```
 
-### 🛠️ Technology Stack
-- **AI & Orchestration:** LangGraph, Ollama, Qwen 2.5 Coder (7B)
-- **Backend API:** FastAPI (Python 3.10+)
-- **Frontend UI:** React (Vite)
-- **Background Tasks:** Celery + Redis (Message Broker & Result Backend)
-- **Database (Lịch sử):** MongoDB
-- **Vector Database (RAG):** Qdrant
-- **Deployment:** Docker & Docker Compose
+## Tech Stack
 
----
+- Backend: FastAPI, Python 3.11
+- Worker: Celery, Redis
+- Điều phối LLM: LangGraph, LangChain
+- Mô hình cục bộ: Ollama
+- Vector store: Qdrant
+- Lưu trữ: MongoDB
+- Frontend: React 19, Vite, Tailwind CSS, i18next
+- Triển khai local: Docker Compose
+- Kiểm thử: pytest
 
-## 🚀 Hướng Dẫn Cài Đặt & Khởi Chạy (Deployment Guide)
+## Cấu Trúc Thư Mục
 
-Hệ thống đã được Docker hóa hoàn toàn, mang lại trải nghiệm cài đặt "Plug-and-Play". Bạn không cần cấu hình thủ công Database hay Redis trên máy chủ.
-
-### 1. Yêu Cầu Hệ Thống (Prerequisites)
-- Đã cài đặt **Docker** và **Docker Compose**.
-- Đã cài đặt **Ollama** trên máy chủ (Host machine).
-
-**Hỗ Trợ Đa Nền Tảng (Cross-Platform):**
-- 🪟 **Windows:** Yêu cầu bật **WSL2** làm backend cho Docker Desktop. Ollama chạy trực tiếp trên Windows, tự động nhận diện GPU NVIDIA (CUDA) nếu có.
-- 🍏 **macOS:** Cài đặt Docker Desktop for Mac. Ollama hỗ trợ hoàn hảo kiến trúc ARM và tận dụng thư viện Metal (Apple Silicon M1/M2/M3...) giúp tốc độ xử lý AI cực kỳ ấn tượng.
-- 🐧 **Linux:** Docker Engine chạy native (hiệu năng mạng và I/O tốt nhất). Ollama hỗ trợ native CUDA (NVIDIA) hoặc ROCm (AMD) giúp phát huy 100% sức mạnh phần cứng.
-
-### 2. Khởi Tạo Mô Hình AI (Ollama)
-
-Mở Terminal (hoặc PowerShell / Command Prompt) trên máy Host và tải các mô hình cơ sở:
-```bash
-ollama pull qwen2.5-coder:7b
-ollama pull bge-m3
+```text
+frontend/                         Giao diện React
+src/ai_scrum_master/api/          API routes và schemas của FastAPI
+src/ai_scrum_master/agents/       Router, Researcher, Planner, Evaluator
+src/ai_scrum_master/core/         Config, pipeline, validation, tiện ích
+src/ai_scrum_master/ingestion/    Parse, chunk và index tài liệu
+src/ai_scrum_master/retrieval/    RAG và truy cập vector store
+src/ai_scrum_master/worker/       Celery app và background tasks
+tests/                            Unit test và integration-style test
 ```
 
-**Cài đặt mô hình Planner (đã Fine-tune):**
-Mô hình `Pm-agent` là "linh hồn" của hệ thống.
-1. Lấy file `.gguf` (được tạo ra từ pipeline Fine-tune trên Colab/Kaggle).
-2. Đặt file `.gguf` vào thư mục `src/Models/`.
-3. Mở Terminal tại thư mục `src/Models/` và chạy lệnh sau để đăng ký mô hình vào Ollama:
-   ```bash
-   ollama create Pm-agent -f Modelfile.txt
-   ```
-4. Có thể sử dụng API của bên thứ 3.
-### 3. Cấu Hình Biến Môi Trường (Environment Variables)
+## Luồng Xử Lý Chính
 
-Nhân bản file cấu hình mẫu và thiết lập các thông số dự án:
+### 1. Sinh User Story
+
+1. Frontend gửi `POST /generate`.
+2. API tạo background job.
+3. Celery chạy pipeline LangGraph.
+4. UI polling trạng thái qua `/generate/status/{job_id}`.
+5. Kết quả cuối cùng được lưu vào lịch sử trong MongoDB.
+
+### 2. Ingest Tài Liệu
+
+1. Frontend upload file `.pdf`, `.docx`, `.txt` hoặc `.md`.
+2. Hệ thống parse và chia nhỏ nội dung thành chunks.
+3. Chunks được embedding bằng mô hình embedding của Ollama.
+4. Vectors được upsert vào Qdrant.
+5. Retrieval có thể lọc theo phạm vi dự án qua `project_id`.
+
+### 3. Sprint Và Actions
+
+- Xem trước và tạo Jira story.
+- Xem trước và gửi thông báo Slack.
+- Tạo GitHub branch sau khi Jira thành công.
+- Tải sprint board, chuyển trạng thái issue và hoàn tất sprint.
+
+## Nguyên Tắc Bắt Buộc
+
+- Không tạo Jira issue trước khi evaluation đạt yêu cầu.
+- Nếu yêu cầu mơ hồ, tạo câu hỏi làm rõ trước khi lập kế hoạch story.
+- Nếu phạm vi quá lớn cho một sprint, tách thành nhiều story và đề xuất phân bổ sprint.
+- Nếu retrieval không có ngữ cảnh hữu ích, tiếp tục với cảnh báo và giả định rõ ràng.
+- Vòng revision tối đa 3 lần trước khi escalation.
+- Task breakdown phải tách theo BE / FE / QA.
+- Story points chỉ dùng Fibonacci: `1`, `2`, `3`, `5`, `8`, `13`.
+
+## Chuẩn Đầu Ra
+
+- Mỗi story phải theo định dạng: `As a / I want / So that`.
+- Mỗi story phải có ít nhất 3 acceptance criteria dạng `Given / When / Then`.
+- Mỗi story phải có definition of done.
+- Planner nên trả về dữ liệu machine-readable khi có thể.
+- Evaluator chỉ trả về một trong hai trạng thái: `APPROVED` hoặc `REVISION`.
+
+## Cấu Hình Môi Trường
+
+Sao chép file env mẫu:
+
 ```bash
 cp src/ai_scrum_master/.env.example src/ai_scrum_master/.env
 ```
 
-**Các biến quan trọng cần lưu ý trong file `.env`:**
-```env
-# Cấu hình kết nối Ollama trên máy Host
-# - Windows/macOS: Dùng http://host.docker.internal:11434
-# - Linux: Dùng http://172.17.0.1:11434 (nếu host.docker.internal không được hỗ trợ)
-OLLAMA_BASE_URL=http://host.docker.internal:11434
+Các biến quan trọng:
 
-# Cấu hình Mô hình phân nhiệm
+```env
+OLLAMA_BASE_URL=http://host.docker.internal:11434
 OLLAMA_REASONING_MODEL=Pm-agent
 OLLAMA_RESEARCHER_MODEL=qwen2.5-coder:7b
 OLLAMA_EMBED_MODEL=bge-m3
 
-# Cấu hình Tích hợp (Tùy chọn)
-JIRA_BASE_URL=https://your-company.atlassian.net
-JIRA_PROJECT_KEY=SCRUM
-JIRA_API_TOKEN=your_jira_api_token
+MONGODB_URI=mongodb://mongodb:27017
+QDRANT_URL=http://qdrant:6333
+CELERY_BROKER_URL=redis://redis:6379/0
+CELERY_RESULT_BACKEND=redis://redis:6379/0
 ```
 
-### 4. Khởi Động Hệ Thống (Run Application)
+Tích hợp tùy chọn:
 
-Tại thư mục gốc của dự án, chạy lệnh sau để khởi động toàn bộ cụm dịch vụ (Microservices).
-Tùy vào hệ điều hành của bạn, hãy sử dụng lệnh phù hợp:
+```env
+JIRA_BASE_URL=
+JIRA_PROJECT_KEY=
+JIRA_EMAIL=
+JIRA_API_TOKEN=
 
-- 🪟 **Windows / 🍏 macOS:**
-  ```bash
-  docker-compose up -d
-  ```
+SLACK_WEBHOOK_URL=
 
-- 🐧 **Linux:**
-  Khuyến nghị sử dụng Docker Compose V2 (có thể cần quyền `sudo`):
-  ```bash
-  sudo docker compose up -d
-  ```
+QDRANT_COLLECTION=ai_scrum_master_context
+```
 
-Lệnh này sẽ tự động khởi tạo 6 Containers:
-1. 🌐 **`api_local`**: API Gateway & Backend (Cổng `8000`)
-2. 💻 **`ui_local`**: Giao diện người dùng (Cổng `5173`)
-3. ⚙️ **`worker_local`**: Celery Worker (Xử lý AI bất đồng bộ)
-4. 🗄️ **`mongodb_local`**: Lưu trữ dữ liệu hệ thống (Cổng `27017`)
-5. 🧠 **`qdrant_local`**: Vector DB cho RAG (Cổng `6333`)
-6. 📨 **`redis_local`**: Message Queue (Cổng `6379`)
+## Chạy Local
 
-**Điểm Truy Cập (Endpoints):**
-- **Giao diện Người dùng:** [http://localhost:5173](http://localhost:5173)
-- **Tài liệu API (Swagger UI):** [http://localhost:8000/docs](http://localhost:8000/docs)
+Khởi động toàn bộ stack bằng Docker Compose:
 
----
+```bash
+docker-compose up -d
+```
 
-## 👨‍💻 Quy Trình Phát Triển (Developer Workflow)
+Các service mặc định:
 
-Hệ thống hỗ trợ **Hot-Reload thông qua Docker Volumes**, giúp tăng tốc quá trình phát triển (Development) mà không cần build lại liên tục.
+- API: `http://localhost:8000`
+- Swagger: `http://localhost:8000/docs`
+- Frontend: `http://localhost:5173`
+- MongoDB: `localhost:27017`
+- Qdrant: `localhost:6333`
+- Redis: `localhost:6379`
 
-- **Sửa API (FastAPI) hoặc UI (React):** Mã nguồn sẽ tự động cập nhật ngay khi bạn lưu file (`Ctrl+S`). KHÔNG cần khởi động lại container.
-- **Sửa Logic AI (Celery Worker):** Do đặc thù của Celery nạp code vào bộ nhớ, mỗi khi bạn thay đổi luồng LangGraph hoặc code của Worker, hãy nạp lại cấu hình bằng lệnh:
-  ```bash
-  docker-compose restart worker
-  ```
-- **Chỉ sử dụng cờ `--build`** khi có sự thay đổi về thư viện hệ thống (`requirements.txt` hoặc `package.json`).
+## Lệnh Hữu Ích
 
----
+Chạy test backend:
 
-## 🩺 Cẩm Nang Khắc Phục Sự Cố (Troubleshooting)
+```bash
+pytest
+```
 
-| Hiện Tượng / Lỗi | Nguyên Nhân Cốt Lõi | Cách Khắc Phục |
-| :--- | :--- | :--- |
-| **`pm_planner_7b does not support tools`** | Mô hình tự custom không hỗ trợ Tool Calling. (Trong khi Agent Researcher bắt buộc phải dùng công cụ). | Kiểm tra lại `.env` đảm bảo `OLLAMA_RESEARCHER_MODEL=qwen2.5-coder:7b`. Sau đó chạy `docker-compose restart worker`. |
-| **Hệ thống tải rất lâu khi "Generate"** | (Đây không phải là lỗi). Tác vụ phân tích AI đang chạy dưới nền (Background). Thời gian phụ thuộc 100% vào tốc độ của GPU. | Theo dõi tiến độ suy luận thực tế (Brainwaves) của AI thông qua log: `docker-compose logs -f worker` |
-| **Lỗi bộ nhớ / Unable to allocate CPU buffer (OOM)** | Máy Host không đủ RAM hoặc Card đồ họa bị tràn VRAM. | 1. Đảm bảo bạn chỉ tải các mô hình định dạng 4-bit (`q4_k_m`).<br>2. Giảm ngữ cảnh tối đa bằng cách chỉnh `OLLAMA_NUM_CTX` trong `.env` xuống mức `2048` hoặc `4096`. |
+Build frontend:
 
----
-*Powered by Phapbot • Built for Agile Excellence*
+```bash
+cd frontend
+npm run build
+```
+
+Restart worker sau khi thay đổi pipeline:
+
+```bash
+docker-compose restart worker
+```
+
+## Ghi Chú Hiện Tại
+
+- Hệ thống ưu tiên Ollama chạy cục bộ, không mặc định dùng hosted LLM API.
+- Planner và evaluator kết hợp LLM với validation rule để giảm rủi ro tạo Jira output sai.
+- Retrieval hỗ trợ ngữ cảnh theo dự án khi tài liệu được ingest với `project_id`.
+- Tài liệu upload được index tăng dần.
+- Với GPU VRAM thấp, nên dùng model quantized, context window vừa phải và cấu hình runtime thận trọng để tránh OOM.
+
+## License
+
+Dự án nội bộ, trừ khi team định nghĩa license khác.
