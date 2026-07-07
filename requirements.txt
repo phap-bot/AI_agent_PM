@@ -9,6 +9,7 @@ langchain-qdrant
 langchain-ollama
 langchain-text-splitters
 qdrant-client
+websockets>=14,<16
 motor
 pyyaml
 pydantic

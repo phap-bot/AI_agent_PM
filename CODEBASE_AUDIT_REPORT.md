@@ -4,7 +4,7 @@ Ngay lap tuc co the dung tai lieu nay lam nen cho proposal ky thuat. Bao cao duo
 
 ## 1. Tom Tat He Thong
 
-Du an la he thong AI Scrum Master Agent dung de chuyen raw stakeholder requirement thanh Jira-ready work item. He thong co UI React, backend FastAPI, worker bat dong bo Celery, luu lich su MongoDB, RAG tren Qdrant, va local LLM qua Ollama/CrewAI LLM wrapper.
+Du an la he thong AI Scrum Master Agent dung de chuyen raw stakeholder requirement thanh Jira-ready work item. He thong co UI React, backend FastAPI, worker bat dong bo Celery, luu lich su MongoDB, RAG tren Qdrant, LangGraph workflow, va local LLM qua Ollama/LangChain ChatOllama adapter.
 
 Gia tri chinh:
 
@@ -25,7 +25,7 @@ Backend:
 - Celery + Redis cho background jobs.
 - MongoDB qua `pymongo` de luu projects/history.
 - LangGraph cho orchestration.
-- CrewAI `LLM` wrapper goi Ollama.
+- LangChain `ChatOllama` adapter goi Ollama cho local LLM.
 - LangChain, langchain-qdrant, langchain-ollama cho RAG.
 - Qdrant vector database.
 - PyMuPDF/fitz, python-docx, pypdf, Typer cho document parsing.
@@ -128,7 +128,7 @@ Da chay:
 Ket qua chi tiet:
 
 - Pytest fail vi tests import cac duong dan cu: `ai_scrum_master.core.http_client`, `core.agent_schemas`, `core.llm_json`, `core.quality`, `core.quality_gate`, `core.domain_profiles`, `core.prompts`, `core.generation_quality`, `scripts.rag_quality`.
-- Test architecture con ky vong file cu `src/ai_scrum_master/core/pipeline.py` va `src/ai_scrum_master/agents/crew.py`, trong khi runtime hien tai da chuyen sang `core/pipeline/orchestrator.py` va `workflows/graph_pipeline.py`.
+- Test architecture da duoc cap nhat theo huong runtime dung `core/pipeline/orchestrator.py` va `workflows/graph_pipeline.py`, khong con legacy agent framework cu.
 - Frontend lint fail vi:
   - `App.jsx` dung `fetchSprintBoard` nhung chua import.
   - Nhieu `React` imports khong dung.
@@ -152,7 +152,7 @@ Ket qua chi tiet:
 Rui ro cao:
 
 - Test suite khong chay duoc do refactor module path chua dong bo.
-- `requirements.txt` khong khai bao truc tiep `crewai`, trong khi `core/llm/setup.py` import `from crewai import LLM`. Docker runtime co nguy co loi khi generate.
+- Runtime LLM setup da chuyen sang `langchain_ollama.ChatOllama`; can tiep tuc verify tren Docker voi Ollama that.
 - `.env.example` o `src/ai_scrum_master` con nhieu bien Chroma cu (`CHROMA_*`, `RAG_FALLBACK_TO_DIRECT_CHROMA`) trong khi runtime dang dung Qdrant (`QDRANT_URL`, `QDRANT_COLLECTION`, `RAG_FALLBACK_TO_DIRECT_QDRANT`).
 - README va mot so UI text bi mojibake/encoding loi, anh huong chat luong proposal/demo.
 - `data/llm_logs/*.json` dang duoc track nhieu file log sinh ra, khong nen nam trong source control.
@@ -249,7 +249,7 @@ Uu tien 1:
 
 - Dong bo test imports voi module moi hoac tao compatibility shims co chu dich.
 - Sua frontend lint critical: `fetchSprintBoard` import, unused imports, hooks dependency.
-- Cap nhat `requirements.txt`/`pyproject.toml` de khop runtime (`crewai`, `pymongo`/`requests` neu can khai bao truc tiep).
+- Cap nhat `requirements.txt`/`pyproject.toml` de khop runtime (`pymongo`/`requests` neu can khai bao truc tiep).
 - Cap nhat `.env.example` va README sang Qdrant/Ollama hien tai, sua encoding.
 - Remove/untrack generated logs/cache/build artifacts.
 
@@ -265,4 +265,3 @@ Uu tien 3:
 - Them smoke test cho Docker Compose.
 - Them e2e frontend/API happy path co mock LLM.
 - Them security note: token storage, secret redaction, auth/role model.
-

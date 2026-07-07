@@ -18,6 +18,8 @@ dependencies = [
     "langchain-qdrant",
     "langchain-ollama",
     "langchain-text-splitters",
+    "langgraph",
+    "websockets>=14,<16",
     "qdrant-client",
     "motor",
     "pyyaml",

@@ -8,7 +8,6 @@ from ai_scrum_master.core.config.domain_profiles import SOURCE_MATCH_TERMS
 from ai_scrum_master.core.utils.logging import get_logger
 from ai_scrum_master.core.validation.quality_gate import evaluate_research_output, expected_relevance_for_requirement, normalize_source_name
 from ai_scrum_master.retrieval.vector_store import get_chunks_by_filenames, search_context
-from ai_scrum_master.tools.rag_tool import ProjectContextRagTool
 
 logger = get_logger(__name__)
 

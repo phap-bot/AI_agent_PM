@@ -1,12 +1,13 @@
+from collections.abc import Callable
 from typing import Any, TypedDict
 
-class PipelineState(TypedDict, total=False):
+class PipelineState(TypedDict):
     requirement: str
     n_results: int
     allow_fallback_without_context: bool
     forced_context_docs: list[str] | None
     project_id: str | None
-    progress_callback: Any
+    progress_callback: Callable[[str, dict[str, Any]], None] | None
     iteration: int
     max_retries: int
     research_feedback: str | None

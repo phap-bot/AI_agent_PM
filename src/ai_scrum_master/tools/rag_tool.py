@@ -13,16 +13,13 @@ class RagSearchInput(BaseModel):
     n_results: int = Field(default=5, ge=1, le=20, description="Maximum number of context chunks to retrieve.")
 
 
-try:
-    from crewai.tools import BaseTool
-except Exception:
-    BaseTool = object
-
-
-class ProjectContextRagTool(BaseTool):
+class ProjectContextRagTool:
     name: str = "ai_scrum_master_context_search"
     description: str = "Search the canonical local AI Scrum Master documentation vector store for requirement-relevant context."
     args_schema: type[BaseModel] = RagSearchInput
+
+    def run(self, query: str, n_results: int = 5) -> list[dict[str, Any]]:
+        return self._run(query=query, n_results=n_results)
 
     def _run(self, query: str, n_results: int = 5) -> list[dict[str, Any]]:
         settings = get_settings()

@@ -46,37 +46,40 @@ def test_runtime_code_imports_retrieval_package_not_core_retrieval_shims() -> No
     assert "ai_scrum_master.core.vector_store" not in runtime_imports
 
 
-def test_pipeline_service_and_crewai_builder_are_separate() -> None:
-    pipeline_path = Path("src/ai_scrum_master/core/pipeline.py")
-    agents_crew_path = Path("src/ai_scrum_master/agents/crew.py")
+def test_langgraph_pipeline_is_the_runtime_orchestrator() -> None:
+    orchestrator_path = Path("src/ai_scrum_master/core/pipeline/orchestrator.py")
+    graph_path = Path("src/ai_scrum_master/workflows/graph_pipeline.py")
 
-    assert pipeline_path.exists()
-    assert agents_crew_path.exists()
-    agents_crew_source = agents_crew_path.read_text(encoding="utf-8")
-    assert "build_scrum_master_crew" in agents_crew_source
-    assert "ai_scrum_master.actions" not in agents_crew_source
-    assert "ai_scrum_master.core.pipeline" not in agents_crew_source
+    assert orchestrator_path.exists()
+    assert graph_path.exists()
+    assert "run_graph_pipeline" in orchestrator_path.read_text(encoding="utf-8")
+    assert "StateGraph" in graph_path.read_text(encoding="utf-8")
 
 
 def test_generate_router_delegates_to_pipeline_service() -> None:
     generate_router_path = Path("src/ai_scrum_master/api/routers/generate.py")
     source = generate_router_path.read_text(encoding="utf-8")
 
-    assert "generate_story_pipeline" in source
+    assert "generate_story_task" in source
     assert ".run(" not in source
 
 
-def test_pipeline_service_builds_crewai_crew_for_current_request() -> None:
-    pipeline_path = Path("src/ai_scrum_master/core/pipeline.py")
-    source = pipeline_path.read_text(encoding="utf-8")
+def test_runtime_code_does_not_import_legacy_agent_framework() -> None:
+    source_files = list(Path("src/ai_scrum_master").rglob("*.py"))
+    runtime_source = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in source_files
+    ).lower()
 
-    assert "build_scrum_master_crew" in source
-    assert "crewai_crew" in source
+    legacy_framework = "crew" + "ai"
+    assert legacy_framework not in runtime_source
 
 
-def test_core_pipeline_does_not_duplicate_crewai_task_assembly() -> None:
-    pipeline_path = Path("src/ai_scrum_master/core/pipeline.py")
-    source = pipeline_path.read_text(encoding="utf-8")
+def test_no_legacy_agent_pipeline_files_remain() -> None:
+    assert not Path("src/ai_scrum_master/core/pipeline.py").exists()
+    assert not Path("src/ai_scrum_master/agents/crew.py").exists()
 
-    assert "ScrumMasterTasks" not in source
-    assert "build_crewai_blueprint" not in source
+    source_files = list(Path("src/ai_scrum_master").rglob("*.py"))
+    runtime_imports = "\n".join(path.read_text(encoding="utf-8") for path in source_files)
+    assert "build_scrum_master_crew" not in runtime_imports
+    assert "build_" + ("crew" + "ai") + "_blueprint" not in runtime_imports

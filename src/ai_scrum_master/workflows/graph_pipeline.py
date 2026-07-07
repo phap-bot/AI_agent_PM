@@ -32,9 +32,23 @@ from ai_scrum_master.workflows.graph_state import PipelineState
 from ai_scrum_master.core.utils.logging import get_logger
 from ai_scrum_master.core.validation.quality import AMBIGUOUS_REQUEST, OVERSIZED_REQUEST, validate_story_against_requirement
 from ai_scrum_master.core.pipeline.requirement_router import build_route_from_classification
-from ai_scrum_master.core.validation.story_validator import evaluate_planner_output, validate_post_generation
+from ai_scrum_master.core.validation.story_validator import evaluate_planner_output
 
 logger = get_logger(__name__)
+
+
+def _required_story(state: PipelineState) -> dict[str, Any]:
+    story = state.get("story")
+    if not isinstance(story, dict):
+        raise ValueError("Pipeline state is missing story. Planner must run before this node.")
+    return story
+
+
+def _required_evaluation(state: PipelineState) -> dict[str, Any]:
+    evaluation = state.get("evaluation")
+    if not isinstance(evaluation, dict):
+        raise ValueError("Pipeline state is missing evaluation. Evaluator must run before this node.")
+    return evaluation
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -162,7 +176,7 @@ def evaluator_node(state: PipelineState) -> dict[str, Any]:
 
     logger.info("Graph node [evaluator] iteration=%s", state.get("iteration"))
 
-    story = state["story"]
+    story = _required_story(state)
     evaluation = evaluator.run(story=story)
 
     # Apply runtime safety checks
@@ -217,7 +231,6 @@ def evaluator_node(state: PipelineState) -> dict[str, Any]:
 def needs_context_node(state: PipelineState) -> dict[str, Any]:
     """Terminal node: context retrieval failed or insufficient."""
     context = state["context"]
-    route = state["route"]
 
     if context.get("missing_required_sources"):
         warning = f"Planner blocked because required context source(s) are missing: {', '.join(context['missing_required_sources'])}."
@@ -250,8 +263,8 @@ def needs_context_node(state: PipelineState) -> dict[str, Any]:
 
 def finalize_approved_node(state: PipelineState) -> dict[str, Any]:
     """Terminal node: story APPROVED — prepare Jira/Slack actions."""
-    story = state["story"]
-    evaluation = state["evaluation"]
+    story = _required_story(state)
+    evaluation = _required_evaluation(state)
     project_id = state.get("project_id")
 
     jira_tool = JiraTool.from_project(project_id)
@@ -270,8 +283,8 @@ def finalize_approved_node(state: PipelineState) -> dict[str, Any]:
 def finalize_revision_node(state: PipelineState) -> dict[str, Any]:
     """Terminal node: story needs REVISION — block actions."""
     evaluation = state.get("evaluation")
-    if not evaluation:
-        pq = state.get("planner_quality", {})
+    if not isinstance(evaluation, dict):
+        pq = state.get("planner_quality") or {}
         warning = "Planner quality gate failed; evaluator was not run because the story is not ready for evaluation."
         failures = list(dict.fromkeys(pq.get("failures", []) + [warning]))
         evaluation = {
@@ -349,7 +362,7 @@ def after_planner(state: PipelineState) -> Literal["evaluator", "researcher", "f
         return "finalize_revision"
 
     # Quality gate check (only for READY stories)
-    pq = state.get("planner_quality", {})
+    pq = state.get("planner_quality") or {}
     if pq.get("passed", True):
         return "evaluator"
 
@@ -435,7 +448,7 @@ def _has_fixable_quality_issues(evaluation: dict[str, Any]) -> bool:
 #  GRAPH BUILDER — compile the StateGraph
 # ═══════════════════════════════════════════════════════════════
 
-def build_pipeline_graph() -> StateGraph:
+def build_pipeline_graph() -> Any:
     """Build and compile the LangGraph pipeline."""
     graph = StateGraph(PipelineState)
 
@@ -491,10 +504,10 @@ def build_pipeline_graph() -> StateGraph:
 # ═══════════════════════════════════════════════════════════════
 
 # Compile once at module level
-_compiled_graph = None
+_compiled_graph: Any | None = None
 
 
-def _get_graph():
+def _get_graph() -> Any:
     global _compiled_graph
     if _compiled_graph is None:
         _compiled_graph = build_pipeline_graph()
@@ -512,7 +525,7 @@ def run_graph_pipeline(
 ) -> dict[str, Any]:
     """Run the full multi-agent pipeline via LangGraph.
 
-    Returns the same dict shape as the old ScrumMasterCrew.run():
+    Returns the dict shape expected by the API and UI:
         {"context", "story", "evaluation", "actions", "next_steps"}
     """
     initial_state: PipelineState = {
@@ -540,7 +553,7 @@ def run_graph_pipeline(
     logger.info("LangGraph pipeline started requirement_length=%s project_id=%s", len(requirement), project_id)
 
     graph = _get_graph()
-    final_state = graph.invoke(initial_state)
+    final_state: dict[str, Any] = graph.invoke(initial_state)
 
     logger.info(
         "LangGraph pipeline completed iterations=%s status=%s",
