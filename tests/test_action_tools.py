@@ -1,6 +1,6 @@
 from ai_scrum_master.actions.jira import JiraConfig, JiraTool
 from ai_scrum_master.actions.slack import SlackConfig, SlackTool
-from ai_scrum_master.core.http_client import HttpResponse
+from ai_scrum_master.core.utils.http_client import HttpResponse
 
 
 STORY = {
@@ -27,6 +27,10 @@ class FakeHttpClient:
         return self.responses.pop(0)
 
     def post_json(self, **kwargs) -> HttpResponse:
+        self.calls.append(kwargs)
+        return self.responses.pop(0)
+
+    def delete_request(self, **kwargs) -> HttpResponse:
         self.calls.append(kwargs)
         return self.responses.pop(0)
 
@@ -180,6 +184,7 @@ def test_jira_execute_retries_unauthorized_then_warns() -> None:
             HttpResponse(status_code=401, text="unauthorized"),
             HttpResponse(status_code=401, text="unauthorized"),
             HttpResponse(status_code=401, text="unauthorized"),
+            HttpResponse(status_code=401, text="unauthorized"),
         ]
     )
     tool = configured_jira(http)
@@ -187,7 +192,7 @@ def test_jira_execute_retries_unauthorized_then_warns() -> None:
     result = tool.execute_action(STORY)
 
     assert result["executed"] is False
-    assert len(http.calls) == 3
+    assert len(http.calls) == 4
     assert any("authorization failed" in warning.lower() for warning in result["warnings"])
 
 
@@ -252,6 +257,7 @@ def test_slack_execute_permanent_failure_returns_warning() -> None:
             HttpResponse(status_code=500, text="server error"),
             HttpResponse(status_code=500, text="server error"),
             HttpResponse(status_code=500, text="server error"),
+            HttpResponse(status_code=500, text="server error"),
         ]
     )
     tool = configured_slack(http)
@@ -259,5 +265,28 @@ def test_slack_execute_permanent_failure_returns_warning() -> None:
     result = tool.execute_action(STORY, {"status": "APPROVED"})
 
     assert result["executed"] is False
-    assert len(http.calls) == 3
+    assert len(http.calls) == 4
     assert result["warnings"]
+
+
+def test_jira_complete_sprint_moves_open_issues_before_closing() -> None:
+    http = FakeHttpClient(
+        [
+            HttpResponse(status_code=204, text="moved"),
+            HttpResponse(status_code=200, json_body={"state": "closed"}, text='{"state":"closed"}'),
+        ]
+    )
+    tool = configured_jira(http)
+
+    result = tool.complete_sprint(
+        sprint_id=12,
+        move_open_to="backlog",
+        open_issues=["SCRUM-1", "SCRUM-2"],
+    )
+
+    assert result == {"success": True}
+    assert len(http.calls) == 2
+    assert http.calls[0]["url"].endswith("/rest/agile/1.0/backlog/issue")
+    assert http.calls[0]["payload"] == {"issues": ["SCRUM-1", "SCRUM-2"]}
+    assert http.calls[1]["url"].endswith("/rest/agile/1.0/sprint/12")
+    assert http.calls[1]["payload"] == {"state": "closed"}

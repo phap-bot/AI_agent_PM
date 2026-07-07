@@ -2,6 +2,7 @@ import hashlib
 from pathlib import Path
 
 from ai_scrum_master.ingestion.ingest import (
+    _compute_file_hash,
     build_chunk_id,
     build_chunk_metadata,
     chunk_text,
@@ -57,6 +58,13 @@ def test_build_chunk_id_is_stable_for_source_and_index() -> None:
     assert first == second
 
 
+def test_build_chunk_id_is_scoped_by_project() -> None:
+    first = build_chunk_id(path=Path("auth/login.md"), chunk_index=0, project_id="project-a")
+    second = build_chunk_id(path=Path("auth/login.md"), chunk_index=0, project_id="project-b")
+
+    assert first != second
+
+
 def test_build_chunk_metadata_includes_provenance_and_hashes(tmp_path) -> None:
     source_dir = tmp_path / "raw_docs"
     source_dir.mkdir()
@@ -82,11 +90,30 @@ def test_build_chunk_metadata_includes_provenance_and_hashes(tmp_path) -> None:
     assert metadata["chunk_strategy"] == "langchain_recursive_character"
 
 
+def test_build_chunk_metadata_includes_project_id_when_present(tmp_path) -> None:
+    source_dir = tmp_path / "raw_docs"
+    source_dir.mkdir()
+    path = source_dir / "auth.md"
+    path.write_text("Auth uses JWT", encoding="utf-8")
+
+    metadata = build_chunk_metadata(
+        path=path,
+        source_dir=source_dir,
+        chunk_index=0,
+        chunk="Auth uses JWT",
+        document_sha1="doc-hash",
+        ingested_at="2026-05-26T00:00:00+00:00",
+        project_id="project-123",
+    )
+
+    assert metadata["project_id"] == "project-123"
+
+
 def test_read_source_text_reads_utf8_text_file(tmp_path) -> None:
     path = tmp_path / "auth.md"
     path.write_text("Đăng nhập bằng Google", encoding="utf-8")
 
-    assert read_source_text(path) == "Đăng nhập bằng Google"
+    assert read_source_text(path).strip() == "Đăng nhập bằng Google"
 
 
 def test_document_hash_uses_pdf_bytes(tmp_path) -> None:
@@ -94,6 +121,13 @@ def test_document_hash_uses_pdf_bytes(tmp_path) -> None:
     path.write_bytes(b"%PDF-1.4\xff\x00binary")
 
     assert document_hash(path, "extracted text") == hashlib.sha1(path.read_bytes()).hexdigest()
+
+
+def test_compute_file_hash_uses_docx_bytes(tmp_path) -> None:
+    path = tmp_path / "guide.docx"
+    path.write_bytes(b"PK\x03\x04docx-binary")
+
+    assert _compute_file_hash(path) == hashlib.sha1(path.read_bytes()).hexdigest()
 
 
 def test_resolve_chunk_source_path_accepts_project_relative_loader_source(tmp_path, monkeypatch) -> None:

@@ -2,9 +2,12 @@ from __future__ import annotations
 
 import json
 import re
+from functools import lru_cache
 from importlib import import_module
 from pathlib import Path
 from typing import Any
+
+from qdrant_client.http import models as rest
 
 from ai_scrum_master.core.config.settings import get_settings
 from ai_scrum_master.core.utils.logging import get_logger
@@ -42,8 +45,6 @@ LANGCHAIN_INSTALL_HINT = (
 
 DEFAULT_EMBEDDING_QUERY_CHARS = 3000
 
-
-
 class LangChainRagDependencyError(ImportError):
     pass
 
@@ -56,9 +57,6 @@ def _load_attr(module_name: str, attr_name: str) -> Any:
             f"Missing LangChain dependency '{module_name}'"
         ) from exc
     return getattr(module, attr_name)
-
-
-from functools import lru_cache
 
 @lru_cache(maxsize=1)
 def build_embeddings() -> Any:
@@ -121,6 +119,19 @@ def build_qdrant_vector_store(collection_name: str | None = None) -> Any:
     )
 
 
+def qdrant_project_filter(project_id: str | None) -> rest.Filter | None:
+    if not project_id:
+        return None
+    return rest.Filter(
+        must=[
+            rest.FieldCondition(
+                key="project_id",
+                match=rest.MatchValue(value=project_id),
+            )
+        ]
+    )
+
+
 def search_context_with_langchain(
     query: str,
     n_results: int = 5,
@@ -133,6 +144,9 @@ def search_context_with_langchain(
     fetch_k = max(n_results, settings.rag_vector_fetch_k if settings.rag_hybrid_search else n_results)
     
     search_kwargs = {}
+    project_filter = qdrant_project_filter(project_id)
+    if project_filter:
+        search_kwargs["filter"] = project_filter
     results = vector_store.similarity_search_with_score(retrieval_query, k=fetch_k, **search_kwargs)
 
     matches: list[dict[str, Any]] = []
@@ -152,7 +166,7 @@ def search_context_with_langchain(
             }
         )
     if settings.rag_hybrid_search:
-        matches = merge_lexical_candidates(retrieval_query, matches, vector_store)
+        matches = merge_lexical_candidates(retrieval_query, matches, vector_store, project_id=project_id)
         matches = rerank_hybrid_matches(matches)
     return matches[:n_results]
 
@@ -185,7 +199,12 @@ def normalize_for_search_input(text: str) -> str:
     return text.strip()
 
 
-def merge_lexical_candidates(query: str, matches: list[dict[str, Any]], vector_store: Any) -> list[dict[str, Any]]:
+def merge_lexical_candidates(
+    query: str,
+    matches: list[dict[str, Any]],
+    vector_store: Any,
+    project_id: str | None = None,
+) -> list[dict[str, Any]]:
     by_id = {citation_id_for_match(match): match for match in matches}
     try:
         raw = vector_store.get(include=["documents", "metadatas"])
@@ -198,6 +217,8 @@ def merge_lexical_candidates(query: str, matches: list[dict[str, Any]], vector_s
     metadatas = raw.get("metadatas", []) if isinstance(raw, dict) else []
     for index, document in enumerate(documents):
         metadata = metadatas[index] if index < len(metadatas) and isinstance(metadatas[index], dict) else {}
+        if project_id and metadata.get("project_id") != project_id:
+            continue
         chunk_id = metadata.get("chunk_id") or metadata.get("id") or (ids[index] if index < len(ids) else "")
         candidate = {
             "id": str(chunk_id),

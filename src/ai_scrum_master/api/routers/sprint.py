@@ -1,17 +1,22 @@
-from fastapi import APIRouter, Query
 from typing import Any, Optional
 
+from fastapi import APIRouter, Query
+from pydantic import BaseModel
+
 from ai_scrum_master.actions.jira import JiraTool
-from ai_scrum_master.core.config.settings import get_settings
 
 router = APIRouter()
 
+
+def _jira_for_project(project_id: Optional[str]) -> JiraTool:
+    if project_id:
+        return JiraTool.from_project(project_id)
+    return JiraTool()
+
+
 @router.get("/sprint", response_model=dict[str, Any])
 def get_sprint_board(project_id: Optional[str] = Query(None)):
-    if project_id:
-        jira = JiraTool.from_project(project_id)
-    else:
-        jira = JiraTool()
+    jira = _jira_for_project(project_id)
         
     # We should get board_id from project config if available
     board_id = jira.config.board_id
@@ -82,94 +87,70 @@ def get_sprint_board(project_id: Optional[str] = Query(None)):
                                 "parent_key": fields.get("parent", {}).get("key")
                             })
 
-        return {
-            "sprint": sprint_data,
-            "issues": mapped_issues
-        }
+        return {"sprint": sprint_data, "issues": mapped_issues}
         
     return {"error": f"Failed to fetch sprint issues: {response.text}"}
 
+
 @router.post("/sprint", response_model=dict[str, Any])
 def create_new_sprint(project_id: Optional[str] = Query(None)):
-    if project_id:
-        jira = JiraTool.from_project(project_id)
-    else:
-        jira = JiraTool()
-        
+    jira = _jira_for_project(project_id)
     board_id = jira.config.board_id
     if not board_id:
         return {"error": "JIRA_BOARD_ID is not configured"}
         
-    import requests
     from datetime import datetime, timedelta, timezone
-    
+
     now = datetime.now(timezone.utc)
-    end = now + timedelta(days=14) # 2 weeks
-    
+    end = now + timedelta(days=14)
     payload = {
         "name": f"AI Auto Sprint {now.strftime('%d%m')}",
         "startDate": now.isoformat(timespec='milliseconds').replace("+00:00", "+0000"),
         "endDate": end.isoformat(timespec='milliseconds').replace("+00:00", "+0000"),
-        "originBoardId": int(board_id)
+        "originBoardId": int(board_id),
     }
-    
+
     url = f"{jira.config.base_url.rstrip('/')}/rest/agile/1.0/sprint"
-    resp = requests.post(
-        url,
-        json=payload,
-        auth=(jira.config.email, jira.config.api_token),
-        headers={"Accept": "application/json"}
+    resp = jira.http_client.post_json(
+        url=url,
+        payload=payload,
+        basic_auth=(jira.config.email, jira.config.api_token),
+        headers={"Accept": "application/json"},
     )
-    
-    if resp.status_code in [200, 201]:
-        return {"message": "Sprint created", "sprint": resp.json()}
-    return {"error": f"Failed to create sprint: {resp.text}"}
+
+    if resp.status_code in (200, 201) and resp.json_body:
+        return {"message": "Sprint created", "sprint": resp.json_body}
+    return {"error": f"Failed to create sprint: {resp.text}", "success": False}
+
+
+class CompleteSprintRequest(BaseModel):
+    move_open_to: str = "backlog"
+    open_issues: list[str] = []
+
 
 @router.post("/sprint/{sprint_id}/complete", response_model=dict[str, Any])
-def complete_sprint(sprint_id: int, project_id: Optional[str] = Query(None)):
-    if project_id:
-        jira = JiraTool.from_project(project_id)
-    else:
-        jira = JiraTool()
-        
-    board_id = jira.config.board_id
-    if not board_id:
-        return {"error": "JIRA_BOARD_ID is not configured"}
-        
-    import requests
-    
-    payload = {
-        "state": "closed"
-    }
-    
-    url = f"{jira.config.base_url.rstrip('/')}/rest/agile/1.0/sprint/{sprint_id}"
-    resp = requests.post(
-        url,
-        json=payload,
-        auth=(jira.config.email, jira.config.api_token),
-        headers={"Accept": "application/json"}
+def complete_sprint(
+    sprint_id: int,
+    payload: CompleteSprintRequest,
+    project_id: Optional[str] = Query(None),
+):
+    jira = _jira_for_project(project_id)
+
+    return jira.complete_sprint(
+        sprint_id=sprint_id,
+        move_open_to=payload.move_open_to,
+        open_issues=payload.open_issues,
     )
-    
-    if resp.status_code in [200, 204]:
-        return {"message": "Sprint completed successfully", "success": True}
-    return {"error": f"Failed to complete sprint: {resp.text}", "success": False}
 
 @router.delete("/sprint/issue/{issue_key}", response_model=dict[str, Any])
 def delete_issue(issue_key: str, project_id: Optional[str] = Query(None)):
-    if project_id:
-        jira = JiraTool.from_project(project_id)
-    else:
-        jira = JiraTool()
+    jira = _jira_for_project(project_id)
     return jira.delete_issue(issue_key)
 
-from pydantic import BaseModel
 class TransitionRequest(BaseModel):
     status: str
 
 @router.put("/sprint/issue/{issue_key}/status", response_model=dict[str, Any])
 def transition_issue(issue_key: str, req: TransitionRequest, project_id: Optional[str] = Query(None)):
-    if project_id:
-        jira = JiraTool.from_project(project_id)
-    else:
-        jira = JiraTool()
+    jira = _jira_for_project(project_id)
     return jira.transition_issue(issue_key, req.status)

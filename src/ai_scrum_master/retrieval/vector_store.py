@@ -45,6 +45,19 @@ def get_embedding_function() -> Any:
     return build_embeddings()
 
 
+def _project_filter(project_id: str | None) -> rest.Filter | None:
+    if not project_id:
+        return None
+    return rest.Filter(
+        must=[
+            rest.FieldCondition(
+                key="project_id",
+                match=rest.MatchValue(value=project_id),
+            )
+        ]
+    )
+
+
 def upsert_documents(
     documents: Sequence[str],
     ids: Sequence[str],
@@ -149,13 +162,15 @@ def query_documents(
     search_result = client.query_points(
         collection_name=collection,
         query=query_vector,
+        query_filter=_project_filter(project_id),
         limit=n_results
     )
     
     docs, metas, distances, ids = [], [], [], []
     for hit in search_result.points:
-        docs.append(hit.payload.get("document", ""))
-        metas.append(hit.payload)
+        payload = hit.payload or {}
+        docs.append(payload.get("document", ""))
+        metas.append(payload)
         distances.append(1.0 - hit.score)  # Convert cosine similarity to "distance" equivalent
         ids.append(hit.id)
         
@@ -257,12 +272,16 @@ def get_chunks_by_filenames(
         return []
 
     # Build an OR filter across all requested filenames
-    should_conditions = [
+    should_conditions: list[Any] = [
         rest.FieldCondition(key="file_name", match=rest.MatchValue(value=fname))
         for fname in filenames
     ]
     
-    query_filter = rest.Filter(should=should_conditions)
+    must_conditions: list[Any] = []
+    if project_id:
+        must_conditions.append(rest.FieldCondition(key="project_id", match=rest.MatchValue(value=project_id)))
+
+    query_filter = rest.Filter(must=must_conditions, should=should_conditions)
     all_matches: list[dict] = []
 
     if query:

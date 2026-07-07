@@ -16,7 +16,7 @@ from ai_scrum_master.retrieval.vector_store import canonical_collection_name
 
 logger = get_logger(__name__)
 
-SUPPORTED_EXTENSIONS = {".md", ".txt", ".pdf"}
+SUPPORTED_EXTENSIONS = {".md", ".txt", ".pdf", ".docx"}
 DEFAULT_CHUNK_SIZE = 1200
 DEFAULT_CHUNK_OVERLAP = 200
 DEFAULT_CHUNK_SEPARATORS = ("\n\n", "\n", ". ", " ", "")
@@ -180,14 +180,14 @@ def apply_chunk_overlap(chunks: list[str], chunk_size: int, overlap: int) -> lis
 
 
 def build_chunk_id(path: Path, chunk_index: int, chunk: str = "", project_id: str | None = None) -> str:
-    digest_input = f"{path.as_posix()}:{chunk_index}"
+    digest_input = f"{project_id or 'global'}:{path.as_posix()}:{chunk_index}"
     digest = hashlib.sha1(digest_input.encode("utf-8")).hexdigest()[:12]
     return f"{path.stem}-{chunk_index}-{digest}"
 
 
 def build_chunk_metadata(path: Path, source_dir: Path, chunk_index: int, chunk: str, document_sha1: str, ingested_at: str, project_id: str | None = None) -> dict:
     relative_path = path.relative_to(source_dir)
-    return {
+    metadata = {
         "source": relative_path.as_posix(),
         "source_path": str(path),
         "file_name": path.name,
@@ -200,6 +200,9 @@ def build_chunk_metadata(path: Path, source_dir: Path, chunk_index: int, chunk: 
         "chunk_size": get_settings().rag_chunk_size,
         "chunk_overlap": get_settings().rag_chunk_overlap,
     }
+    if project_id:
+        metadata["project_id"] = project_id
+    return metadata
 
 
 def read_source_text(path: Path) -> str:
@@ -362,11 +365,23 @@ def _get_existing_doc_hashes(collection_name: str, project_id: str | None = None
         hashes = set()
         offset = None
         while True:
+            scroll_filter = None
+            if project_id:
+                from qdrant_client.http import models as rest
+                scroll_filter = rest.Filter(
+                    must=[
+                        rest.FieldCondition(
+                            key="project_id",
+                            match=rest.MatchValue(value=project_id),
+                        )
+                    ]
+                )
             records, next_offset = client.scroll(
                 collection_name=collection,
                 limit=1000,
                 with_payload=["document_sha1"],
                 with_vectors=False,
+                scroll_filter=scroll_filter,
                 offset=offset,
             )
             for record in records:
@@ -386,9 +401,9 @@ def _get_existing_doc_hashes(collection_name: str, project_id: str | None = None
 
 def _compute_file_hash(path: Path) -> str:
     """Compute document hash from raw file bytes (fast, no parsing needed)."""
-    if path.suffix.lower() == ".pdf":
+    if path.suffix.lower() in {".pdf", ".docx"}:
         return hashlib.sha1(path.read_bytes()).hexdigest()
-    return hashlib.sha1(path.read_text(encoding="utf-8").encode("utf-8")).hexdigest()
+    return hashlib.sha1(path.read_text(encoding="utf-8", errors="ignore").encode("utf-8")).hexdigest()
 
 
 def ingest_raw_docs(raw_docs_dir: Path | None = None, collection_name: str | None = None, project_id: str | None = None) -> dict:

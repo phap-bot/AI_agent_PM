@@ -1,9 +1,9 @@
-                                                                                                                                                        import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import RequirementInputPanel from './components/RequirementInputPanel';
 import ProcessingStatusPanel from './components/ProcessingStatusPanel';
 import StoryDraftEditor from './components/StoryDraftEditor';
 import StorySplitManagerModal from './components/StorySplitManagerModal';
-import { executeAllActions, generateStoriesAsync, getGenerateStatus, previewJiraAction } from './lib/api';
+import { createSprint, executeAllActions, fetchSprintBoard, generateStoriesAsync, getGenerateStatus, previewJiraAction } from './lib/api';
 import { normalizeStoryDraft } from './lib/normalizers';
 import HistoryPanel from './components/HistoryPanel';
 import SprintBoardPanel from './components/SprintBoardPanel';
@@ -18,9 +18,12 @@ import TeamPanel from './components/TeamPanel';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './components/LanguageSwitcher';
 
+const GENERATE_POLL_INITIAL_MS = 3000;
+const GENERATE_POLL_MAX_MS = 10000;
+
 function App() {
   const { t } = useTranslation();
-  const [currentView, setCurrentView] = useState(() => localStorage.getItem('currentView') || 'dashboard');
+  const [currentView, setCurrentView] = useState('dashboard');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   
@@ -39,6 +42,7 @@ function App() {
   const [lastRequirement, setLastRequirement] = useState(null);
   const [forcedContextDocs, setForcedContextDocs] = useState([]);
   const generatePollingRef = useRef(null);
+  const generatePollDelayRef = useRef(GENERATE_POLL_INITIAL_MS);
 
   const [projects, setProjects] = useState([]);
   const [activeProjectId, setActiveProjectId] = useState(() => localStorage.getItem('activeProjectId') || '');
@@ -50,10 +54,6 @@ function App() {
   const [showDeleteProjectConfirm, setShowDeleteProjectConfirm] = useState(false);
 
   const [historyItemView, setHistoryItemView] = useState(null);
-
-  useEffect(() => {
-    localStorage.setItem('currentView', currentView);
-  }, [currentView]);
 
   useEffect(() => {
     localStorage.setItem('activeProjectId', activeProjectId);
@@ -130,8 +130,31 @@ function App() {
 
   useEffect(() => {
     if (!generateJobId || !isLoading) return;
+    let cancelled = false;
+    generatePollDelayRef.current = GENERATE_POLL_INITIAL_MS;
     
-    generatePollingRef.current = setInterval(async () => {
+    const clearGeneratePoll = () => {
+      if (generatePollingRef.current) {
+        clearTimeout(generatePollingRef.current);
+        generatePollingRef.current = null;
+      }
+    };
+
+    const finishPolling = () => {
+      cancelled = true;
+      clearGeneratePoll();
+      setGenerateJobId(null);
+      setIsLoading(false);
+      setGenerationMessage('');
+    };
+
+    const scheduleNextPoll = () => {
+      if (cancelled) return;
+      generatePollingRef.current = setTimeout(pollGenerateStatus, generatePollDelayRef.current);
+      generatePollDelayRef.current = Math.min(generatePollDelayRef.current + 1000, GENERATE_POLL_MAX_MS);
+    };
+
+    async function pollGenerateStatus() {
       try {
         const status = await getGenerateStatus(generateJobId);
         
@@ -143,10 +166,7 @@ function App() {
         if (status.partial_result?.story) setStoryDraft(normalizeStoryDraft(status.partial_result.story, ""));
         
         if (status.status === 'completed') {
-          clearInterval(generatePollingRef.current);
-          setGenerateJobId(null);
-          setIsLoading(false);
-          setGenerationMessage('');
+          finishPolling();
           const finalResult = status.result;
           if (finalResult) {
              setContext(finalResult.context);
@@ -155,26 +175,29 @@ function App() {
              setActions(finalResult.actions);
           }
         } else if (status.status === 'failed') {
-          clearInterval(generatePollingRef.current);
-          setGenerateJobId(null);
-          setIsLoading(false);
-          setGenerationMessage('');
+          finishPolling();
           setError(status.message);
+        } else {
+          scheduleNextPoll();
         }
       } catch (err) {
          console.error("Polling error:", err);
+         scheduleNextPoll();
       }
-    }, 2000);
+    }
+
+    scheduleNextPoll();
 
     return () => {
-      if (generatePollingRef.current) clearInterval(generatePollingRef.current);
+      cancelled = true;
+      clearGeneratePoll();
     }
   }, [generateJobId, isLoading]);
 
   useEffect(() => {
     async function loadSprintName() {
       try {
-        const data = await fetchSprintBoard();
+        const data = await fetchSprintBoard(activeProjectId || undefined);
         if (data && data.sprint && data.sprint.name) {
           setSprintName(data.sprint.name);
         } else {
@@ -185,7 +208,7 @@ function App() {
       }
     }
     loadSprintName();
-  }, []);
+  }, [activeProjectId]);
 
   const handleGenerate = async (requestPayload) => {
     if (lastRequirement === requestPayload.requirement) {
@@ -337,11 +360,9 @@ function App() {
           <button 
             onClick={async () => {
               try {
-                const api = await import('./lib/api');
-                const res = await api.createSprint(activeProjectId);
+                const res = await createSprint(activeProjectId);
                 alert(`Sprint created successfully: ${res.sprint?.name || 'Success'}`);
-                localStorage.setItem('currentView', 'sprint');
-                window.location.reload();
+                setCurrentView('sprint');
               } catch (err) {
                 alert(`Failed to create sprint: ${err.message}`);
               }

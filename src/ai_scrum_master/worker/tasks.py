@@ -3,30 +3,76 @@ from pathlib import Path
 
 from ai_scrum_master.worker.celery_app import celery_app
 from ai_scrum_master.core.pipeline.orchestrator import generate_story_pipeline
+from ai_scrum_master.core.utils.database import DatabaseManager
 from ai_scrum_master.ingestion.ingest import ingest_raw_docs
 
 
 @celery_app.task(bind=True, name="generate_story_task")
-def generate_story_task(self, requirement: str, n_results: int, allow_fallback: bool, forced_docs: list[str] | None = None, project_id: str | None = None):
+def generate_story_task(
+    self,
+    requirement: str,
+    n_results: int,
+    allow_fallback: bool,
+    forced_docs: list[str] | None = None,
+    project_id: str | None = None,
+    user_id: str | None = None,
+):
     """Celery task to run the generation pipeline."""
     partial_result = {}
     task_id = self.request.id
+    DatabaseManager.create_job(
+        job_id=task_id,
+        requirement=requirement,
+        project_id=project_id,
+        user_id=user_id,
+    )
+    DatabaseManager.update_job(
+        task_id,
+        status="processing",
+        stage="started",
+        message="Task has started...",
+    )
     
     def progress_callback(stage: str, partial_data: dict):
         partial_result.update(partial_data)
         # Update celery state so API can poll progress.
         # Pass task_id explicitly because LangGraph runs this in a background thread.
         self.update_state(task_id=task_id, state='PROCESSING', meta={'stage': stage, 'partial_result': partial_result})
+        DatabaseManager.update_job(
+            task_id,
+            status="processing",
+            stage=stage,
+            message="Task is in progress...",
+            partial_result=partial_result,
+        )
 
-    result = generate_story_pipeline(
-        requirement=requirement,
-        n_results=n_results,
-        allow_fallback_without_context=allow_fallback,
-        forced_context_docs=forced_docs,
-        progress_callback=progress_callback,
-        project_id=project_id
-    )
-    return result
+    try:
+        result = generate_story_pipeline(
+            requirement=requirement,
+            n_results=n_results,
+            allow_fallback_without_context=allow_fallback,
+            forced_context_docs=forced_docs,
+            progress_callback=progress_callback,
+            project_id=project_id
+        )
+        DatabaseManager.update_job(
+            task_id,
+            status="completed",
+            stage="completed",
+            message="Task completed successfully.",
+            partial_result={},
+            result=result,
+        )
+        return result
+    except Exception as exc:
+        DatabaseManager.update_job(
+            task_id,
+            status="failed",
+            stage="failed",
+            message=str(exc),
+            error=str(exc),
+        )
+        raise
 
 
 @celery_app.task(bind=True, name="ingest_docs_task")

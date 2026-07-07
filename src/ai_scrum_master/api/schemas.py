@@ -54,6 +54,7 @@ class GenerateStoriesRequest(SanitizedBaseModel):
     allow_fallback_without_context: bool = False
     forced_context_docs: list[str] = Field(default_factory=list)
     project_id: str | None = None
+    user_id: str | None = None
 
 
 class IngestRequest(SanitizedBaseModel):

@@ -2,6 +2,9 @@ export interface GenerateStoriesRequest {
   requirement: string;
   n_results?: number;
   allow_fallback_without_context?: boolean;
+  forced_context_docs?: string[];
+  project_id?: string;
+  user_id?: string;
 }
 
 export interface IngestRequest {
@@ -145,6 +148,7 @@ export interface GenerateJobResponse {
 export interface GenerateStatusResponse {
   job_id: string;
   status: string; // processing | completed | failed
+  stage?: string;
   message: string;
   result?: GenerateStoriesResponse | null;
   partial_result?: {

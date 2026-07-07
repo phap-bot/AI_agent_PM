@@ -32,11 +32,17 @@ class DatabaseManager:
     @classmethod
     def get_db(cls) -> Database:
         cls.get_client()
+        if cls._db is None:
+            raise RuntimeError("MongoDB database was not initialized")
         return cls._db
 
     @classmethod
     def get_history_collection(cls) -> Collection:
         return cls.get_db()["history"]
+
+    @classmethod
+    def get_jobs_collection(cls) -> Collection:
+        return cls.get_db()["jobs"]
 
     @classmethod
     def get_projects_collection(cls) -> Collection:
@@ -47,7 +53,14 @@ class DatabaseManager:
         try:
             history = cls.get_history_collection()
             history.create_index([("created_at", -1)])
+            history.create_index([("project_id", 1), ("created_at", -1)])
             history.create_index("jira_key")
+
+            jobs = cls.get_jobs_collection()
+            jobs.create_index("job_id", unique=True)
+            jobs.create_index([("project_id", 1), ("created_at", -1)])
+            jobs.create_index([("user_id", 1), ("created_at", -1)])
+            jobs.create_index([("status", 1), ("created_at", -1)])
             
             projects = cls.get_projects_collection()
             projects.create_index("name", unique=True)
@@ -129,6 +142,96 @@ class DatabaseManager:
             return str(res.inserted_id)
         except Exception as e:
             logger.error("Failed to save history to MongoDB: %s", e)
+            return None
+
+    @classmethod
+    def create_job(
+        cls,
+        *,
+        job_id: str,
+        requirement: str,
+        project_id: str | None = None,
+        user_id: str | None = None,
+    ) -> str | None:
+        """Create a durable job record for long-running generation work."""
+        try:
+            from datetime import UTC, datetime
+
+            now = datetime.now(UTC).isoformat()
+            doc = {
+                "job_id": job_id,
+                "requirement": requirement,
+                "project_id": project_id,
+                "user_id": user_id,
+                "status": "processing",
+                "stage": "queued",
+                "message": "Generation queued.",
+                "partial_result": {},
+                "result": None,
+                "error": None,
+                "created_at": now,
+                "updated_at": now,
+            }
+            cls.get_jobs_collection().update_one(
+                {"job_id": job_id},
+                {"$setOnInsert": doc},
+                upsert=True,
+            )
+            return job_id
+        except Exception as e:
+            logger.error("Failed to create job record: %s", e)
+            return None
+
+    @classmethod
+    def update_job(
+        cls,
+        job_id: str,
+        *,
+        status: str | None = None,
+        stage: str | None = None,
+        message: str | None = None,
+        partial_result: dict | None = None,
+        result: dict | None = None,
+        error: str | None = None,
+    ) -> bool:
+        """Update durable job status/result without relying on Redis result retention."""
+        try:
+            from datetime import UTC, datetime
+
+            update: dict[str, Any] = {"updated_at": datetime.now(UTC).isoformat()}
+            if status is not None:
+                update["status"] = status
+            if stage is not None:
+                update["stage"] = stage
+            if message is not None:
+                update["message"] = message
+            if partial_result is not None:
+                update["partial_result"] = partial_result
+            if result is not None:
+                update["result"] = result
+            if error is not None:
+                update["error"] = error
+
+            res = cls.get_jobs_collection().update_one(
+                {"job_id": job_id},
+                {"$set": update},
+                upsert=False,
+            )
+            return res.matched_count > 0
+        except Exception as e:
+            logger.error("Failed to update job record job_id=%s: %s", job_id, e)
+            return False
+
+    @classmethod
+    def get_job(cls, job_id: str) -> dict[str, Any] | None:
+        try:
+            doc = cls.get_jobs_collection().find_one({"job_id": job_id})
+            if not doc:
+                return None
+            doc["id"] = str(doc.pop("_id"))
+            return doc
+        except Exception as e:
+            logger.error("Failed to fetch job record job_id=%s: %s", job_id, e)
             return None
 
     @classmethod
