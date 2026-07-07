@@ -3,6 +3,7 @@ import sys
 import json
 import time
 import argparse
+import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Xử lý tiếng Việt trên Windows Terminal
@@ -76,7 +77,7 @@ Output ONLY a valid JSON object with exactly the following structure (no markdow
 
 def get_client(key):
     return OpenAI(
-        base_url="https://openrouter.ai/api/v1",
+        base_url="https://openrouter.ai/api/v1/chat/completions",
         api_key=key,
         timeout=120.0
     )

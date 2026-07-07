@@ -151,6 +151,12 @@ export default function RequirementInputPanel({ onSubmit, isLoading, projectId }
           />
           <label 
             htmlFor="doc-upload"
+            onClick={(e) => {
+              if (!projectId) {
+                e.preventDefault();
+                setIngestError('Vui lòng chọn hoặc tạo một dự án ở góc trên bên phải trước khi import tài liệu.');
+              }
+            }}
             className={`flex items-center gap-stack-sm px-4 py-2 border border-outline-variant rounded-lg text-label-md font-label-md text-on-surface-variant transition-colors cursor-pointer ${isIngesting || isLoading ? 'opacity-50 pointer-events-none' : 'hover:bg-surface-container-high'}`}
           >
             <span className="material-symbols-outlined text-[20px]">upload_file</span>

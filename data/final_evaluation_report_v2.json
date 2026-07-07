@@ -1,28 +1,18 @@
 {
   "summary": {
-    "total_cases": 39,
-    "success_cases": 33,
+    "total_cases": 135,
+    "success_cases": 135,
     "average_scores": {
-      "file_coverage_score": 0.0,
-      "task_categorization_score": 0.0,
-      "logic_alignment_score": 0.0,
-      "actionability_score": 0.0,
-      "rag_retrieval_score": 0.0,
-      "feature_recognition_score": 2.12,
-      "requirement_classification_score": 2.03,
-      "domain_type_score": 2.42,
-      "task_scope_score": 1.97
+      "feature_recognition_score": 2.6,
+      "requirement_classification_score": 2.59,
+      "domain_type_score": 2.79,
+      "task_scope_score": 2.23
     }
   },
   "details": [
     {
       "id": "VS-311118",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 2,
         "requirement_classification_score": 2,
         "domain_type_score": 2,
@@ -39,11 +29,6 @@
     {
       "id": "VS-308080",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 2,
         "requirement_classification_score": 2,
         "domain_type_score": 3,
@@ -60,11 +45,6 @@
     {
       "id": "VS-311121",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 1,
         "requirement_classification_score": 1,
         "domain_type_score": 1,
@@ -81,11 +61,6 @@
     {
       "id": "VS-311383",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 1,
         "requirement_classification_score": 1,
         "domain_type_score": 3,
@@ -102,11 +77,6 @@
     {
       "id": "VS-311504",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 3,
         "requirement_classification_score": 2,
         "domain_type_score": 3,
@@ -123,11 +93,6 @@
     {
       "id": "VS-311510",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 1,
         "requirement_classification_score": 1,
         "domain_type_score": 1,
@@ -144,11 +109,6 @@
     {
       "id": "VS-311245",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 4,
         "requirement_classification_score": 3,
         "domain_type_score": 5,
@@ -165,11 +125,6 @@
     {
       "id": "VS-308073",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 1,
         "requirement_classification_score": 2,
         "domain_type_score": 2,
@@ -186,11 +141,6 @@
     {
       "id": "VS-311096",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 3,
         "requirement_classification_score": 4,
         "domain_type_score": 5,
@@ -207,11 +157,6 @@
     {
       "id": "VS-312009",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 4,
         "requirement_classification_score": 3,
         "domain_type_score": 4,
@@ -228,11 +173,6 @@
     {
       "id": "VS-312052",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 1,
         "requirement_classification_score": 1,
         "domain_type_score": 1,
@@ -249,11 +189,6 @@
     {
       "id": "VS-311709",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 1,
         "requirement_classification_score": 1,
         "domain_type_score": 1,
@@ -270,11 +205,6 @@
     {
       "id": "VS-312869",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 2,
         "requirement_classification_score": 2,
         "domain_type_score": 2,
@@ -291,11 +221,6 @@
     {
       "id": "VS-312162",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 4,
         "requirement_classification_score": 3,
         "domain_type_score": 5,
@@ -312,11 +237,6 @@
     {
       "id": "VS-312922",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 1,
         "requirement_classification_score": 1,
         "domain_type_score": 2,
@@ -331,25 +251,8 @@
       "status": "success"
     },
     {
-      "id": "VS-312050",
-      "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0
-      },
-      "reasons": {},
-      "status": "failed"
-    },
-    {
       "id": "VS-314149",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 1,
         "requirement_classification_score": 1,
         "domain_type_score": 1,
@@ -364,25 +267,8 @@
       "status": "success"
     },
     {
-      "id": "VS-313160",
-      "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0
-      },
-      "reasons": {},
-      "status": "failed"
-    },
-    {
       "id": "VS-313103",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 4,
         "requirement_classification_score": 4,
         "domain_type_score": 3,
@@ -399,11 +285,6 @@
     {
       "id": "VS-313922",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 1,
         "requirement_classification_score": 1,
         "domain_type_score": 1,
@@ -420,11 +301,6 @@
     {
       "id": "VS-314184",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 5,
         "requirement_classification_score": 4,
         "domain_type_score": 5,
@@ -441,11 +317,6 @@
     {
       "id": "VS-314824",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 2,
         "requirement_classification_score": 2,
         "domain_type_score": 2,
@@ -462,11 +333,6 @@
     {
       "id": "VS-314809",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 1,
         "requirement_classification_score": 1,
         "domain_type_score": 2,
@@ -483,11 +349,6 @@
     {
       "id": "VS-314807",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 2,
         "requirement_classification_score": 2,
         "domain_type_score": 2,
@@ -504,11 +365,6 @@
     {
       "id": "VS-314278",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 4,
         "requirement_classification_score": 4,
         "domain_type_score": 4,
@@ -525,11 +381,6 @@
     {
       "id": "VS-314827",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 1,
         "requirement_classification_score": 1,
         "domain_type_score": 1,
@@ -546,11 +397,6 @@
     {
       "id": "VS-314385",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 1,
         "requirement_classification_score": 1,
         "domain_type_score": 1,
@@ -567,11 +413,6 @@
     {
       "id": "VS-314889",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 1,
         "requirement_classification_score": 1,
         "domain_type_score": 1,
@@ -588,11 +429,6 @@
     {
       "id": "VS-314879",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 1,
         "requirement_classification_score": 1,
         "domain_type_score": 2,
@@ -607,25 +443,8 @@
       "status": "success"
     },
     {
-      "id": "VS-314867",
-      "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0
-      },
-      "reasons": {},
-      "status": "failed"
-    },
-    {
       "id": "VS-314952",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 3,
         "requirement_classification_score": 4,
         "domain_type_score": 4,
@@ -642,11 +461,6 @@
     {
       "id": "VS-315061",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 2,
         "requirement_classification_score": 2,
         "domain_type_score": 2,
@@ -661,37 +475,8 @@
       "status": "success"
     },
     {
-      "id": "VS-314880",
-      "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0
-      },
-      "reasons": {},
-      "status": "failed"
-    },
-    {
-      "id": "VS-314887",
-      "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0
-      },
-      "reasons": {},
-      "status": "failed"
-    },
-    {
       "id": "VS-315059",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 3,
         "requirement_classification_score": 2,
         "domain_type_score": 3,
@@ -708,11 +493,6 @@
     {
       "id": "VS-315182",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 1,
         "requirement_classification_score": 1,
         "domain_type_score": 1,
@@ -729,11 +509,6 @@
     {
       "id": "VS-315581",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 5,
         "requirement_classification_score": 5,
         "domain_type_score": 4,
@@ -750,11 +525,6 @@
     {
       "id": "VS-315588",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0,
         "feature_recognition_score": 1,
         "requirement_classification_score": 1,
         "domain_type_score": 1,
@@ -769,16 +539,1636 @@
       "status": "success"
     },
     {
+      "id": "VS-307568",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 1,
+        "domain_type_score": 1,
+        "task_scope_score": 1
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI returned an empty object and did not produce any user story or acceptance criteria, so it failed to recognize or articulate the required feature of adding WSL connection support.",
+        "requirement_classification_reason": "No classification (BE/FE/QA) was provided; the AI did not identify the backend work needed for the agent host changes.",
+        "domain_type_reason": "The output contains no indication of the business domain (agent host / remote development) or requirement type (Feature), thus it does not meet the expectation.",
+        "task_scope_reason": "The AI did not identify the overall scope (implementing WSL support across multiple modules) and instead returned an empty result, showing no understanding of the task intent."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-312050",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 1,
+        "domain_type_score": 1,
+        "task_scope_score": 1
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI did not extract any user story, acceptance criteria, or concrete feature description. It only produced generic clarification questions, whereas the ground truth clearly defines a concrete implementation (adding an exit_plan_mode.requested handler and related code changes).",
+        "requirement_classification_reason": "The AI failed to classify the work into backend, frontend, or QA effort. The ground truth involves backend (agent host services) and test changes, but the AI gave no classification.",
+        "domain_type_reason": "The AI did not identify the correct domain (SDK/agentHost) or requirement type (feature implementation). It merely labeled the story as a generic task without domain context.",
+        "task_scope_reason": "Instead of recognizing the overall scope—adding a handler for exit_plan_mode.requested and updating related modules—the AI asked for clarification, indicating it did not grasp the core intent of the task."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-313160",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 1,
+        "domain_type_score": 1,
+        "task_scope_score": 1
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI did not capture the core feature – making the agent‑host terminal respect the user's preferred shell (inherit from `terminal.integrated.defaultProfile.*` or a dedicated setting). Instead it only asked clarification questions and produced no user story or acceptance criteria.",
+        "requirement_classification_reason": "The output never identified the effort as Backend, Frontend, or QA. The ground‑truth change touches multiple backend modules (agent host services, terminal profile resolver) and requires QA, but the AI left the classification undefined.",
+        "domain_type_reason": "The AI failed to state the business domain (agent host / terminal configuration) or the requirement type (feature). It only listed a generic “software_feature” tag without confirming the correct domain.",
+        "task_scope_reason": "Instead of summarising the overall intent (“update agent host to use the user's default terminal profile or dedicated setting”), the AI produced a set of clarification questions, showing it did not recognise the actual scope of work."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-314887",
+      "scores": {
+        "feature_recognition_score": 2,
+        "requirement_classification_score": 1,
+        "domain_type_score": 1,
+        "task_scope_score": 1
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI did not capture the core feature of unifying Agent Host launching across connection surfaces; instead it only listed clarification questions and produced no concrete user story or acceptance criteria aligned with the ground‑truth patch.",
+        "requirement_classification_reason": "The output contains no indication of backend, frontend, or QA effort. The ground truth involves extensive backend changes, which the AI failed to identify.",
+        "domain_type_reason": "The AI did not state the business domain (agents_app) or the requirement type (feature). It merely asked for clarification without classifying the work.",
+        "task_scope_reason": "The AI focused on asking clarification rather than recognizing the actual scope—implementing a unified Agent Host connection matrix—as indicated by the code changes. It did not articulate the WHAT of the task."
+      },
+      "status": "success"
+    },
+    {
       "id": "VS-315160",
       "scores": {
-        "file_coverage_score": 0,
-        "task_categorization_score": 0,
-        "logic_alignment_score": 0,
-        "actionability_score": 0,
-        "rag_retrieval_score": 0
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 1,
+        "domain_type_score": 2,
+        "task_scope_score": 1
       },
-      "reasons": {},
-      "status": "failed"
+      "reasons": {
+        "feature_recognition_reason": "The AI failed to recognize that the issue is about displaying agent host credit/price information in the chat UI (as indicated by the ground‑truth behavior). Instead of extracting this feature into a user story with acceptance criteria, it only produced clarification questions and left the core requirement unaddressed.",
+        "requirement_classification_reason": "The AI did not assign any effort categories (backend, frontend, QA). The ground truth involves UI changes (frontend) and some state handling (backend), but the AI provided no classification.",
+        "domain_type_reason": "While the routing metadata hints at the \"agent_host\" domain, the AI never explicitly stated the business domain or requirement type (feature). It defaulted to a generic clarification request, missing the specific feature context.",
+        "task_scope_reason": "The AI did not identify the actual scope – showing credit usage/pricing in turn details. It stopped at asking for clarification instead of summarizing the needed work, which the ground truth makes clear."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-314867",
+      "scores": {
+        "feature_recognition_score": 4,
+        "requirement_classification_score": 3,
+        "domain_type_score": 2,
+        "task_scope_score": 4
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI correctly captured the core problem – skill names in Agent Host should include the plugin prefix (e.g., 'vsckb'). The user story and acceptance criteria reflect this behavior and align with the expected change in the remoteAgentHostCustomizationHarness.ts file.",
+        "requirement_classification_reason": "The AI split work into backend (BE) and frontend (FE) tasks, which is reasonable because the fix may involve both data handling and UI rendering. However, the actual change is primarily a UI rendering adjustment, so the BE emphasis is a slight over‑classification.",
+        "domain_type_reason": "The AI mis‑identified the domain as \"notification\" and labeled the story as a generic \"software_feature\" while the issue is a bug in the Agent Host UI. The correct classification should be a Bug (UI/AgentHost) rather than a notification‑related feature.",
+        "task_scope_reason": "The AI focused on the overall intent – ensuring the plugin prefix is displayed – and produced concise high‑level tasks rather than an exhaustive implementation plan. This matches the request to generate tasks and acceptance criteria, though the task list is a bit more granular than necessary."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-316538",
+      "scores": {
+        "feature_recognition_score": 2,
+        "requirement_classification_score": 2,
+        "domain_type_score": 4,
+        "task_scope_score": 2
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI generated a generic user story about reducing file requests, but the ground truth is a specific bug fix to stop redundant customization sync events in several agentHost modules. The acceptance criteria do not match the concrete behavior expected in the patch.",
+        "requirement_classification_reason": "The AI split work into BE, FE, and QA tasks, whereas the actual change is a backend/code fix affecting only the agentHost implementation. The classification is therefore inaccurate.",
+        "domain_type_reason": "The AI correctly identified the issue as a bug related to the agent‑host domain, which aligns with the ground truth.",
+        "task_scope_reason": "Instead of focusing on the core intent—removing redundant customization sync events—the AI produced a broad list of investigative and debounce tasks, missing the precise scope of the required code changes."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-316347",
+      "scores": {
+        "feature_recognition_score": 2,
+        "requirement_classification_score": 2,
+        "domain_type_score": 4,
+        "task_scope_score": 2
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI produced a generic user story and acceptance criteria that do not reflect the concrete code changes listed in the ground truth (specific modules and the zsh pitfall fixes). It missed the precise behavior to be ported.",
+        "requirement_classification_reason": "The ground truth indicates backend code modifications only, yet the AI split work into BE, FE, and QA tasks, over‑classifying effort that is not required.",
+        "domain_type_reason": "The AI correctly identified the requirement as a software feature related to the Agent Host terminal (zsh) domain, matching the expected type.",
+        "task_scope_reason": "Instead of summarizing the overall intent (port zsh terminal fixes), the AI generated a detailed list of sub‑tasks, which diverges from the desired high‑level scope identification."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-316544",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 1,
+        "domain_type_score": 1,
+        "task_scope_score": 1
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI did not extract any user story, logic, or acceptance criteria from the issue. Instead it simply echoed the issue description and asked the user what to do next, failing to recognize the required code change (routing long question text through detailedMessage in agentHostSessionHandler.ts).",
+        "requirement_classification_reason": "No classification of effort (Backend, Frontend, QA) was provided. The AI gave no indication of which team should handle the change.",
+        "domain_type_reason": "The AI did not determine the business domain (e.g., VS Code workbench chat) nor the requirement type (feature/bug). It only presented the original prompt without analysis.",
+        "task_scope_reason": "The AI failed to identify the core scope of the task (implementing the routing of long question text through detailedMessage). It produced a clarification request instead of stating the needed work."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-316543",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 1,
+        "domain_type_score": 1,
+        "task_scope_score": 1
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI generated a user story and acceptance criteria about showing progress indicators in the chat list, which does not match the ground‑truth change (syncing AHP version for a reducer fix). It failed to capture the actual required behavior.",
+        "requirement_classification_reason": "The AI split the work into BE, FE, and QA tasks, whereas the ground truth indicates a single backend change (updating protocol modules and reducer). The classification is therefore incorrect.",
+        "domain_type_reason": "The AI labeled the work as a UI bug with frontend focus, while the real change concerns the agentHost protocol and reducer logic – a core/backend domain. The type and domain are mismatched.",
+        "task_scope_reason": "Instead of identifying the narrow scope of syncing the AHP version in the reducer, the AI produced a broad set of UI‑centric tasks. It did not focus on the specific code change required."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-316541",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 1,
+        "domain_type_score": 1,
+        "task_scope_score": 1
+      },
+      "reasons": {
+        "feature_recognition_reason": "The issue is about making Agent Host git‑blob URIs label‑friendly (PR #317450). The AI produced a story focused on UI path truncation and breadcrumb navigation, which does not match the required behavior.",
+        "requirement_classification_reason": "The ground‑truth change is primarily a backend label/URI handling update. The AI incorrectly split the work into backend, frontend, and QA tasks for a UI enhancement, showing a mis‑classification of effort.",
+        "domain_type_reason": "The correct domain is the Agent Host core/git integration feature. The AI labeled it as a UI improvement for the file browser, which is unrelated to the actual domain and type.",
+        "task_scope_reason": "Instead of identifying the core intent—adjusting how git‑blob URIs are rendered as friendly labels—the AI generated a detailed list of unrelated UI sub‑tasks, missing the high‑level scope of the required change."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-314880",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 1,
+        "domain_type_score": 2,
+        "task_scope_score": 1
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI failed to capture the core change (using origin/main for worktrees) and provided no user story or acceptance criteria aligned with the ground‑truth behavior.",
+        "requirement_classification_reason": "The issue requires a backend code change, but the AI did not assign any BE effort and left all task groups empty.",
+        "domain_type_reason": "The AI labeled the work as a \"software_feature\" with a Bug jira type, which is partially correct, yet it did not identify the correct domain (AgentHost/git service) or emphasize the bug nature of the fix.",
+        "task_scope_reason": "Instead of stating the overall intent (modify agentHostGitService to prefer origin/<default>), the AI asked clarification questions, showing it did not recognize the clear scope of the required change."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-315947",
+      "scores": {
+        "feature_recognition_score": 5,
+        "requirement_classification_score": 5,
+        "domain_type_score": 4,
+        "task_scope_score": 4
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI correctly captured the core problem (image output not reported) and produced a user story and acceptance criteria that align with the ground‑truth description and expected behavior.",
+        "requirement_classification_reason": "It identified the need for backend changes (protocol handling), frontend updates (chat UI), and QA verification, matching the split indicated in the ground truth.",
+        "domain_type_reason": "The domain (Agent Host) is correct, but the AI labeled the story as a \"software_feature\" while the ground truth classifies it as a Bug, showing a minor mismatch in type identification.",
+        "task_scope_reason": "The AI provided a very detailed list of sub‑tasks rather than focusing solely on the high‑level intent, which slightly deviates from the requirement to identify the overall scope without exhaustive breakdown."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-316802",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 1,
+        "domain_type_score": 1,
+        "task_scope_score": 1
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI interpreted the issue as a remote file‑path obfuscation problem and produced a user story and acceptance criteria about read_file, which does not match the ground‑truth change (rendering agent‑host links in chat tool titles). It failed to capture the correct feature.",
+        "requirement_classification_reason": "The ground truth requires a frontend change (rendering links in the chat UI). The AI incorrectly split the work into backend, frontend, and QA tasks for a backend‑focused security feature, showing a mis‑classification of effort.",
+        "domain_type_reason": "The actual domain is the chat UI (frontend) and the type is a UI/feature change. The AI labeled it as a bug/security backend feature, which is inaccurate.",
+        "task_scope_reason": "Instead of identifying the core intent—\"render agent host links in chat tool titles\"—the AI generated a detailed list of unrelated sub‑tasks for path obfuscation, missing the high‑level scope entirely."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-316799",
+      "scores": {
+        "feature_recognition_score": 3,
+        "requirement_classification_score": 5,
+        "domain_type_score": 5,
+        "task_scope_score": 4
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI identified the problem as a UI width issue and created a user story and acceptance criteria around button sizing, which aligns with the bug nature of the ground truth. However, it did not pinpoint the exact source file (chatInputPart.ts) or the specific code change needed, so the understanding is only partially correct.",
+        "requirement_classification_reason": "The AI correctly classified the work as a Frontend effort, assigning FE tasks only, which matches the UI‑only fix indicated by the ground truth.",
+        "domain_type_reason": "The AI labeled the work as a Bug in the UI/UX domain of the Agent Host feature, which aligns with the ground truth description of fixing a wide share button.",
+        "task_scope_reason": "The AI captured the overall intent (fix the button width) but broke it down into many granular sub‑tasks. While the scope is identified, the excessive detail shows a slight deviation from focusing solely on the high‑level WHAT."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-317038",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 1,
+        "domain_type_score": 2,
+        "task_scope_score": 1
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI interpreted the issue as a UI display problem and created a user story about showing branch information, whereas the ground truth indicates a backend change to changeset description formatting and session management. The extracted features and acceptance criteria do not match the actual code changes.",
+        "requirement_classification_reason": "The AI did not identify the need for backend work; it treated the requirement as a UI/feature task. The ground truth requires changes in core agent host modules, which is a backend effort.",
+        "domain_type_reason": "The AI labeled the work as a \"software_feature\" with UI‑bug tags, while the real change is a core bug/feature in the agent host platform. It partially recognized it as a bug but mis‑assigned the domain.",
+        "task_scope_reason": "The AI focused on creating a detailed UI‑oriented user story instead of identifying the actual scope: adding branch changeset description formatting and updating session management in specific backend modules."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-316823",
+      "scores": {
+        "feature_recognition_score": 5,
+        "requirement_classification_score": 3,
+        "domain_type_score": 5,
+        "task_scope_score": 3
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI correctly captured the core problem – instructions/customizations not being synced to remote agent hosts – and expressed it as a user story with appropriate acceptance criteria that match the ground‑truth intent of fixing the instruction sync bug.",
+        "requirement_classification_reason": "The work is primarily backend (protocol changes, session provider logic) and the AI correctly identified BE effort, but it also added FE tasks that are not evident from the code changes, showing a partial mismatch.",
+        "domain_type_reason": "The AI correctly classified the work as a Feature within the Agent‑Host domain, which aligns with the ground‑truth description of a customization tweak.",
+        "task_scope_reason": "The AI provided a very detailed breakdown of sub‑tasks rather than focusing on the high‑level intent (syncing instructions to remote hosts). The evaluation expects identification of the overall scope, so the answer is overly granular."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-316905",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 1,
+        "domain_type_score": 1,
+        "task_scope_score": 1
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI interpreted the issue as a UI bug about edit‑pill click handling and diff display, while the ground‑truth patch replaces the AgentHostEditingSession with a direct externalEdit progress part – a backend refactor. The extracted user story and acceptance criteria do not match the actual required change.",
+        "requirement_classification_reason": "The AI split the work into BE, FE, and QA tasks, but the ground‑truth change is primarily a backend/code‑base modification (no new UI work). The classification is therefore incorrect.",
+        "domain_type_reason": "The AI labeled the requirement as a UI bug (UI, diff‑viewer) whereas the true domain is the AgentHost core/editor infrastructure and the type is a refactor/feature replacement, not a UI bug.",
+        "task_scope_reason": "Instead of identifying the core intent – replace AgentHostEditingSession with a direct externalEdit progress part – the AI produced a detailed list of unrelated UI/QA tasks, missing the high‑level scope of the change."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-317113",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 2,
+        "domain_type_score": 2,
+        "task_scope_score": 1
+      },
+      "reasons": {
+        "feature_recognition_reason": "The ground truth implements GitHub pull‑request operations in the agent host backend (service layer, provider, tests). The AI output instead describes a UI‑focused \"Create PR Operation\" modal in the Agent Window and changesets view, which does not match the required code changes.",
+        "requirement_classification_reason": "The actual change is purely backend (service, provider, OctoKit integration). The AI split the work into backend, frontend, and QA tasks, incorrectly classifying the effort as needing significant frontend work.",
+        "domain_type_reason": "The ground truth is a feature addition to the agentHost platform (core backend). The AI labeled it as a feature but placed it in the UI/agent‑window domain, which is a mismatch.",
+        "task_scope_reason": "Instead of summarising the overall intent (add GitHub PR operations to the agent host), the AI produced a detailed list of sub‑tasks and UI components, missing the high‑level scope required."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-316554",
+      "scores": {
+        "feature_recognition_score": 3,
+        "requirement_classification_score": 4,
+        "domain_type_score": 5,
+        "task_scope_score": 3
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI captured the high‑level goal of improving the out‑of‑date agent host experience (clear message, force‑kill/update), which matches the issue description, but it missed the specific ground‑truth behavior of clearing the sticky incompatible status after an upgrade reconnect and did not reference the exact modules to be changed.",
+        "requirement_classification_reason": "The AI correctly split the work into backend (version check, kill/update logic) and frontend (dialog UI) effort, which aligns with the need to modify both contribution files and UI components.",
+        "domain_type_reason": "The AI accurately identified the domain as the Agent Host and classified the requirement as a feature/UI improvement, matching the labels and context.",
+        "task_scope_reason": "The output provides a very granular list of sub‑tasks rather than focusing on the overall intent (clear message, kill/update actions). The evaluation criteria prefer a high‑level scope description, so the answer is overly detailed."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-317289",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 2,
+        "domain_type_score": 3,
+        "task_scope_score": 2
+      },
+      "reasons": {
+        "feature_recognition_reason": "The ground truth only requires updating the session type for AgentHostCopilot and enhancing slash‑command handling in two specific files. The AI generated a broad user story about implementing multiple slash commands (/skills, /agents, /fork) with extensive UI behavior, which does not match the actual code change.",
+        "requirement_classification_reason": "The AI split the work into BE, FE, and QA buckets, which is a reasonable classification pattern, but it over‑engineered the effort (adding many endpoints and UI components) that are not needed for the simple patch described in the ground truth.",
+        "domain_type_reason": "The AI correctly identified the work as a feature (software_feature) and associated it with frontend/backend/agent UI labels, which aligns with the general domain, though the specific scope is off‑target.",
+        "task_scope_reason": "Instead of summarizing the core intent—changing the session type and tweaking slash‑command handling—the AI produced a detailed list of sub‑tasks and UI features, missing the concise scope required by the ground truth."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-317907",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 2,
+        "domain_type_score": 2,
+        "task_scope_score": 1
+      },
+      "reasons": {
+        "feature_recognition_reason": "The issue is about adding agent host completion attachments to chat input (see ground‑truth modules and behavior). The AI output describes a completely different feature – skill suggestion decorations – which does not match the required logic or acceptance criteria.",
+        "requirement_classification_reason": "The ground truth involves changes across both UI and core chat handling modules, but the AI’s classification into generic BE/FE/QA tasks is not aligned with the specific backend‑centric change (sending attachments) and over‑splits the work.",
+        "domain_type_reason": "The correct domain is the chat/agent‑host integration (core functionality), whereas the AI labeled it as a UI‑focused feature improvement (skill decorations). The type (Feature) is correct, but the domain is wrong.",
+        "task_scope_reason": "Instead of summarising the core intent – implement sending of agent host completion attachments – the AI produced a detailed list of sub‑tasks for a different feature. It failed to capture the high‑level WHAT that needs to be done."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-317921",
+      "scores": {
+        "feature_recognition_score": 5,
+        "requirement_classification_score": 5,
+        "domain_type_score": 5,
+        "task_scope_score": 3
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI correctly captured the core requirement to support commit and rollback operations in the Agent Window, and its user story and acceptance criteria match the intended functionality described in the ground truth.",
+        "requirement_classification_reason": "The AI accurately split the work into backend (service implementation), frontend (UI changes), and QA (testing) categories, which aligns with the extensive backend code changes listed in the ground truth.",
+        "domain_type_reason": "It identified the business domain as the Agent Window/version‑control area and classified the work as a new Feature, which is consistent with the ground truth.",
+        "task_scope_reason": "While the AI provided a comprehensive breakdown of sub‑tasks, the evaluation criteria ask for identification of the overall scope/intent rather than a detailed task list. The answer is therefore correct in intent but overly granular, resulting in a moderate score."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-317567",
+      "scores": {
+        "feature_recognition_score": 5,
+        "requirement_classification_score": 5,
+        "domain_type_score": 2,
+        "task_scope_score": 2
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI correctly understood the issue, extracted the core feature (respecting the selected folder vs. spawning a worktree) and produced accurate acceptance criteria that match the ground‑truth behavior.",
+        "requirement_classification_reason": "It identified the need for backend changes (provider modules) and also listed appropriate frontend and QA tasks, aligning with the code changes required.",
+        "domain_type_reason": "The issue is essentially a bug fix (respecting folder selection), but the AI labeled it as a new feature, misclassifying the requirement type.",
+        "task_scope_reason": "The output goes into a detailed task breakdown rather than stating the overall scope/intent; the evaluation expects a high‑level description of WHAT needs to be done, not an exhaustive sub‑task list."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-317922",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 1,
+        "domain_type_score": 1,
+        "task_scope_score": 1
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI generated a user story and acceptance criteria about Claude agent file‑edit tracking, which bears no relation to the ground‑truth change introducing a ChangesetFileMonitorCoordinator for session‑specific file monitoring. It failed to capture the actual feature.",
+        "requirement_classification_reason": "The ground truth concerns a backend change (new coordinator and related services). The AI incorrectly split effort across backend, frontend, and QA for unrelated Claude‑agent functionality, showing a mis‑classification of the requirement.",
+        "domain_type_reason": "The correct domain is the VS Code agent‑host backend and the type is a new feature. The AI described a different domain (Claude agent) and mixed feature/bug/QA tasks, not matching the expected classification.",
+        "task_scope_reason": "Instead of identifying the high‑level intent (introduce a ChangesetFileMonitorCoordinator and related file‑monitoring services), the AI produced a long list of unrelated sub‑tasks focused on Claude agent hooks, indicating a failure to recognize the overall scope."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-317839",
+      "scores": {
+        "feature_recognition_score": 5,
+        "requirement_classification_score": 5,
+        "domain_type_score": 4,
+        "task_scope_score": 3
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI correctly identified that the core problem is duplicate sessions created when forking an AHP chat and that the fix requires adding a \"forked:\" prefix to the new session titles. The generated user story and acceptance criteria directly reflect the ground‑truth behavior.",
+        "requirement_classification_reason": "The AI assigned work to backend (title handling), frontend (UI display) and QA (verification), which matches the multi‑layer nature of the change described in the ground truth.",
+        "domain_type_reason": "The issue is a bug in the chat session handling, but the AI labeled the story as a \"software_feature\" while also marking the Jira type as \"Bug\". The mixed classification shows partial alignment but is not perfectly accurate.",
+        "task_scope_reason": "The AI produced a very granular list of sub‑tasks rather than focusing on the high‑level intent (add the prefix and prevent duplicate titles). The evaluation criteria ask for identification of the overall scope, so the answer is overly detailed."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-318069",
+      "scores": {
+        "feature_recognition_score": 3,
+        "requirement_classification_score": 4,
+        "domain_type_score": 4,
+        "task_scope_score": 2
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI captured the main idea of adding a folder picker for multi‑root Agent Host sessions, but it introduced many extra details (protocol changes, persistence, settings UI) that are not reflected in the ground‑truth patch. The core feature is recognized, yet the scope is broader than required.",
+        "requirement_classification_reason": "The AI correctly split the work into backend, frontend, and QA categories, which aligns with the need for backend configuration, UI picker component, and corresponding tests shown in the ground‑truth module list.",
+        "domain_type_reason": "The AI identified the work as a software feature within the Agent Host / chat domain and used appropriate labels, matching the ground‑truth context.",
+        "task_scope_reason": "Instead of summarising the overall intent (add a folder‑picker chip for multi‑root workspaces), the AI produced a granular list of sub‑tasks. The evaluation criteria expect a focus on WHAT needs to be done, not an exhaustive breakdown."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-318251",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 1,
+        "domain_type_score": 1,
+        "task_scope_score": 1
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI generated a user story and acceptance criteria about hiding removed requests in the UI, which does not match the ground‑truth change (hydrating the snapshot controller for Restore Checkpoint). The core logic and required behavior were mis‑identified.",
+        "requirement_classification_reason": "The AI split the work into backend, frontend, and QA tasks, whereas the ground truth only involves backend code changes (agentHostSessionHandler, agentHostSnapshotController) and a single behavior change.",
+        "domain_type_reason": "The AI labeled the work as a UI bug with frontend focus, but the actual change is a bug fix in the agent‑host core logic (snapshot controller), not a UI‑only issue.",
+        "task_scope_reason": "Instead of summarising the high‑level intent (hydrate snapshot controller on restore), the AI produced a detailed list of sub‑tasks, missing the primary scope of the required code modification."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-317944",
+      "scores": {
+        "feature_recognition_score": 5,
+        "requirement_classification_score": 5,
+        "domain_type_score": 2,
+        "task_scope_score": 3
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI correctly captured the core problem – the Agent Picker is not pre‑selected when a new Agent Host session starts – and expressed it in the user story and acceptance criteria that match the ground‑truth behavior.",
+        "requirement_classification_reason": "The AI identified work for both backend (state persistence, protocol handling) and frontend (picker UI update) as well as QA testing, which aligns with the modules changed in the ground truth (frontend input part, common chat mode service, and test mock).",
+        "domain_type_reason": "The issue is a bug fix (regression of pre‑selection), but the AI classified it as a new feature (software_feature). This mis‑labels the requirement type, even though the domain (Agent Host / Chat UI) is correct.",
+        "task_scope_reason": "The AI provided a very granular list of sub‑tasks rather than focusing on the high‑level intent (“ensure the picker retains the selected agent across session restarts”). While the intent is present, the excessive detail deviates from the desired scope identification."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-318401",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 2,
+        "domain_type_score": 2,
+        "task_scope_score": 2
+      },
+      "reasons": {
+        "feature_recognition_reason": "The issue is about a model‑availability error and a git worktree conflict that stem from the session model picker implementation. The ground‑truth change is to unify the model picker into the core via the provider getModels API. The AI generated a completely different user story about fallback models and branch‑name handling, which does not match the required feature or acceptance criteria.",
+        "requirement_classification_reason": "The AI split the work into BE, FE and QA tasks, but the ground‑truth change is primarily a backend/core refactor (provider API) with minimal UI impact. The classification is therefore only partially correct.",
+        "domain_type_reason": "The AI labeled the work as \"backend, frontend, copilot‑chat, error‑handling\". The true domain is the sessions core (model picker unification) and the type is a core feature/architectural change, not a generic error‑handling feature.",
+        "task_scope_reason": "Instead of identifying the single overarching intent (unify model picker via getModels API), the AI produced a long list of unrelated sub‑tasks (fallback logic, git branch conflict resolution, UI messages). This shows a failure to capture the core scope of the required change."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-318458",
+      "scores": {
+        "feature_recognition_score": 4,
+        "requirement_classification_score": 5,
+        "domain_type_score": 3,
+        "task_scope_score": 3
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI correctly identified the core problem (truncated command display and lack of streaming output) and formulated a user story and acceptance criteria that match the intent of fixing terminal progress for the built‑in SDK bash tool.",
+        "requirement_classification_reason": "It appropriately split the work into backend (SDK integration, session handling), frontend (chat UI updates), and QA tasks, which aligns with the code changes required in the listed modules.",
+        "domain_type_reason": "The domain (AgentHost) is correct, but the AI classified the work as a new feature rather than a bug/fix, which diverges from the ground‑truth classification of a bug/repair.",
+        "task_scope_reason": "The AI produced a detailed list of sub‑tasks instead of focusing on the high‑level scope (\"fix terminal progress for built‑in SDK bash tool\"). The evaluation expects identification of the overall intent rather than an exhaustive task breakdown."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-319314",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 2,
+        "domain_type_score": 2,
+        "task_scope_score": 2
+      },
+      "reasons": {
+        "feature_recognition_reason": "The issue is about avoiding rewriting attachment URIs that already exist on the agent host (PR #319452). The AI generated a story about removing a pre‑edit permission prompt, which is unrelated to the required behavior change, so it failed to capture the correct feature and acceptance criteria.",
+        "requirement_classification_reason": "The ground‑truth change only touches backend files (agentService.ts and its test). The AI split the work into backend, frontend, and QA tasks, incorrectly assuming UI changes are needed, thus misclassifying the effort.",
+        "domain_type_reason": "The correct domain is the agent‑host core functionality (a bug/behavior fix). The AI labeled the work as a generic UX‑improvement feature for the CLI, which does not match the actual domain or type.",
+        "task_scope_reason": "Instead of summarizing the core intent—preventing duplicate URI rewrites—the AI produced a long list of sub‑tasks and clarification questions, deviating from the concise scope required by the ground truth."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-318693",
+      "scores": {
+        "feature_recognition_score": 2,
+        "requirement_classification_score": 2,
+        "domain_type_score": 3,
+        "task_scope_score": 2
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI captured the general problem (authentication error in Agents window with Remote SSH) and produced a user story and acceptance criteria, but it did not identify the specific technical requirement from the ground truth – forwarding the GitHub token in the createSession/resumeSession RPC. The acceptance criteria remain high‑level and do not reflect the precise behavior change needed.",
+        "requirement_classification_reason": "The ground truth indicates a backend code change (modifying session creation/resume RPCs). The AI split the work into backend, frontend, and QA tasks, adding UI‑related work that is not required for the fix, thus misclassifying the effort.",
+        "domain_type_reason": "The issue is fundamentally an authentication bug in the Copilot CLI integration. The AI labeled it as a bug and included some UI/UX aspects, which is partially correct, but it does not emphasize the auth/backend nature of the change.",
+        "task_scope_reason": "The AI produced a long list of sub‑tasks and UI enhancements rather than focusing on the core intent: implement token forwarding in the session RPC path. This dilutes the primary scope and adds unnecessary work."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-318265",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 2,
+        "domain_type_score": 1,
+        "task_scope_score": 2
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI produced a user story focused on UI pending‑message indicators, while the ground‑truth change is a backend fix that surfaces steering messages as their own user turn (code change in copilotAgentSession.ts and corresponding test). The acceptance criteria do not match the required behavior.",
+        "requirement_classification_reason": "The AI split the work into BE, FE and QA tasks, but the actual requirement is a backend change (and a unit test). Front‑end work is not needed for the core fix, so the classification is only partially correct.",
+        "domain_type_reason": "The issue is a bug in the agent‑host core logic, not a UI or rendering bug. The AI labeled it as a UI/UX problem, which is inaccurate.",
+        "task_scope_reason": "Instead of summarising the high‑level intent (fix steering message handling and add a test), the AI generated a detailed list of sub‑tasks that are largely unrelated to the real change. The scope identification is therefore weak."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-319641",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 2,
+        "domain_type_score": 2,
+        "task_scope_score": 1
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI produced a generic user story about a \"stuck client tool call\" with broad acceptance criteria, which does not match the specific ground‑truth change (fixing orphaned client tool calls after a window reload in the agentHost layer). It failed to capture the precise behavior and the exact modules that need modification.",
+        "requirement_classification_reason": "The AI split the work into BE, FE, and QA tasks, whereas the ground truth change is purely a backend/core bug fix within the agentHost infrastructure. The classification is therefore only partially correct.",
+        "domain_type_reason": "The AI labeled the work as a bug related to tools, but the true domain is the core agentHost subsystem (backend bug). It identified the type as a bug, which is correct, but missed the correct business domain.",
+        "task_scope_reason": "Instead of summarising the overall intent – fixing orphaned client tool calls after a reload – the AI listed many low‑level sub‑tasks and clarification questions. It did not correctly identify the high‑level scope of the required change."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-319381",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 1,
+        "domain_type_score": 1,
+        "task_scope_score": 1
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI generated a generic user story and acceptance criteria that do not capture the specific bug described in the ground truth (keeping the SSH connection registered after an incompatible handshake). It failed to recognize the required behavior change.",
+        "requirement_classification_reason": "The AI did not identify that the work is primarily a backend fix (modifying remoteAgentHost services and related tests). Instead it left the task lists empty and marked the issue as needing clarification.",
+        "domain_type_reason": "The AI labeled the requirement as a generic \"software_feature\" bug, missing the precise domain (agentHost/SSH) and type (Bug/Regression) indicated by the ground truth.",
+        "task_scope_reason": "Instead of focusing on the core intent—fixing the SSH remote agent host registration—the AI produced a list of clarification questions and did not outline the actual scope of work."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-319769",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 1,
+        "domain_type_score": 2,
+        "task_scope_score": 2
+      },
+      "reasons": {
+        "feature_recognition_reason": "The issue is about enabling `#` as a file‑completion trigger in the AHP agent host (a code‑completion change). The AI produced a story about opening a native file‑picker dialog when `#` is typed, which does not match the required behavior.",
+        "requirement_classification_reason": "The ground‑truth change only touches backend modules that provide completion suggestions. The AI incorrectly split the work into backend, frontend, and QA tasks for a UI dialog, which is unrelated.",
+        "domain_type_reason": "The AI labeled the work as a VS Code extension feature, but the true domain is the agent‑host platform core (completion provider). It identified the type as a feature, which is partially correct, yet the domain is wrong.",
+        "task_scope_reason": "Instead of summarising the core intent – add `#` as a trigger for file completions – the AI generated a long list of implementation subtasks for a UI flow. This shows a failure to capture the high‑level scope."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-319516",
+      "scores": {
+        "feature_recognition_score": 3,
+        "requirement_classification_score": 3,
+        "domain_type_score": 3,
+        "task_scope_score": 4
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI captured the main problem (leaked server process) and the need to kill the whole process tree, but it omitted the second expected module (cli/src/util/command.rs) and did not mention the exact code change (kill full server process tree) required by the ground truth.",
+        "requirement_classification_reason": "The ground truth indicates a backend change only, yet the AI added QA tasks and listed both BE and QA effort. While backend work is correct, the extra QA classification deviates from the expected assignment.",
+        "domain_type_reason": "The issue is a bug fix, but the AI labeled the story as a generic software feature and only included \"bugfix\" as a label. It did not explicitly classify the requirement as a Bug, which is the precise domain/type.",
+        "task_scope_reason": "The AI correctly identified the overall scope—modifying kill_running_server to terminate the full process group—and focused on the WHAT rather than enumerating overly detailed sub‑tasks. This aligns well with the ground truth intent."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-319764",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 2,
+        "domain_type_score": 3,
+        "task_scope_score": 2
+      },
+      "reasons": {
+        "feature_recognition_reason": "The issue is about a race condition in eager createSession for chat sessions (see the listed modules and PR description). The AI produced a completely unrelated user story about git worktree failures in folder sessions, which does not match the ground‑truth problem or the required fix.",
+        "requirement_classification_reason": "The ground truth change is a backend code fix (chat session handling). The AI split effort across BE, FE, and QA, which is unnecessary and mis‑classifies the work required.",
+        "domain_type_reason": "The AI correctly labeled the work as a Bug, which aligns with the ground truth. However, it did not identify the correct domain (chat/agent host core) and added unrelated labels (git‑integration, session‑management).",
+        "task_scope_reason": "The AI generated a long list of investigation, retry logic, UI messages, and test cases that do not correspond to the actual race‑condition fix. The scope should have been focused on correcting the eager createSession logic, not on generic git worktree handling."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-319812",
+      "scores": {
+        "feature_recognition_score": 4,
+        "requirement_classification_score": 4,
+        "domain_type_score": 4,
+        "task_scope_score": 3
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI captured the core intent – exposing VS Code built‑in and extension tools through the Agent Host – and produced user story and acceptance criteria that align with the ground‑truth change (adding tools to chat customizations). It missed mentioning the specific PR reference, but the essential feature is correctly identified.",
+        "requirement_classification_reason": "The AI correctly split the work into backend (tool discovery, protocol changes), frontend (UI panel, selection components) and QA (tests for discovery and invocation), which matches the mixed nature of the code changes across many modules.",
+        "domain_type_reason": "The AI placed the work in the Chat/Agent Host domain and labeled it as a Feature, which is consistent with the ground‑truth (adding tools to chat customizations).",
+        "task_scope_reason": "While the AI identified the overall intent (expose tools via Agent Host), it produced an overly granular list of sub‑tasks instead of focusing solely on the high‑level scope (“implement tool discovery and UI integration”). This reduces the score for task‑scope identification."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-319814",
+      "scores": {
+        "feature_recognition_score": 4,
+        "requirement_classification_score": 5,
+        "domain_type_score": 5,
+        "task_scope_score": 3
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI captured the core need to enable rename functionality for forked chats, including UI and slash‑command aspects, which aligns with the ground‑truth expectation of adding a generic /rename command for agent sessions.",
+        "requirement_classification_reason": "It correctly identified work for backend (command registration, event dispatch), frontend (menu and pencil icon), and QA (testing persistence and events), matching the code changes that span both server‑side and client‑side modules.",
+        "domain_type_reason": "The story is placed in the Agent Host / Chat domain and is classified as a Feature, which is consistent with the ground‑truth PR description.",
+        "task_scope_reason": "The output goes beyond the requested high‑level scope by enumerating many detailed sub‑tasks; the evaluation criteria prefer a concise statement of WHAT needs to be done rather than an exhaustive task breakdown."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-319819",
+      "scores": {
+        "feature_recognition_score": 4,
+        "requirement_classification_score": 2,
+        "domain_type_score": 4,
+        "task_scope_score": 3
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI correctly captured the core need – delegating an active AHP session from one agent type to another – and produced a user story and acceptance criteria that align with the expected behavior (chat: delegate agent‑host sessions).",
+        "requirement_classification_reason": "The output never identified which team(s) (Backend, Frontend, QA) would need to work on the change, even though the ground‑truth modules span both UI (frontend) and session‑management (backend) code.",
+        "domain_type_reason": "It correctly placed the work in the Agent‑Host / chat session domain and labeled it as a Feature request, matching the expected classification.",
+        "task_scope_reason": "The AI described the overall intent (delegating sessions) but mixed that with a list of clarification questions instead of focusing solely on the high‑level scope, resulting in a partially correct identification of the task’s breadth."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-319824",
+      "scores": {
+        "feature_recognition_score": 3,
+        "requirement_classification_score": 2,
+        "domain_type_score": 3,
+        "task_scope_score": 2
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI captured the core need to surface a friendly error when git‑lfs is missing and wrote reasonable acceptance criteria, but it added unnecessary frontend UI concerns that are not part of the actual code change.",
+        "requirement_classification_reason": "The ground‑truth change only touches backend code (agentHostGitService and its test). The AI incorrectly split the work into BE, FE, and QA, over‑classifying the effort.",
+        "domain_type_reason": "The issue is a bug/feature fix in the core agent host platform. The AI labeled it as a generic software feature with frontend/backend tags, which is partially correct but adds irrelevant UI scope.",
+        "task_scope_reason": "The AI produced a detailed list of sub‑tasks (including UI formatting and visual indicators) whereas the real task is simply to catch the git‑lfs error in the backend service and add a test. The scope is therefore too broad."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-320011",
+      "scores": {
+        "feature_recognition_score": 5,
+        "requirement_classification_score": 3,
+        "domain_type_score": 2,
+        "task_scope_score": 2
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI correctly identified the core problem (an infinite rootConfig update loop) and produced a user story and acceptance criteria that match the ground‑truth intent of stopping the config update loop across windows.",
+        "requirement_classification_reason": "The primary fix is a backend change, but the AI also added frontend monitoring and UI indicator tasks that are not required by the ground truth, showing a partial mis‑classification.",
+        "domain_type_reason": "The ground truth describes a bug/critical backend issue, whereas the AI labeled the work as a generic \"software_feature\" and mixed in feature‑type language, missing the bug classification.",
+        "task_scope_reason": "Instead of summarising the overall intent (stop the loop), the AI produced a very detailed sub‑task breakdown, which goes beyond the requested high‑level scope identification."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-319802",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 1,
+        "domain_type_score": 1,
+        "task_scope_score": 1
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI interpreted the issue as a Copilot UI/RAG problem and created a user story about document retrieval, which does not match the ground‑truth requirement of adding support for attaching virtual resources (untitled, notebook cells) in the agent host layer.",
+        "requirement_classification_reason": "The ground truth involves changes across core platform modules (both backend and frontend) to enable virtual resource attachment, but the AI incorrectly split the work into generic BE/FE/QA tasks for a chat UI feature, missing the real classification.",
+        "domain_type_reason": "The true domain is the agent host/core infrastructure (a bug/feature in the VS Code‑like platform), whereas the AI placed the work in the AI‑assistant/Copilot domain, misidentifying the business area and requirement type.",
+        "task_scope_reason": "Instead of summarising the overall intent (enable virtual resource attachment in the agent host), the AI produced a detailed list of unrelated sub‑tasks for a different feature, showing a failure to capture the correct scope."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-320114",
+      "scores": {
+        "feature_recognition_score": 5,
+        "requirement_classification_score": 4,
+        "domain_type_score": 5,
+        "task_scope_score": 3
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI correctly captured the core requirement to move the radio‑tower sync icon from each chat session to a global location, matching the issue description and the ground‑truth intent of moving the remote‑connections toggle to the title bar.",
+        "requirement_classification_reason": "The change is primarily a frontend UI modification, but it also touches a small amount of backend/state handling (reading telemetry settings). The AI’s classification into BE, FE, and QA effort reflects this mix, which aligns with the actual code changes that span both UI and contribution layers.",
+        "domain_type_reason": "The AI correctly identified the domain as the Agents window UI (a UI/UX feature) and labeled the work as a feature, which matches the ground‑truth classification.",
+        "task_scope_reason": "The AI identified the overall intent (move the icon globally) but then expanded into a very granular list of sub‑tasks. The evaluation criteria prefer a focus on the high‑level WHAT rather than an exhaustive breakdown, so the scope identification is only partially aligned."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-320122",
+      "scores": {
+        "feature_recognition_score": 5,
+        "requirement_classification_score": 5,
+        "domain_type_score": 3,
+        "task_scope_score": 3
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI accurately captured the core problem (incorrect 'session will stop' notification) and produced acceptance criteria that match the ground‑truth behavior for local vs remote Agent Host sessions and window close vs full quit scenarios.",
+        "requirement_classification_reason": "It correctly split the work into backend (session model changes), frontend (notification UI changes), and QA (test scenarios), which aligns with the code changes required in the listed modules.",
+        "domain_type_reason": "The ground truth is a bug fix (notification warning), but the AI labeled the work as a new feature (software_feature). The domain (chat/agent‑host) is correct, but the type classification is off.",
+        "task_scope_reason": "The AI provided a very granular list of sub‑tasks (be, fe, qa). The evaluation criteria ask for identification of the overall scope/intent rather than an exhaustive breakdown, so the answer is more detailed than needed."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-320152",
+      "scores": {
+        "feature_recognition_score": 2,
+        "requirement_classification_score": 2,
+        "domain_type_score": 3,
+        "task_scope_score": 2
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI identified the /compact hang issue but added unrelated requirements like timeouts and cancellation, which are not part of the ground‑truth fix that simply ensures the turn completes when /compact finishes.",
+        "requirement_classification_reason": "The patch only touches backend agent‑host code, yet the AI split work into BE, FE, and QA, over‑classifying effort that is purely backend.",
+        "domain_type_reason": "The issue is a bug in the agent‑host core; the AI marked it as a Bug but incorrectly set the story type to a feature, showing partial understanding of the domain and type.",
+        "task_scope_reason": "The AI produced a long list of detailed sub‑tasks (timeouts, UI messages, cancellation) instead of focusing on the core intent: fixing the /compact command so the session turn completes."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-320303",
+      "scores": {
+        "feature_recognition_score": 2,
+        "requirement_classification_score": 3,
+        "domain_type_score": 4,
+        "task_scope_score": 2
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI extracted a user story and acceptance criteria about debouncing listSessions calls and cache diffing, which does not match the ground‑truth change: implementing CoalescingAgentHostSessionListConnection to coalesce session list retrieval. It missed the core feature the patch is introducing.",
+        "requirement_classification_reason": "The AI correctly identified that both backend and frontend work are needed, but it omitted the test module change and focused on debouncing rather than the backend coalescing connection, so the classification is only partially aligned.",
+        "domain_type_reason": "The AI correctly labeled the work as a performance‑related feature in the agent‑host domain, which aligns with the expected business area and requirement type.",
+        "task_scope_reason": "Instead of summarising the overall intent (implement CoalescingAgentHostSessionListConnection), the AI produced a detailed list of sub‑tasks that diverge from the actual code change, showing a poor grasp of the high‑level scope."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-319820",
+      "scores": {
+        "feature_recognition_score": 3,
+        "requirement_classification_score": 3,
+        "domain_type_score": 4,
+        "task_scope_score": 3
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI identified the need to add tooltips, but it framed the work around generic toolbar icons rather than the specific agent‑host session config pickers referenced in the ground‑truth patch. The acceptance criteria are close but not precisely aligned with the actual code change.",
+        "requirement_classification_reason": "The AI split the work into backend, frontend, and QA tasks. The real change is purely a frontend/UI modification (adding tooltip metadata), so the inclusion of backend effort is unnecessary.",
+        "domain_type_reason": "The AI correctly classified the work as a UI‑related bug/feature involving tooltips, matching the domain (VS Code extension UI) and type (bug/feature).",
+        "task_scope_reason": "The AI provided a very detailed list of sub‑tasks instead of focusing on the high‑level intent (add missing tooltips). While the scope is identified, the granularity goes beyond what the evaluation criteria expect."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-320245",
+      "scores": {
+        "feature_recognition_score": 5,
+        "requirement_classification_score": 4,
+        "domain_type_score": 5,
+        "task_scope_score": 5
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI correctly captured the core problem (async race causing DisposableStore leak) and produced a user story and acceptance criteria that match the ground‑truth fix for the Node.js file watcher.",
+        "requirement_classification_reason": "The primary effort is backend (code change in watcher library). The AI also listed FE verification tasks, which are peripheral but not harmful; overall classification is acceptable.",
+        "domain_type_reason": "The AI identified the domain as backend and the requirement type as a bugfix related to disposables and the watcher, exactly as required.",
+        "task_scope_reason": "The AI focused on the high‑level intent—fixing the race condition and preventing leaks—without over‑detailing implementation steps, aligning with the expected scope."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-320454",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 1,
+        "domain_type_score": 1,
+        "task_scope_score": 1
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI generated a user story about showing an error message when no workspace is open, which does not match the ground truth that requires using a temporary subdirectory for createSession when workingDirectory is omitted.",
+        "requirement_classification_reason": "The AI assigned work to backend, frontend, and QA, whereas the actual change is a backend code modification (and a test) only.",
+        "domain_type_reason": "The AI labeled the work as a UI‑related bug with multiple labels, while the true change is a core platform bug fix in the agent host backend.",
+        "task_scope_reason": "Instead of identifying the concise intent (use a temp subdirectory for session creation), the AI produced an extensive list of unrelated tasks, missing the core scope of the required change."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-320247",
+      "scores": {
+        "feature_recognition_score": 3,
+        "requirement_classification_score": 2,
+        "domain_type_score": 2,
+        "task_scope_score": 2
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI understood that the issue is about stripping redundant 'cd' prefixes, but it expanded the scope to additional separators (e.g., ';', '||', '|') which are not mentioned in the ground truth. It captured the core idea but added unnecessary features.",
+        "requirement_classification_reason": "The ground truth only involves backend code changes (commandLineHelpers.ts and its tests). The AI incorrectly split effort across backend, frontend, and QA, showing a mismatch with the actual requirement.",
+        "domain_type_reason": "The issue is a bug fix in the SDK core, but the AI labeled it as a new feature/story, misclassifying the domain and type.",
+        "task_scope_reason": "Instead of summarizing the overall intent (extend cd‑prefix stripping), the AI produced a detailed task breakdown, which goes beyond identifying the primary scope of work."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-320824",
+      "scores": {
+        "feature_recognition_score": 4,
+        "requirement_classification_score": 4,
+        "domain_type_score": 5,
+        "task_scope_score": 3
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI correctly captured the missing context‑window size picker, created a user story and acceptance criteria that match the ground‑truth intent (propagating model context options to the picker).",
+        "requirement_classification_reason": "It identified backend work (API, session metadata) and frontend work (picker component, integration) plus QA testing, which aligns with the code changes spanning both server‑side and UI modules.",
+        "domain_type_reason": "The requirement is a new feature in the Agent‑Host/Chat UI domain, and the AI labeled it as a feature/UI‑improvement, matching the expected classification.",
+        "task_scope_reason": "The AI produced a very granular list of sub‑tasks rather than focusing on the high‑level scope (\"add a context window size picker and propagate the setting\"), so it over‑specified the work while still covering the correct intent."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-320509",
+      "scores": {
+        "feature_recognition_score": 4,
+        "requirement_classification_score": 3,
+        "domain_type_score": 5,
+        "task_scope_score": 4
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI captured the core problem (hover causing layout jumps) and produced a user story and acceptance criteria that align well with the ground‑truth intent of fixing the session list hover warnings and layout issues.",
+        "requirement_classification_reason": "The work is purely frontend/UI; the AI incorrectly added a Backend (BE) task, indicating a mis‑classification of effort distribution.",
+        "domain_type_reason": "The AI correctly identified the domain as a UI bug and labeled it as a bug/UI issue, matching the ground truth.",
+        "task_scope_reason": "The AI focused on the overall intent—stabilising hover layout—and did not get lost in overly detailed sub‑tasks, though the inclusion of unnecessary BE tasks slightly dilutes the scope clarity."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-320784",
+      "scores": {
+        "feature_recognition_score": 5,
+        "requirement_classification_score": 4,
+        "domain_type_score": 2,
+        "task_scope_score": 3
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI correctly identified the core problem (empty terminal command for Claude/Copilot agents) and produced a user story and acceptance criteria that match the ground‑truth intent of fixing the bug.",
+        "requirement_classification_reason": "The AI assigned effort to backend, frontend, and QA. The actual change is a backend code fix, so including FE and QA is a slight over‑classification, but it still recognized the need for implementation and testing.",
+        "domain_type_reason": "The ground truth describes a bug fix, whereas the AI labeled the work as a \"software_feature\". It failed to classify the requirement correctly as a Bug in the agent‑host domain.",
+        "task_scope_reason": "The AI listed many granular tasks rather than focusing on the primary intent (implementing the fix). While the overall scope is identified, the output is overly detailed and deviates from a concise description of WHAT needs to be done."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-320522",
+      "scores": {
+        "feature_recognition_score": 3,
+        "requirement_classification_score": 2,
+        "domain_type_score": 4,
+        "task_scope_score": 3
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI captured the need for a Delete action in the UI and wrote appropriate acceptance criteria, but it ignored the backend work required to actually enable the Delete command for agent host sessions as indicated by the ground‑truth code changes.",
+        "requirement_classification_reason": "The AI assigned most effort to Frontend and QA, assuming the backend deleteSession already exists, whereas the ground truth shows substantial backend modifications across several modules.",
+        "domain_type_reason": "The AI correctly identified the work as a Feature related to the chat/agent‑host UI domain, matching the ground‑truth intent.",
+        "task_scope_reason": "The AI produced a detailed list of sub‑tasks rather than focusing on the high‑level intent (enabling Delete for agent host sessions). It identified the overall goal but over‑specified the implementation steps."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-320531",
+      "scores": {
+        "feature_recognition_score": 4,
+        "requirement_classification_score": 5,
+        "domain_type_score": 5,
+        "task_scope_score": 3
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI correctly identified the core problem (missing skill descriptions in client-to-host payload) and produced a user story and acceptance criteria that match the ground‑truth intent, though it added some extra details not strictly required.",
+        "requirement_classification_reason": "It accurately split the work into backend, frontend, and QA effort, mirroring the ground‑truth classification of BE, FE, and QA tasks.",
+        "domain_type_reason": "The AI assigned the correct domain (Copilot/agent‑skills) and type (Bug/Feature) with appropriate labels, aligning with the expected classification.",
+        "task_scope_reason": "While the AI identified the overall intent (include description field in serialization), it over‑specified by enumerating many granular sub‑tasks instead of focusing on the high‑level scope of fixing the serialization logic."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-320924",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 2,
+        "domain_type_score": 2,
+        "task_scope_score": 1
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI generated a generic user story about message sending and model list issues, which does not match the ground‑truth change (reverting a specific PR in copilotAgent.ts). It failed to capture the precise fix required.",
+        "requirement_classification_reason": "The AI split the work into BE, FE, and QA tasks, whereas the actual change is a single backend revert. The classification is therefore largely inaccurate.",
+        "domain_type_reason": "The AI labeled the work with generic tags (agent-host, copilot, bug, ui) but did not identify the specific domain (agent host backend) nor the requirement type (a bug fix via revert).",
+        "task_scope_reason": "Instead of stating the concise intent – revert the \"add env var to AH to tag our CAPI traffic\" PR – the AI produced an extensive list of unrelated tasks, missing the core scope of the patch."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-321030",
+      "scores": {
+        "feature_recognition_score": 4,
+        "requirement_classification_score": 5,
+        "domain_type_score": 3,
+        "task_scope_score": 3
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI correctly captured the core problem (quota error message and banner not showing in Agent Host sessions) and produced appropriate acceptance criteria that match the expected behavior of rich error handling.",
+        "requirement_classification_reason": "It identified backend, frontend, and QA effort, which aligns with the code changes spanning both server‑side error propagation and UI rendering.",
+        "domain_type_reason": "The issue is fundamentally a bug (missing UI feedback), but the AI labeled the story as a feature; the domain is partially correct but the type classification is off.",
+        "task_scope_reason": "The AI supplied a very granular list of sub‑tasks rather than focusing on the high‑level intent (propagate quota errors and display them), which deviates from the desired scope‑identification emphasis."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-321021",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 1,
+        "domain_type_score": 2,
+        "task_scope_score": 1
+      },
+      "reasons": {
+        "feature_recognition_reason": "The issue is about leaking build processes caused by worktreeCreated tasks not being stopped when a session is marked done. The ground‑truth patch stops those tasks. The AI generated a story about terminating a terminal CLI process, which does not address the actual bug, so it failed to capture the correct feature/logic.",
+        "requirement_classification_reason": "The required change is purely backend (session task runner services). The AI split the work into BE, FE, and QA buckets and focused on UI button handling, which is not aligned with the actual backend‑only fix.",
+        "domain_type_reason": "The correct domain is the core session/task infrastructure and the type is a bug fix. The AI labeled the work as a new feature with performance and CLI‑session tags, partially recognizing it as a bug but adding unrelated categories, so the classification is mostly incorrect.",
+        "task_scope_reason": "The AI produced a long list of sub‑tasks and clarification questions instead of succinctly stating the core intent: stop worktreeCreated tasks when a session is marked done. This shows a failure to identify the overall scope of the required change."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-321032",
+      "scores": {
+        "feature_recognition_score": 3,
+        "requirement_classification_score": 2,
+        "domain_type_score": 4,
+        "task_scope_score": 3
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI captured the core problem (model selected by Auto not displayed) and wrote reasonable acceptance criteria, but it did not reflect the specific code change focus (turn details for Auto model) indicated in the ground truth.",
+        "requirement_classification_reason": "The ground truth points to backend changes in specific TypeScript modules, yet the AI split effort across BE, FE, and QA, showing uncertainty about the correct classification.",
+        "domain_type_reason": "The AI correctly identified the domain (agent‑host/model‑picker) and labeled the work as a bug, matching the ground truth context.",
+        "task_scope_reason": "The AI listed many detailed sub‑tasks rather than succinctly stating the primary work (fixing model display logic), so the overall intent is present but not sharply focused."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-321411",
+      "scores": {
+        "feature_recognition_score": 4,
+        "requirement_classification_score": 5,
+        "domain_type_score": 5,
+        "task_scope_score": 3
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI correctly captured the core problem (missing agent icons) and translated it into a user story and acceptance criteria that match the ground‑truth intent of using provider‑specific icons, though it added some extra details not present in the patch.",
+        "requirement_classification_reason": "It identified both backend and frontend work (modifying session handler and picker UI) and included QA verification, which aligns with the two modules changed in the ground truth.",
+        "domain_type_reason": "The AI placed the work in the chat UI domain and labeled it as a feature/UI improvement, which fits the nature of the bug‑fix/feature change described in the ground truth.",
+        "task_scope_reason": "The AI provided an extensive list of sub‑tasks rather than focusing on the high‑level intent (replace hard‑coded icon logic with generic provider‑icon handling). The scope identification is therefore more detailed than required, reducing the score."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-321410",
+      "scores": {
+        "feature_recognition_score": 5,
+        "requirement_classification_score": 4,
+        "domain_type_score": 5,
+        "task_scope_score": 5
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI correctly captured the core problem (sessions filter showing hard‑coded 'Copilot CLI [Agent Host]' for non‑CLI agents) and expressed it in a clear user story with precise acceptance criteria that match the expected behavior.",
+        "requirement_classification_reason": "It identified the need for backend changes (modifying agentSessions.ts), frontend verification, and QA test creation, which aligns with the actual code changes required.",
+        "domain_type_reason": "The AI correctly classified the work as a bug/feature in the chat UI/agent‑host domain, matching the labels and context of the issue.",
+        "task_scope_reason": "The AI focused on the overall intent—replacing the hard‑coded string with the agent's displayName—without over‑detailing implementation steps, accurately reflecting the scope of the task."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-321399",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 1,
+        "domain_type_score": 1,
+        "task_scope_score": 1
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI did not produce a user story or acceptance criteria that reflect the required change (enhancing skill file parsing to extract the name). Instead it asked clarification questions, despite the ground truth clearly specifying the needed code modification.",
+        "requirement_classification_reason": "The AI failed to identify that the work involves backend changes (pluginParsers.ts) and did not assign the effort to the appropriate team (BE). It defaulted to asking for clarification rather than classifying the work.",
+        "domain_type_reason": "The AI did not determine the correct domain (AI Agent Skills / Customization) nor the requirement type (Bug/Fix). It omitted any classification, opting for vague questions.",
+        "task_scope_reason": "Instead of recognizing the core intent—updating the skill name extraction logic—the AI generated clarification queries, showing no understanding of the overall scope of the task."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-321390",
+      "scores": {
+        "feature_recognition_score": 5,
+        "requirement_classification_score": 5,
+        "domain_type_score": 5,
+        "task_scope_score": 5
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI correctly captured the core problem (missing summary in UI) and produced a user story and acceptance criteria that align with the ground‑truth requirement to render task_complete summaries as markdown.",
+        "requirement_classification_reason": "It identified both backend (API handling) and frontend (UI rendering) work, matching the code changes across several modules and the need for UI updates.",
+        "domain_type_reason": "The AI classified the work as a Bug affecting the agents UI, which matches the ground‑truth description and labels.",
+        "task_scope_reason": "The overall intent – displaying the task summary in the UI – is clearly identified, without unnecessary over‑specification; the sub‑tasks support that intent."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-321453",
+      "scores": {
+        "feature_recognition_score": 5,
+        "requirement_classification_score": 5,
+        "domain_type_score": 3,
+        "task_scope_score": 3
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI correctly captured the core problem (folder picker choice not persisting) and produced a user story and acceptance criteria that align with the ground‑truth behavior of persisting the multi‑root folder selection for new agent‑host chats.",
+        "requirement_classification_reason": "It identified both backend (state persistence, session handling) and frontend (picker UI) work, matching the code changes listed in the ground truth.",
+        "domain_type_reason": "The domain (chat/agent‑host) is correct, but the AI classified the work as a \"software_feature\" whereas the issue is fundamentally a bug fix, so the type is only partially accurate.",
+        "task_scope_reason": "The AI provided a very granular list of sub‑tasks (BE, FE, QA) rather than focusing on the high‑level intent (persist folder selection across new chats). The scope is therefore more detailed than required."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-321426",
+      "scores": {
+        "feature_recognition_score": 4,
+        "requirement_classification_score": 4,
+        "domain_type_score": 4,
+        "task_scope_score": 3
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI correctly captured the core requirement – displaying cost information for agent host models – and translated the acceptance criteria into a coherent user story that aligns with the ground‑truth behavior of adding model pricing metadata handling.",
+        "requirement_classification_reason": "It identified the need for backend work (model pricing metadata), frontend work (tooltip UI), and QA verification, which matches the mixed nature of the change described in the ground truth.",
+        "domain_type_reason": "The AI placed the work in the UI/Frontend domain with a feature type, which is appropriate given the visual tooltip change and the underlying feature implementation.",
+        "task_scope_reason": "The output provides a very granular list of sub‑tasks rather than focusing on the high‑level intent (implement cost metadata handling and display it). While the scope is correct, the level of detail exceeds what was asked for, resulting in a modest deduction."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-321743",
+      "scores": {
+        "feature_recognition_score": 4,
+        "requirement_classification_score": 3,
+        "domain_type_score": 2,
+        "task_scope_score": 3
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI captured the core performance problem (UI freeze due to unthrottled event stream and excessive changeset computation) and produced relevant acceptance criteria that align with the ground‑truth fix, though it did not reference the exact modules changed.",
+        "requirement_classification_reason": "The AI split work into BE, FE, and QA buckets, but the actual change is purely a frontend performance optimisation; introducing a backend bucket is unnecessary.",
+        "domain_type_reason": "The issue is a bug/performance regression, yet the AI classified it as a new feature story, which does not match the ground‑truth classification.",
+        "task_scope_reason": "The AI provided a detailed list of sub‑tasks rather than focusing on the high‑level intent (optimise changeset reconciliation), so the scope identification is only partially correct."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-321781",
+      "scores": {
+        "feature_recognition_score": 5,
+        "requirement_classification_score": 5,
+        "domain_type_score": 5,
+        "task_scope_score": 4
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI correctly captured the core problem (context window widget not rendering in Auto mode) and produced a user story and acceptance criteria that match the ground‑truth intent of resolving the context window for Auto in the Agent Host.",
+        "requirement_classification_reason": "It identified the need for backend (resource scheme/content provider), frontend (widget rendering), and QA (tests) work, which aligns with the required code changes in both source and test modules.",
+        "domain_type_reason": "The AI classified the work as a Bug in the agents‑window/UI domain, matching the ground‑truth description and the expected modules.",
+        "task_scope_reason": "The AI focused on the overall intent—fixing the widget rendering—and provided a coherent high‑level scope, though it added an extensive list of sub‑tasks which is slightly beyond the minimal scope identification requirement."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-321797",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 2,
+        "domain_type_score": 1,
+        "task_scope_score": 1
+      },
+      "reasons": {
+        "feature_recognition_reason": "The issue is about fixing the tool call confirmation message rendering and requires changes in specific backend and UI modules. The AI generated a story about a permission widget dropdown, which does not match the actual problem or the ground‑truth code changes.",
+        "requirement_classification_reason": "The AI split the work into BE, FE and QA tasks, which loosely aligns with the need for both backend and frontend changes, but the tasks themselves target the wrong feature (permission UI) instead of the confirmation message bug.",
+        "domain_type_reason": "The ground truth describes a bug fix in the chat UI (core/bug), whereas the AI labeled the work as a new feature (permission widget improvement). This is an incorrect domain and type classification.",
+        "task_scope_reason": "Instead of summarising the core intent (fix the confirmation message rendering), the AI produced a detailed list of unrelated sub‑tasks, showing a failure to identify the true scope of the required change."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-321801",
+      "scores": {
+        "feature_recognition_score": 4,
+        "requirement_classification_score": 4,
+        "domain_type_score": 5,
+        "task_scope_score": 3
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI correctly captured the core requirement – using the generated chat session title for the worktree name – and produced appropriate acceptance criteria that match the ground‑truth intent. It did not mention the specific modules, but the functional description is accurate.",
+        "requirement_classification_reason": "The AI identified backend work needed (changing worktree name generation) and also noted frontend verification and QA testing, which aligns with the expected change that primarily touches backend code while still requiring UI validation.",
+        "domain_type_reason": "The AI correctly placed the work in the \"agents\" domain and classified it as a feature request, matching the ground‑truth classification.",
+        "task_scope_reason": "The AI provided a very granular breakdown of BE, FE, and QA tasks rather than focusing solely on the high‑level intent (update worktree name generation). While the overall scope is identified, the answer leans toward a detailed task list instead of a concise statement of WHAT needs to be done."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-321675",
+      "scores": {
+        "feature_recognition_score": 2,
+        "requirement_classification_score": 2,
+        "domain_type_score": 4,
+        "task_scope_score": 2
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI extracted a user story and acceptance criteria that only address updating the Claude Agent icon. The ground truth indicates a broader change: polishing permission labels, descriptions, and icons across multiple modules. The AI missed these additional aspects and did not reference the required code files.",
+        "requirement_classification_reason": "The AI assigned only Frontend (FE) tasks, whereas the ground truth changes involve both frontend UI updates and backend test modifications (e.g., test files, permission mode logic). It also omitted QA effort needed for regression testing.",
+        "domain_type_reason": "The AI correctly identified the domain as UI/visual branding and classified the work as a Feature, which aligns with the intent to update the icon and related UI elements.",
+        "task_scope_reason": "Instead of summarizing the overall intent (\"polish Claude agent permission UI and icons\"), the AI produced a granular list of sub‑tasks. The evaluation expects recognition of the high‑level scope rather than an exhaustive task breakdown."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-321805",
+      "scores": {
+        "feature_recognition_score": 3,
+        "requirement_classification_score": 4,
+        "domain_type_score": 4,
+        "task_scope_score": 2
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI captured the core idea of hiding or disabling the Copilot CLI option when not signed in, but the ground truth specifies that the option should be shown disabled with a 'Sign in' button, not hidden. The acceptance criteria also differ slightly, so the understanding is only partially correct.",
+        "requirement_classification_reason": "The AI correctly identified the need for backend (auth state handling), frontend (dropdown rendering), and QA effort, which aligns with the changes required across multiple modules in the ground truth.",
+        "domain_type_reason": "The AI correctly placed the work in the authentication/UI domain and labeled it as a bug/feature related to Copilot CLI, matching the ground truth context.",
+        "task_scope_reason": "Instead of summarizing the overall intent (e.g., \"ensure Copilot CLI is disabled when unauthenticated\"), the AI produced a detailed breakdown of sub‑tasks, which goes beyond the requested high‑level scope."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-321810",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 1,
+        "domain_type_score": 1,
+        "task_scope_score": 1
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI generated a user story about the model picker disappearing, which does not match the ground‑truth change (enhanced logging for model refresh and passing a GitHub token in CopilotClient). The core problem and required behavior were mis‑identified.",
+        "requirement_classification_reason": "The ground truth involves a backend code change (logging and token handling). The AI split work into backend, frontend, and QA tasks, incorrectly treating it as a UI‑related issue.",
+        "domain_type_reason": "The actual change is a backend bug/feature fix, but the AI labeled the work as a generic \"software_feature\" with mixed labels (backend, frontend, bug). This does not reflect the true domain or type.",
+        "task_scope_reason": "The AI produced a detailed list of sub‑tasks focused on UI model‑picker debugging, whereas the ground truth required a concise code patch to add logging and token propagation. The scope is therefore misaligned."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-321960",
+      "scores": {
+        "feature_recognition_score": 4,
+        "requirement_classification_score": 3,
+        "domain_type_score": 4,
+        "task_scope_score": 3
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI captured the core problem (mode picker resetting to Plan) and produced a user story and acceptance criteria that align with the ground‑truth behavior of ignoring sub‑agent mode changes. The story is relevant, though it adds some extra context not strictly required.",
+        "requirement_classification_reason": "The AI correctly identified backend work (modifying copilotAgentSession.ts) but also introduced unnecessary frontend and QA effort. The ground truth only needed a backend change and a unit test, so the classification is only partially correct.",
+        "domain_type_reason": "The AI labeled the work as a bug affecting the agent host (backend) and included appropriate labels (backend, frontend, reactive‑pipeline). This matches the domain and type, though the extra frontend label is superfluous.",
+        "task_scope_reason": "The AI provided a very granular list of sub‑tasks rather than focusing on the high‑level intent (prevent mode reset). The ground truth expects a concise change to ignore sub‑agent mode changes; the detailed breakdown goes beyond the required scope."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-321891",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 2,
+        "domain_type_score": 1,
+        "task_scope_score": 1
+      },
+      "reasons": {
+        "feature_recognition_reason": "The issue is a bug where the Customizations dialog's plugins tab remains stuck on the marketplace view after installing a plugin from source. The ground‑truth patch fixes this UI bug. The AI output instead created a new feature story about adding source‑URL installation support, which does not address the reported problem.",
+        "requirement_classification_reason": "The ground‑truth change is a bug‑fix that likely touches both frontend UI logic and a small backend state update. The AI incorrectly classified the work as a full feature split into BE, FE, and QA tasks, missing the core bug‑fix classification.",
+        "domain_type_reason": "The correct domain is the AI Customizations UI within the workbench (a UI bug). The AI labeled the work as a new feature (plugin source installation) and treated it as a generic feature request, not as a bug in the plugins tab.",
+        "task_scope_reason": "Instead of identifying the concise scope – fixing the tab navigation and counter update after installation – the AI produced an extensive list of new feature tasks. This does not align with the simple intent of the patch."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-321827",
+      "scores": {
+        "feature_recognition_score": 2,
+        "requirement_classification_score": 2,
+        "domain_type_score": 4,
+        "task_scope_score": 2
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI captured the high‑level problem (the /compact command not working) but failed to reflect the specific ground‑truth behavior – handling a no‑op compaction error in the Copilot agent host. The acceptance criteria are generic and do not target the required error‑handling logic or the exact modules to be changed.",
+        "requirement_classification_reason": "The ground truth indicates a backend change (node copilotAgentSession files). The AI did not assign the work to any team (BE/FE/QA) and left the task lists empty, showing it did not correctly classify the effort.",
+        "domain_type_reason": "The AI correctly identified the work as a bug related to a slash command and credit calculation, matching the issue’s domain. It missed the nuance that this is specifically a backend agent‑host bug, but the overall type (Bug) is accurate.",
+        "task_scope_reason": "The AI produced a vague user story and acceptance criteria without focusing on the concrete scope – fixing the no‑op error handling in the specified files. It did not articulate the precise “what” (add guard for empty compaction, return proper error, update tests). Hence the scope identification is insufficient."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-322112",
+      "scores": {
+        "feature_recognition_score": 4,
+        "requirement_classification_score": 2,
+        "domain_type_score": 3,
+        "task_scope_score": 2
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI captured the core requirement of auto‑approving terminal tools and included relevant acceptance criteria (auto‑approve, non‑interactive handling, interactive flow, deadlock fix), which aligns with the ground‑truth intent.",
+        "requirement_classification_reason": "The ground‑truth change is purely backend (code in agentHost modules). The AI incorrectly added frontend and QA effort, over‑classifying the work.",
+        "domain_type_reason": "The AI identified the work as a feature in the agent‑host/backend domain, which is mostly correct, but the inclusion of frontend labels dilutes the accuracy.",
+        "task_scope_reason": "The AI produced a detailed breakdown of sub‑tasks rather than focusing on the high‑level WHAT needs to be done, which does not match the desired scope identification."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-322139",
+      "scores": {
+        "feature_recognition_score": 5,
+        "requirement_classification_score": 5,
+        "domain_type_score": 5,
+        "task_scope_score": 5
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI correctly captured the core requirement – adding a tooltip to the disabled workspace folder name in Copilot Chat – and produced appropriate user story, acceptance criteria, and UI‑focused tasks that align with the ground‑truth change (adding full path/branch tooltip to the folder picker chip).",
+        "requirement_classification_reason": "The AI correctly classified the work as purely frontend (FE) effort, with no backend changes needed, matching the ground truth which only modifies a UI component.",
+        "domain_type_reason": "The AI identified the domain as a UI enhancement within the Copilot Chat feature and labeled it as a Feature, which is accurate for this change.",
+        "task_scope_reason": "The AI focused on the overall intent – implementing a tooltip for the folder name – and listed concise, relevant FE tasks without over‑detailing sub‑tasks, reflecting a proper scope identification."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-321816",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 2,
+        "domain_type_score": 4,
+        "task_scope_score": 2
+      },
+      "reasons": {
+        "feature_recognition_reason": "The ground‑truth change is a very specific backend fix – stop offering worktree isolation for folders with no commits. The AI generated a broad user story about handling generic git worktree failures, added retry logic, UI messages, and extensive logging, none of which match the precise behavior required.",
+        "requirement_classification_reason": "The actual patch only touches backend code (copilotAgent.ts and its test). The AI split effort across BE, FE, and QA, inventing frontend error dialogs and QA test scenarios that are not needed for the simple backend guard.",
+        "domain_type_reason": "The AI correctly identified the issue as a bug in the agent‑host platform related to git integration, which aligns with the ground‑truth domain and type.",
+        "task_scope_reason": "Instead of focusing on the single intent – add a guard to avoid worktree isolation when there are no commits – the AI produced a large list of unrelated tasks (retry mechanisms, logging, UI changes). This dilutes the core scope and does not reflect the concise fix described in the ground truth."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-322014",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 1,
+        "domain_type_score": 1,
+        "task_scope_score": 1
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI generated a new feature story about forcing a remote agent host restart and UI diagnostics, which does not match the ground‑truth bug fix (remote auto‑shutdown with renderer proxy) and the listed code modules.",
+        "requirement_classification_reason": "The ground truth concerns a backend bug fix; the AI incorrectly split work into backend, frontend, and QA tasks for a feature, showing a mis‑classification.",
+        "domain_type_reason": "The issue is a bug in the agent‑host core; the AI labeled it as a feature with multiple domains, which is inaccurate.",
+        "task_scope_reason": "Instead of summarising the core intent (fix remote auto‑shutdown), the AI produced an extensive list of sub‑tasks, deviating from the required high‑level scope."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-322193",
+      "scores": {
+        "feature_recognition_score": 5,
+        "requirement_classification_score": 4,
+        "domain_type_score": 5,
+        "task_scope_score": 3
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI correctly identified that the issue is about renaming the Agent Host Copilot CLI session type to 'Copilot' and captured the core acceptance criteria that match the ground‑truth behavior (simplify the label in the chat UI).",
+        "requirement_classification_reason": "The AI assigned work to backend, frontend, and QA, which aligns with the ground‑truth changes that span multiple modules (both UI and underlying session‑type constants). A slight over‑classification (explicit BE work) keeps the score just below perfect.",
+        "domain_type_reason": "The AI correctly placed the work in the UI/Chat domain and labeled it as a feature change, matching the expected \"chat: simplify Agent Host Copilot label\" scope.",
+        "task_scope_reason": "While the AI captured the overall intent (rename the user‑facing label), it broke it down into a very detailed task list. The evaluation criteria prefer a high‑level description of WHAT needs to be done rather than an exhaustive sub‑task breakdown, so the scope identification is only partially aligned."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-322180",
+      "scores": {
+        "feature_recognition_score": 5,
+        "requirement_classification_score": 5,
+        "domain_type_score": 5,
+        "task_scope_score": 5
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI correctly identified that the core problem is a disabled plugin still being loaded by the agent host and translated it into a clear user story and acceptance criteria that match the ground‑truth behavior (filtering disabled plugins from system/init.plugins).",
+        "requirement_classification_reason": "The AI accurately split the work into backend (filtering logic), frontend (UI state persistence), and QA (test cases), which aligns exactly with the ground‑truth classification of effort.",
+        "domain_type_reason": "The issue is correctly classified as a Bug within the agent‑host/plugin system domain, matching the ground‑truth labels and context.",
+        "task_scope_reason": "The AI focused on the high‑level intent—ensuring disabled plugins are not loaded—without over‑detailing implementation steps, which is precisely the expected scope identification."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-322442",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 1,
+        "domain_type_score": 2,
+        "task_scope_score": 1
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI generated a user story and acceptance criteria about adding timeouts, UI progress indicators, and retry logic for runTests tool calls, which does not match the ground‑truth change that fixes a premature disconnect force‑fail of a live client tool call (PR #322175). The core problem and required fix were not captured.",
+        "requirement_classification_reason": "The AI assigned effort to backend, frontend, and QA, whereas the actual patch only touches backend files (protocolServerHandler.ts and its test). The classification is therefore inaccurate.",
+        "domain_type_reason": "The AI labeled the work as a bug affecting backend/frontend, but the true domain is the core agent‑host backend. It recognized it as a bug but mis‑identified the specific subsystem.",
+        "task_scope_reason": "Instead of focusing on the precise fix (preventing premature disconnects in the protocol server handler), the AI produced a broad list of unrelated tasks (timeouts, UI notifications, retry UI, etc.). This does not reflect the actual scope of the required change."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-322387",
+      "scores": {
+        "feature_recognition_score": 5,
+        "requirement_classification_score": 5,
+        "domain_type_score": 5,
+        "task_scope_score": 4
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI correctly captured the core requirement – adding a mute/hide button to the \"Continue using agent host\" notification – and expressed it in a user story and acceptance criteria that match the ground‑truth behavior.",
+        "requirement_classification_reason": "The change is purely UI‑focused (frontend) with accompanying test updates; the AI assigned FE work and QA verification, which aligns with the actual code changes (no backend work needed).",
+        "domain_type_reason": "The AI identified the domain as AI/Chat UI and classified the work as a new feature (software_feature), matching the expected feature addition for the agent host tip.",
+        "task_scope_reason": "The AI accurately described the overall intent (add a hide button and persist its state) but broke it down into a very granular task list. The evaluation criteria prefer a high‑level scope description, so a slight deduction is given."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-322797",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 1,
+        "domain_type_score": 2,
+        "task_scope_score": 1
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI produced a user story about deduplicating session entries, which does not match the ground‑truth change (session resource aliasing for untitled and real chat sessions). The core problem and acceptance criteria are unrelated to the actual code patch.",
+        "requirement_classification_reason": "The ground‑truth fix is a backend change (implementation of session aliasing) affecting chat service modules. The AI incorrectly split the work into BE, FE, and QA tasks, indicating a mis‑classification of effort.",
+        "domain_type_reason": "The issue is a bug in the chat core domain, but the AI labeled it as a generic \"software_feature\" with UI‑focused labels. While it did include the Bug tag, the domain and type identification are not aligned with the actual change.",
+        "task_scope_reason": "Instead of summarising the high‑level intent (implement session resource aliasing), the AI generated a detailed list of sub‑tasks around deduplication. This does not capture the true scope of the required work."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-322155",
+      "scores": {
+        "feature_recognition_score": 2,
+        "requirement_classification_score": 2,
+        "domain_type_score": 2,
+        "task_scope_score": 2
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI identified a name‑mismatch problem, but it expanded the scope to UI display and visual indicators, which are not part of the actual bug fix. The ground‑truth change only corrects the backend skill name extraction logic and adds a test.",
+        "requirement_classification_reason": "The AI split the work into backend, frontend, and QA tasks, whereas the real change only requires backend code and a unit test. The classification adds unnecessary effort.",
+        "domain_type_reason": "The issue is a bug (wrong skill name from plugins) and the AI labeled it as a new feature with extra UI‑related labels. It missed the primary bug nature of the work.",
+        "task_scope_reason": "Instead of stating the high‑level intent – fix the skill name extraction logic and update the corresponding test – the AI produced a detailed list of sub‑tasks, including UI enhancements that are out of scope."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-323305",
+      "scores": {
+        "feature_recognition_score": 5,
+        "requirement_classification_score": 3,
+        "domain_type_score": 4,
+        "task_scope_score": 4
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI accurately captured the core problem, root cause, and fix, and produced a user story and acceptance criteria that match the ground‑truth behavior of routing default‑chat tool completions by the resolved session URI.",
+        "requirement_classification_reason": "The change is purely backend (agentSideEffects and related agents). The AI added unnecessary frontend (FE) tasks, indicating a mis‑classification of effort.",
+        "domain_type_reason": "The issue is a bug in the agent host; the AI labeled it as a software feature with bugfix labels, which is close but not a perfect match to the bug‑fix domain.",
+        "task_scope_reason": "The AI identified the correct overall intent (fix routing of tool call completions) but broke it into an overly granular list of sub‑tasks, whereas the ground truth focuses on a concise code change and related tests."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-322453",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 2,
+        "domain_type_score": 3,
+        "task_scope_score": 2
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI generated a user story about chat input elements disappearing after clicking “Continue in Agent Host”, which does not match the ground‑truth change (hiding the agent‑host tip when the user manually selects via the picker). The acceptance criteria and tasks are unrelated to the actual code modification.",
+        "requirement_classification_reason": "The AI split the work into Backend, Frontend, and QA tasks, whereas the real change is a small frontend UI tweak plus a unit‑test update. The classification is therefore largely incorrect.",
+        "domain_type_reason": "The AI identified the issue as a bug in the chat UI, which is roughly aligned with the domain (chat UI) and type (bug). However, because the specific behavior to be fixed is different, the classification is only partially correct.",
+        "task_scope_reason": "Instead of focusing on the core intent – hide the agent‑host tip and add the corresponding test – the AI produced a long list of sub‑tasks that address a different symptom. It failed to capture the concise scope of the required change."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-323428",
+      "scores": {
+        "feature_recognition_score": 2,
+        "requirement_classification_score": 3,
+        "domain_type_score": 2,
+        "task_scope_score": 2
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI captured the symptom (custom agent not applied) but missed the core change described in the ground truth, which is about rebasing the selected agent on worktree relocation and restoring from draft on session resume. The acceptance criteria do not reflect these behaviors.",
+        "requirement_classification_reason": "The ground truth involves changes to a backend provider and its tests, so the primary effort is BE. The AI correctly included BE tasks but unnecessarily added FE and QA work, showing only partial alignment.",
+        "domain_type_reason": "The issue is a bug fix (the selected agent is ignored), yet the AI labeled the work as a new feature (software_feature) and did not identify it as a bug in the agent‑host domain.",
+        "task_scope_reason": "Instead of summarizing the overall intent (fix the agent selection handling logic), the AI produced a long list of granular sub‑tasks. The scope should be expressed as a concise description of the required fix."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-323381",
+      "scores": {
+        "feature_recognition_score": 5,
+        "requirement_classification_score": 5,
+        "domain_type_score": 4,
+        "task_scope_score": 3
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI correctly captured the core problem (Open in Editor must also restore the Agent Host chat session) and translated it into a clear user story and acceptance criteria that match the ground‑truth intent and the required behavior change.",
+        "requirement_classification_reason": "It identified the need for backend (protocol URL construction), frontend (UI handling), and QA (tests) work, which aligns with the code changes spanning actions, utils, and tests indicated in the ground truth.",
+        "domain_type_reason": "The AI implicitly placed the work in the \"agent‑host / chat\" domain and labeled it as a Feature, which is correct, though it did not explicitly state the domain/type label.",
+        "task_scope_reason": "The output goes beyond the requested high‑level scope by enumerating many fine‑grained sub‑tasks (BE, FE, QA items). The evaluation criteria asked for the overall intent (WHAT needs to be done) rather than a detailed breakdown, so the scope identification is only partially aligned."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-323634",
+      "scores": {
+        "feature_recognition_score": 5,
+        "requirement_classification_score": 4,
+        "domain_type_score": 3,
+        "task_scope_score": 4
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI correctly identified the core problem (workspace context not restored when revisiting an agent host session) and produced user story, acceptance criteria, and tasks that match the ground‑truth intent of fixing the restored Agent Host workspace context.",
+        "requirement_classification_reason": "The primary work is backend (code changes in session handling), which the AI captured, but it also added unnecessary frontend tasks. The ground truth does not require UI work, so the classification is slightly off.",
+        "domain_type_reason": "The AI placed the work in the correct domain (Agent Host) but labeled the story as a \"software_feature\" while the ground truth indicates a bug fix. This partial mismatch lowers the score.",
+        "task_scope_reason": "The AI identified the overall intent (fixing workspace context restoration) but broke it down into an overly granular task list. The scope is clear, though the level of detail is more than needed."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-318241",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 1,
+        "domain_type_score": 1,
+        "task_scope_score": 1
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI generated a user story and acceptance criteria about preventing duplicate \"Install & Watch\" sessions, which does not match the ground‑truth change that fixes the over‑firing of WorktreeCreatedTaskDispatcher. It failed to capture the actual bug and its logic.",
+        "requirement_classification_reason": "The ground truth only requires a backend code change (fixing WorktreeCreatedTaskDispatcher). The AI incorrectly split the work into backend, frontend, and QA tasks, showing a wrong classification of effort.",
+        "domain_type_reason": "The real change belongs to the sessions core (a bug fix). The AI labeled the work as a new feature with UI changes, which is inaccurate for the domain and requirement type.",
+        "task_scope_reason": "Instead of focusing on the single intent of correcting the over‑firing dispatcher, the AI produced a broad set of unrelated tasks and UI enhancements, missing the core scope of the patch."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-321707",
+      "scores": {
+        "feature_recognition_score": 4,
+        "requirement_classification_score": 5,
+        "domain_type_score": 4,
+        "task_scope_score": 3
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI captured the core problem of mismatched context size between the picker and usage widget and produced relevant acceptance criteria, but it lacked the deeper technical details present in the ground‑truth code changes (e.g., specific state protocols and module interactions).",
+        "requirement_classification_reason": "The AI correctly identified that both backend (state synchronization, agent service) and frontend (widget update, UI feedback) work is required and also listed QA validation, matching the multi‑module nature of the fix.",
+        "domain_type_reason": "It recognized the issue as a UI/UX bug within the VS Code AI/Agent Host domain and labeled it as a feature/bug, which aligns with the ground truth, though it did not explicitly mention the Agent Host module name.",
+        "task_scope_reason": "The output focused heavily on enumerating detailed sub‑tasks (BE, FE, QA) rather than summarizing the high‑level intent (synchronizing picker and usage widget state). The scope description is therefore more granular than required."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-317549",
+      "scores": {
+        "feature_recognition_score": 3,
+        "requirement_classification_score": 4,
+        "domain_type_score": 3,
+        "task_scope_score": 2
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI identified the need to handle SSH passphrase authentication, which matches the core of the ground‑truth fix, but it added unrelated elements (e.g., IdentityAgent UI) and framed the work as a new feature rather than the specific bug‑fix change.",
+        "requirement_classification_reason": "It correctly split the work into backend, frontend, and QA effort, reflecting that the change touches both the remote‑agent host code and the UI/settings layer.",
+        "domain_type_reason": "The ground truth is a bug‑fix (SSH remote agent host passphrase auth), while the AI labeled the work as a feature story and introduced UI configuration, so the domain/type identification is only partially correct.",
+        "task_scope_reason": "The AI produced a detailed list of sub‑tasks instead of summarising the overall intent (fix passphrase handling). The ground truth expects a concise implementation change, so the scope identification is too granular."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-322527",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 1,
+        "domain_type_score": 1,
+        "task_scope_score": 1
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI interpreted the issue as a worktree file‑access bug and produced a user story and acceptance criteria about session worktree handling, which does not match the ground‑truth change that implements a `rebaseUnder` function and customization anchoring in `copilotAgent.ts`.",
+        "requirement_classification_reason": "The ground truth requires a backend code change (implementation in `src/vs/platform/agentHost/node/copilot/copilotAgent.ts` and its test). The AI incorrectly split effort across BE, FE, and QA, showing a mis‑classification of the work.",
+        "domain_type_reason": "The AI labeled the work as a bug in the agents‑window/session domain, whereas the actual change is a core backend feature/bug fix in the Copilot agent platform.",
+        "task_scope_reason": "Instead of identifying the single intent of adding the `rebaseUnder` function and related anchoring logic, the AI generated an extensive list of sub‑tasks unrelated to the required code patch."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-319771",
+      "scores": {
+        "feature_recognition_score": 3,
+        "requirement_classification_score": 2,
+        "domain_type_score": 2,
+        "task_scope_score": 2
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI captured the core idea of fixing per‑turn cost reporting, but it introduced many extra details (OTel, native mode handling, UI formatting) that are not present in the ground‑truth patch, which simply propagates SDK usage to the agent session.",
+        "requirement_classification_reason": "The change is purely backend (agent session code). The AI incorrectly split work into BE, FE and QA, adding frontend tasks that are not required.",
+        "domain_type_reason": "The issue is a bug (incorrect credit reporting). The AI labeled it as a bug but also added a \"software_feature\" type and mixed backend/frontend domains, which does not match the ground truth.",
+        "task_scope_reason": "Instead of focusing on the single intent – propagating Copilot usage from the SDK to the agent session – the AI produced a long list of sub‑tasks across multiple teams, diluting the core scope."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-323283",
+      "scores": {
+        "feature_recognition_score": 5,
+        "requirement_classification_score": 4,
+        "domain_type_score": 2,
+        "task_scope_score": 4
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI correctly captured the core problem (session restore splitting interactions) and produced a user story and acceptance criteria that match the ground‑truth intent of fixing mapSessionEvents to use user turn boundaries.",
+        "requirement_classification_reason": "The primary work is backend (modifying mapSessionEvents), which the AI identified, though it also added FE and QA tasks that are not strictly required by the ground truth.",
+        "domain_type_reason": "The issue is a bug in the agent‑host subsystem, but the AI labeled the story as a \"software_feature\" instead of a Bug, missing the correct requirement type.",
+        "task_scope_reason": "The AI understood the overall scope (fixing turn boundary logic) but broke it down into many detailed sub‑tasks; the ground truth expects a concise description of the fix, so the scope identification is mostly correct but overly granular."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-318891",
+      "scores": {
+        "feature_recognition_score": 2,
+        "requirement_classification_score": 3,
+        "domain_type_score": 4,
+        "task_scope_score": 2
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI produced a generic \"file change history/diff view\" story, which does not match the ground‑truth behavior of showing a per‑turn file‑changes summary for agent‑host chat responses. The core feature was mis‑identified.",
+        "requirement_classification_reason": "The AI split work into backend, frontend, and QA tasks, which is reasonable, but the ground truth primarily involves UI changes and a small backend hook. The classification is broader than needed.",
+        "domain_type_reason": "The AI correctly placed the work in the Agent‑Host / chat UI domain and labeled it as a feature/UI improvement, aligning with the expected domain.",
+        "task_scope_reason": "Instead of summarising the overall intent (show per‑turn file‑change summary), the AI generated a long list of detailed sub‑tasks, missing the high‑level scope focus required."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-321778",
+      "scores": {
+        "feature_recognition_score": 5,
+        "requirement_classification_score": 5,
+        "domain_type_score": 5,
+        "task_scope_score": 4
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI correctly captured the core problem (discount not rendered in AHP model picker) and produced a user story and acceptance criteria that match the ground‑truth behavior of rendering the discount badge, mirroring the desktop implementation.",
+        "requirement_classification_reason": "It identified the need for backend changes (pricing data flow), frontend changes (UI rendering), and QA verification, which aligns with the code changes across pricing, agent host, and provider modules.",
+        "domain_type_reason": "The AI classified the work as a Bug within the Copilot/AI‑host‑process domain, matching the issue type and relevant labels from the ground truth.",
+        "task_scope_reason": "The AI provided a comprehensive set of sub‑tasks, which is useful, but the evaluation criteria prefer a higher‑level scope description rather than an exhaustive task breakdown."
+      },
+      "status": "success"
+    },
+    {
+      "id": "VS-322429",
+      "scores": {
+        "feature_recognition_score": 1,
+        "requirement_classification_score": 1,
+        "domain_type_score": 1,
+        "task_scope_score": 1
+      },
+      "reasons": {
+        "feature_recognition_reason": "The AI created a new feature story about adding exponential backoff retry logic for model refresh, which does not match the ground truth bug fix of cancelling pending model‑refresh retries on shutdown.",
+        "requirement_classification_reason": "The AI assigned backend, frontend, and QA effort, whereas the actual change is a backend bug fix (and a test) with no UI work required.",
+        "domain_type_reason": "The AI labeled the work as a Feature, but the ground truth describes a Bug fix in the agent host code.",
+        "task_scope_reason": "Instead of identifying the single intent of cancelling pending retries on shutdown, the AI produced a detailed list of new tasks unrelated to the required change."
+      },
+      "status": "success"
     }
   ]
 }

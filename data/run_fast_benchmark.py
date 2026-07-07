@@ -59,7 +59,7 @@ def process_issue(item, index, total):
     
     print(f"[{index}/{total}] Researching context for {issue_id}...")
     try:
-        # Bước 1: RAG bằng Python trực tiếp (nhanh vù vù)
+        # Bước 1: RAG bằng Python trực tiếp
         query = f"Title: {title}\nBody: {body}"
         matches = search_context(query=query, n_results=5)
         
@@ -68,12 +68,14 @@ def process_issue(item, index, total):
             meta = match.get("metadata", {})
             file_name = meta.get("file_name", "Unknown File")
             doc = match.get("document", "")
+            if not doc:
+                 doc = match.get("page_content", "")
             context_texts.append(f"--- File: {file_name} ---\n{doc}")
             
         rag_context = "\n\n".join(context_texts) if context_texts else "No relevant context found."
         
         # Cắt bớt RAG context nếu nó quá dài để tránh lỗi vượt quá 8192 tokens của Ollama
-        max_context_chars = 20000 # Khoảng 5000-6000 tokens
+        max_context_chars = 10000 # Khoảng ~3000 tokens an toàn
         if len(rag_context) > max_context_chars:
             rag_context = rag_context[:max_context_chars] + "\n... [TRUNCATED DUE TO CONTEXT LIMIT]"
         
