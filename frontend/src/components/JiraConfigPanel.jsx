@@ -68,22 +68,22 @@ export default function JiraConfigPanel({ projectId }) {
       <form onSubmit={handleSave} className="space-y-4">
         <div>
           <label className="block text-sm font-medium mb-1">{t('config.jira.base_url')}</label>
-          <input type="text" name="base_url" value={config.base_url} onChange={handleChange} placeholder="https://your-domain.atlassian.net" className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
+          <input type="text" name="base_url" value={config.base_url} onChange={handleChange} placeholder={t('config.jira.placeholder_base_url')} className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">{t('config.jira.project_key')}</label>
-          <input type="text" name="project_key" value={config.project_key} onChange={handleChange} placeholder="e.g. ALP" className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
+          <input type="text" name="project_key" value={config.project_key} onChange={handleChange} placeholder={t('config.jira.placeholder_project_key')} className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">{t('config.jira.email')}</label>
-          <input type="email" name="email" value={config.email} onChange={handleChange} placeholder="Email Atlassian" className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
+          <input type="email" name="email" value={config.email} onChange={handleChange} placeholder={t('config.jira.placeholder_email')} className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
         </div>
         <div>
           <label className="block text-sm font-medium mb-1 flex justify-between">
             <span>{t('config.jira.api_token')}</span>
             <a href="https://id.atlassian.com/manage-profile/security/api-tokens" target="_blank" rel="noreferrer" className="text-primary hover:underline font-normal">{t('config.jira.get_token')}</a>
           </label>
-          <input type="password" name="api_token" value={config.api_token} onChange={handleChange} placeholder="Token" className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
+          <input type="password" name="api_token" value={config.api_token} onChange={handleChange} placeholder={t('config.jira.placeholder_api_token')} className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>

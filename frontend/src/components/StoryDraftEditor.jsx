@@ -86,12 +86,12 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
     unansweredQuestions.forEach((q, idx) => {
       const ans = answers[idx]?.trim();
       if (ans) {
-         combinedText += `Câu hỏi: ${q}\nTrả lời: ${ans}\n\n`;
+         combinedText += `${t('story_draft.question_label')}: ${q}\n${t('story_draft.answer_label')}: ${ans}\n\n`;
       }
     });
 
     if (clarificationInput.trim()) {
-       combinedText += `Thông tin bổ sung: ${clarificationInput.trim()}\n`;
+       combinedText += `${t('story_draft.additional_info_label')}: ${clarificationInput.trim()}\n`;
     }
 
     if (!combinedText || isRegenerating) return;
@@ -127,14 +127,14 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
             <span className="material-symbols-outlined text-[24px]" style={{fontVariationSettings: "'FILL' 1"}}>auto_awesome</span>
           </div>
           <div>
-            <h3 className="font-headline-sm text-headline-sm font-bold text-primary">Human Approval</h3>
+            <h3 className="font-headline-sm text-headline-sm font-bold text-primary">{t('story_draft.human_approval')}</h3>
             <p className="text-[12px] text-on-surface-variant font-medium">{t('story_draft.draft_desc')}</p>
           </div>
         </div>
         <div className="flex items-center gap-stack-sm">
           <span className="ai-badge-pulse bg-green-50/80 text-green-700 text-[10px] font-bold px-3 py-1.5 rounded-full border border-green-200 uppercase tracking-widest flex items-center gap-1">
             <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-            AI Generated
+            {t('story_draft.ai_generated')}
           </span>
         </div>
       </div>
@@ -143,7 +143,7 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
         {/* Error/Warning Issues from Evaluator */}
         {evaluation && evaluation.issues && evaluation.issues.length > 0 && !(draft.story_type === 'oversized_request' || draft.planning_status === 'SPLIT_RECOMMENDED') && (
           <div className="bg-red-50 border border-red-200 p-4 rounded-xl text-red-800 text-body-md">
-            <strong>Issues Identified:</strong>
+            <strong>{t('story_draft.issues_identified')}</strong>
             <ul className="list-disc ml-5 mt-2">
               {evaluation.issues.map((issue, i) => <li key={i}>{issue}</li>)}
             </ul>
@@ -204,7 +204,7 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
                 <label className="text-label-md font-bold text-on-surface-variant mb-unit block">{t('story_draft.priority')}</label>
                 <select 
                   className="w-full bg-white/50 border border-outline-variant/50 rounded-xl px-4 py-3 font-bold text-red-600 focus:ring-2 focus:ring-primary/20 outline-none"
-                  value={draft.priority || (priorities.length > 0 ? priorities[0].name : 'Medium')}
+                  value={draft.priority || (priorities.length > 0 ? priorities[0].name : t('story_draft.default_priority'))}
                   onChange={(e) => handleChange('priority', e.target.value)}
                 >
                   {priorities.length > 0 ? (
@@ -213,9 +213,9 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
                     ))
                   ) : (
                     <>
-                      <option value="High">High</option>
-                      <option value="Medium">Medium</option>
-                      <option value="Low">Low</option>
+                      <option value="High">{t('story_draft.priority_high')}</option>
+                      <option value="Medium">{t('story_draft.priority_medium')}</option>
+                      <option value="Low">{t('story_draft.priority_low')}</option>
                     </>
                   )}
                 </select>
@@ -224,7 +224,7 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
 
             <div className="space-y-stack-md">
               <div>
-                <p className="text-label-md font-bold text-on-surface-variant mb-stack-sm uppercase">User Stories</p>
+                <p className="text-label-md font-bold text-on-surface-variant mb-stack-sm uppercase">{t('story_draft.user_stories')}</p>
                 <div className="space-y-2">
                   <textarea 
                     className="w-full p-3 bg-white/40 border border-outline-variant/20 rounded-lg text-body-md focus:ring-2 focus:ring-primary/20 outline-none resize-none h-24"
@@ -235,7 +235,7 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
               </div>
               
               <div>
-                <p className="text-label-md font-bold text-on-surface-variant mb-stack-sm uppercase">Acceptance Criteria</p>
+                <p className="text-label-md font-bold text-on-surface-variant mb-stack-sm uppercase">{t('story_draft.acceptance_criteria')}</p>
                 <div className="space-y-2">
                   {(draft.acceptance_criteria || []).map((ac, i) => (
                     <div key={i} className="flex gap-2">
@@ -253,7 +253,7 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
               </div>
 
               <div>
-                <p className="text-label-md font-bold text-on-surface-variant mb-stack-sm uppercase">Sub-Tasks</p>
+                <p className="text-label-md font-bold text-on-surface-variant mb-stack-sm uppercase">{t('story_draft.sub_tasks')}</p>
                 <div className="space-y-2">
                   {draft.tasks?.be?.map((task, i) => (
                     <div key={`be-${i}`} className="flex items-center gap-2 p-2 bg-white/40 border border-outline-variant/20 rounded-lg">
@@ -420,10 +420,10 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
 
         {actionExecution?.jira && (
           <div className={`p-4 rounded-xl border text-body-md ${actionExecution.jira.executed ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800'}`}>
-            <strong>{actionExecution.jira.executed ? 'Jira issue created.' : 'Jira push failed.'}</strong>
+            <strong>{actionExecution.jira.executed ? t('story_draft.jira_created') : t('story_draft.jira_failed')}</strong>
             {actionExecution.jira.created?.story?.key && (
               <p className="mt-1">
-                Issue: <a className="underline font-bold" href={actionExecution.jira.created.story.url} target="_blank" rel="noreferrer">{actionExecution.jira.created.story.key}</a>
+                {t('story_draft.issue_label')} <a className="underline font-bold" href={actionExecution.jira.created.story.url} target="_blank" rel="noreferrer">{actionExecution.jira.created.story.key}</a>
               </p>
             )}
             {actionExecution.jira.warnings?.length > 0 && (
@@ -436,7 +436,7 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
 
         {actionExecution?.slack && (
           <div className={`p-4 rounded-xl border text-body-md mt-2 ${actionExecution.slack.executed ? 'bg-blue-50 border-blue-200 text-blue-800' : 'bg-amber-50 border-amber-200 text-amber-800'}`}>
-            <strong>{actionExecution.slack.executed ? 'Slack notification sent.' : 'Slack notification failed or skipped.'}</strong>
+            <strong>{actionExecution.slack.executed ? t('story_draft.slack_sent') : t('story_draft.slack_failed')}</strong>
             {actionExecution.slack.warnings?.length > 0 && (
               <ul className="list-disc ml-5 mt-2">
                 {actionExecution.slack.warnings.map((warning, i) => <li key={i}>{warning}</li>)}
@@ -447,10 +447,10 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
 
         {actionExecution?.github && (
           <div className={`p-4 rounded-xl border text-body-md mt-2 ${actionExecution.github.executed ? 'bg-purple-50 border-purple-200 text-purple-800' : 'bg-red-50 border-red-200 text-red-800'}`}>
-            <strong>{actionExecution.github.executed ? 'GitHub feature branch created.' : 'GitHub action failed.'}</strong>
+            <strong>{actionExecution.github.executed ? t('story_draft.github_created') : t('story_draft.github_failed')}</strong>
             {actionExecution.github.created?.branch_url && (
               <p className="mt-1">
-                Branch: <a className="underline font-bold" href={actionExecution.github.created.branch_url} target="_blank" rel="noreferrer">{actionExecution.github.payload?.branch_name || 'View Branch'}</a>
+                {t('story_draft.branch_label')} <a className="underline font-bold" href={actionExecution.github.created.branch_url} target="_blank" rel="noreferrer">{actionExecution.github.payload?.branch_name || t('story_draft.view_branch')}</a>
               </p>
             )}
             {actionExecution.github.warnings?.length > 0 && (

@@ -7,6 +7,12 @@ export default function TeamPanel({ projectId }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const isHighWorkload = (status) => status === 'High' || status === 'Cao';
+  const formatWorkloadStatus = (status) => {
+    if (isHighWorkload(status)) return t('team.high');
+    return status;
+  };
+
   useEffect(() => {
     let intervalId;
     async function loadData(showLoading = false) {
@@ -137,10 +143,10 @@ export default function TeamPanel({ projectId }) {
                     <div className="flex flex-col gap-1">
                       <div className="flex justify-between text-[10px]">
                         <span>{member.type === 'human' ? `${member.workload.current}/${member.workload.total} ${t('team.tickets')}` : `${member.workload.current} ${t('team.tasks_monitor')}`}</span>
-                        <span className={`font-bold ${member.workload.status === 'High' || member.workload.status === 'Cao' ? 'text-error' : 'text-green-600'}`}>{member.workload.status === 'High' ? t('team.high') : member.workload.status}</span>
+                        <span className={`font-bold ${isHighWorkload(member.workload.status) ? 'text-error' : 'text-green-600'}`}>{formatWorkloadStatus(member.workload.status)}</span>
                       </div>
                       <div className="w-24 h-1.5 bg-surface-variant rounded-full">
-                        <div className={`${member.workload.status === 'High' ? 'bg-error' : 'bg-green-500'} h-full rounded-full`} style={{ width: `${member.workload.percentage}%` }}></div>
+                        <div className={`${isHighWorkload(member.workload.status) ? 'bg-error' : 'bg-green-500'} h-full rounded-full`} style={{ width: `${member.workload.percentage}%` }}></div>
                       </div>
                     </div>
                   </td>

@@ -87,7 +87,7 @@ export default function StorySplitManagerModal({
 
     try {
       const response = await generateStoriesAsync({
-        requirement: `Tập trung phân tích và viết Story cho tính năng này: ${splitText}`,
+        requirement: `${t('app.requirement.split_focus_prefix')} ${splitText}`,
         n_results: 5,
         allow_fallback_without_context: true,
         forced_context_docs: forcedContextDocs,
@@ -111,7 +111,7 @@ export default function StorySplitManagerModal({
       });
       setActions(prev => ({ ...prev, jira: newActions.jira }));
     } catch (err) {
-      alert(`${t('split_manager.jira_preview_error')}${err.message}`);
+      alert(`${t('app.actions.jira_preview_error')}${err.message}`);
     }
   };
 
@@ -136,7 +136,7 @@ export default function StorySplitManagerModal({
   const handleClarificationSubmit = async (clarificationText) => {
     if (!clarificationText.trim() || !activeSplitId) return;
 
-    const enrichedRequirement = `Tập trung phân tích và viết Story cho tính năng này: ${activeSplitId}\n\n[Clarification from user]: ${clarificationText}`;
+    const enrichedRequirement = `${t('app.requirement.split_focus_prefix')} ${activeSplitId}\n\n[Clarification from user]: ${clarificationText}`;
     
     setIsLoading(true);
     setGenerationMessage(t('split_manager.ai_reanalyzing'));
@@ -194,7 +194,7 @@ export default function StorySplitManagerModal({
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-3 sidebar-scroll">
               {splits?.map((split, idx) => {
-                const splitTitle = typeof split === 'string' ? split : (split.title || split.name || `Sub-ticket ${idx+1}`);
+                const splitTitle = typeof split === 'string' ? split : (split.title || split.name || `${t('split_manager.sub_ticket')} ${idx + 1}`);
                 const splitDesc = typeof split === 'string' ? '' : (split.description || split.reason || '');
                 const isActive = activeSplitId === splitTitle;
                 const isCompleted = actionExecution?.jira?.executed && isActive;
@@ -263,7 +263,7 @@ export default function StorySplitManagerModal({
                   <div className="bg-error-container text-on-error-container p-6 rounded-2xl flex gap-3 items-start border border-error/20">
                     <span className="material-symbols-outlined text-[24px]">error</span>
                     <div>
-                      <h3 className="font-bold text-lg mb-1">{t('split_manager.generate_error')}</h3>
+                      <h3 className="font-bold text-lg mb-1">{t('app.errors.flow_generation')}</h3>
                       <p className="text-sm">{error}</p>
                       <button 
                         className="mt-4 px-4 py-2 bg-error text-on-error rounded-lg text-sm font-medium"

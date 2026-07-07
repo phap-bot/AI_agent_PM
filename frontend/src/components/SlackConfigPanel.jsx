@@ -65,19 +65,19 @@ export default function SlackConfigPanel({ projectId }) {
             <span>{t('config.slack.webhook_url')}</span>
             <a href="https://api.slack.com/messaging/webhooks" target="_blank" rel="noreferrer" className="text-primary hover:underline font-normal">{t('config.slack.create_webhook')}</a>
           </label>
-          <input type="password" name="webhook_url" value={config.webhook_url} onChange={handleChange} placeholder="https://hooks.slack.com/..." className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
+          <input type="password" name="webhook_url" value={config.webhook_url} onChange={handleChange} placeholder={t('config.slack.placeholder_webhook_url')} className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">{t('config.slack.mention_user_id')}</label>
-          <input type="text" name="mention_user_id" value={config.mention_user_id} onChange={handleChange} placeholder="e.g. U123456" className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
+          <input type="text" name="mention_user_id" value={config.mention_user_id} onChange={handleChange} placeholder={t('config.slack.placeholder_mention_user_id')} className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">{t('config.slack.dev_channel_id')}</label>
-          <input type="text" name="dev_channel_id" value={config.dev_channel_id} onChange={handleChange} placeholder="e.g. C11111" className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
+          <input type="text" name="dev_channel_id" value={config.dev_channel_id} onChange={handleChange} placeholder={t('config.slack.placeholder_dev_channel_id')} className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">{t('config.slack.qa_channel_id')}</label>
-          <input type="text" name="qa_channel_id" value={config.qa_channel_id} onChange={handleChange} placeholder="e.g. C22222" className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
+          <input type="text" name="qa_channel_id" value={config.qa_channel_id} onChange={handleChange} placeholder={t('config.slack.placeholder_qa_channel_id')} className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
         </div>
         
         <button type="submit" disabled={saving} className="mt-4 px-4 py-2 bg-primary text-on-primary rounded-lg font-medium disabled:opacity-50 flex items-center gap-2">

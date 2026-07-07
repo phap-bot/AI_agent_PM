@@ -57,6 +57,7 @@ export default function DashboardPanel({ projectId }) {
   const sb = data?.statusBreakdown || { todo: 0, in_progress: 0, done: 0 };
   const totalIssues = sb.todo + sb.in_progress + sb.done;
   const burndownMax = Math.max(totalIssues, 1);
+  const notAvailable = t('common.not_available');
 
   return (
     <div className="flex-1 overflow-y-auto p-container-padding custom-scrollbar">
@@ -82,7 +83,7 @@ export default function DashboardPanel({ projectId }) {
         </div>
         <div className="text-right">
           <p className="font-label-md text-on-surface-variant">{t('dashboard.estimated_finish')}</p>
-          <p className="font-headline-sm text-headline-sm text-on-surface">{data?.sprintEndDate || '--'}</p>
+          <p className="font-headline-sm text-headline-sm text-on-surface">{data?.sprintEndDate || notAvailable}</p>
         </div>
       </section>
 
@@ -96,7 +97,7 @@ export default function DashboardPanel({ projectId }) {
           </div>
           <div className="mt-4 flex items-center gap-1 text-tertiary font-label-md">
             <span className="material-symbols-outlined text-sm">trending_up</span>
-            <span>{data?.totalTicketsTrend || '--'}</span>
+            <span>{data?.totalTicketsTrend || notAvailable}</span>
           </div>
         </div>
 
@@ -284,21 +285,21 @@ export default function DashboardPanel({ projectId }) {
                   <div className={`w-2 h-2 rounded-full ${data?.agentHealth?.researcher === 'Active' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-amber-500 animate-pulse'}`}></div>
                   <span className="font-body-md">{t('dashboard.researcher_agent')}</span>
                 </div>
-                <span className="font-mono-sm text-on-surface-variant">{data?.agentHealth?.researcher || '...'}</span>
+                <span className="font-mono-sm text-on-surface-variant">{data?.agentHealth?.researcher || notAvailable}</span>
               </div>
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
                   <div className={`w-2 h-2 rounded-full ${data?.agentHealth?.planner === 'Active' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-amber-500 animate-pulse'}`}></div>
                   <span className="font-body-md">{t('dashboard.planner_agent')}</span>
                 </div>
-                <span className="font-mono-sm text-on-surface-variant">{data?.agentHealth?.planner || '...'}</span>
+                <span className="font-mono-sm text-on-surface-variant">{data?.agentHealth?.planner || notAvailable}</span>
               </div>
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
                   <div className={`w-2 h-2 rounded-full ${data?.agentHealth?.evaluator === 'Active' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-amber-500 animate-pulse'}`}></div>
                   <span className="font-body-md">{t('dashboard.evaluator_agent')}</span>
                 </div>
-                <span className="font-mono-sm text-on-surface-variant">{data?.agentHealth?.evaluator || '...'}</span>
+                <span className="font-mono-sm text-on-surface-variant">{data?.agentHealth?.evaluator || notAvailable}</span>
               </div>
             </div>
           </div>

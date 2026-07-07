@@ -17,12 +17,14 @@ import AnalyticsPanel from './components/AnalyticsPanel';
 import TeamPanel from './components/TeamPanel';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './components/LanguageSwitcher';
+import LandingPage from './components/LandingPage';
 
 const GENERATE_POLL_INITIAL_MS = 3000;
 const GENERATE_POLL_MAX_MS = 10000;
 
 function App() {
   const { t } = useTranslation();
+  const [showLanding, setShowLanding] = useState(() => localStorage.getItem('skipLanding') !== 'true');
   const [currentView, setCurrentView] = useState('dashboard');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -35,7 +37,7 @@ function App() {
   const [isPushingJira, setIsPushingJira] = useState(false);
   const [showSplitModal, setShowSplitModal] = useState(false);
   
-  const [sprintName, setSprintName] = useState('Đang tải...');
+  const [sprintName, setSprintName] = useState(t('common.loading'));
 
   const [generateJobId, setGenerateJobId] = useState(null);
   const [generationMessage, setGenerationMessage] = useState('');
@@ -54,6 +56,12 @@ function App() {
   const [showDeleteProjectConfirm, setShowDeleteProjectConfirm] = useState(false);
 
   const [historyItemView, setHistoryItemView] = useState(null);
+
+  const handleEnterApp = () => {
+    localStorage.setItem('skipLanding', 'true');
+    setShowLanding(false);
+    setCurrentView('project');
+  };
 
   useEffect(() => {
     localStorage.setItem('activeProjectId', activeProjectId);
@@ -92,7 +100,7 @@ function App() {
       setNewProjectName('');
       clearWorkspace();
     } catch (err) {
-      alert("Error creating project: " + err.message);
+      alert(`${t('app.project_modal.create_error')}${err.message}`);
     }
   };
 
@@ -104,7 +112,7 @@ function App() {
       setShowEditProject(false);
       setEditProjectName('');
     } catch (err) {
-      alert("Error updating project: " + err.message);
+      alert(`${t('app.project_modal.update_error')}${err.message}`);
     }
   };
 
@@ -124,7 +132,7 @@ function App() {
       setActions(null);
       setHistoryItemView(null);
     } catch (err) {
-      alert("Error deleting project: " + err.message);
+      alert(`${t('app.project_modal.delete_error')}${err.message}`);
     }
   };
 
@@ -201,18 +209,18 @@ function App() {
         if (data && data.sprint && data.sprint.name) {
           setSprintName(data.sprint.name);
         } else {
-          setSprintName('Backlog');
+          setSprintName(t('sprint_board.backlog'));
         }
       } catch (err) {
-        setSprintName('Backlog');
+        setSprintName(t('sprint_board.backlog'));
       }
     }
     loadSprintName();
-  }, [activeProjectId]);
+  }, [activeProjectId, t]);
 
   const handleGenerate = async (requestPayload) => {
     if (lastRequirement === requestPayload.requirement) {
-      alert("Yêu cầu này đã được phân tích. Vui lòng thay đổi nội dung yêu cầu nếu bạn muốn chạy lại!");
+      alert(t('app.requirement.duplicate_alert'));
       return;
     }
     
@@ -222,7 +230,7 @@ function App() {
 
     setLastRequirement(requestPayload.requirement);
     setIsLoading(true);
-    setGenerationMessage('Đang khởi tạo Agent...');
+    setGenerationMessage(t('app.requirement.initializing_agent'));
     setError(null);
     setContext(null);
     setStoryDraft(null);
@@ -270,7 +278,7 @@ function App() {
       });
       setActions(prev => ({ ...prev, jira: newActions.jira }));
     } catch (err) {
-      alert(`Jira Preview Error: ${err.message}`);
+      alert(`${t('app.actions.jira_preview_error')}${err.message}`);
     }
   };
 
@@ -286,7 +294,7 @@ function App() {
       });
       setActionExecution(result);
     } catch (err) {
-      alert(`Execute Error: ${err.message}`);
+      alert(`${t('app.actions.execute_error')}${err.message}`);
     } finally {
       setIsPushingJira(false);
     }
@@ -307,39 +315,55 @@ function App() {
   const displayStoryDraft = historyItemView ? normalizeStoryDraft(historyItemView.result?.story, "") : storyDraft;
   const displayEvaluation = historyItemView?.result?.evaluation || evaluation;
   const displayActions = historyItemView?.result?.actions || actions;
+  const topNavClass = (view) => `cursor-pointer rounded-full px-3.5 py-1.5 font-label-md text-label-md transition-all ${
+    currentView === view ? 'bg-slate-200 text-slate-950 shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-950'
+  }`;
+  const sideNavClass = (view) => `flex min-h-10 cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 font-label-md text-label-md transition-all ${
+    currentView === view ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950'
+  }`;
+  const mobileNavClass = (view) => `flex flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 text-[10px] font-black transition ${
+    currentView === view ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-500'
+  }`;
+
+  if (showLanding) {
+    return <LandingPage onEnterApp={handleEnterApp} />;
+  }
 
   return (
     <>
       {/* Top Navigation Bar */}
-      <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-page h-16 bg-surface border-b border-outline-variant">
+      <header className="fixed left-0 top-0 z-50 flex h-14 w-full items-center justify-between gap-3 border-b border-slate-200 bg-white/90 px-3 shadow-sm backdrop-blur-xl sm:px-5">
         <div className="flex items-center gap-gutter">
-          <span className="text-headline-md font-headline-md font-bold text-primary">AI Scrum Master</span>
+          <div className="flex items-center gap-3">
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-slate-800 text-sm font-black text-white shadow-sm">AI</span>
+            <span className="hidden text-headline-sm font-black tracking-[-0.03em] text-slate-950 sm:inline">AI Scrum Master</span>
+          </div>
           <nav className="hidden md:flex items-center gap-stack-lg ml-stack-lg">
             <a 
               onClick={() => setCurrentView('dashboard')}
-              className={`cursor-pointer font-label-md text-label-md transition-colors ${currentView === 'dashboard' ? 'text-primary border-b-2 border-primary pb-1' : 'text-on-surface-variant hover:text-primary'}`}>
-              Dashboard
+              className={topNavClass('dashboard')}>
+              {t('header.dashboard')}
             </a>
             <a 
               onClick={() => setCurrentView('analytics')}
-              className={`cursor-pointer font-label-md text-label-md transition-colors ${currentView === 'analytics' ? 'text-primary border-b-2 border-primary pb-1' : 'text-on-surface-variant hover:text-primary'}`}>
-              Analytics
+              className={topNavClass('analytics')}>
+              {t('header.analytics')}
             </a>
             <a 
               onClick={() => setCurrentView('team')}
-              className={`cursor-pointer font-label-md text-label-md transition-colors ${currentView === 'team' ? 'text-primary border-b-2 border-primary pb-1' : 'text-on-surface-variant hover:text-primary'}`}>
-              Team
+              className={topNavClass('team')}>
+              {t('header.team')}
             </a>
             <a 
               onClick={() => setCurrentView('project')}
-              className={`cursor-pointer font-label-md text-label-md transition-colors ${currentView === 'project' ? 'text-primary border-b-2 border-primary pb-1' : 'text-on-surface-variant hover:text-primary'}`}>
-              SmartLib
+              className={topNavClass('project')}>
+              {t('header.smart_lib')}
             </a>
           </nav>
         </div>
-        <div className="flex items-center gap-stack-md">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-stack-md">
           <div className="relative flex items-center gap-2">
-            <span className="text-sm font-medium text-on-surface-variant">{t('header.project')}</span>
+            <span className="hidden text-sm font-medium text-on-surface-variant sm:inline">{t('header.project')}</span>
             <ProjectDropdown
               projects={projects}
               activeProjectId={activeProjectId}
@@ -361,19 +385,23 @@ function App() {
             onClick={async () => {
               try {
                 const res = await createSprint(activeProjectId);
-                alert(`Sprint created successfully: ${res.sprint?.name || 'Success'}`);
+                alert(`${t('app.sprint.create_success')}${res.sprint?.name || t('common.success')}`);
                 setCurrentView('sprint');
               } catch (err) {
-                alert(`Failed to create sprint: ${err.message}`);
+                alert(`${t('app.sprint.create_error')}${err.message}`);
               }
             }}
-            className="bg-primary text-on-primary px-container-padding py-unit rounded-lg font-label-md text-label-md hover:opacity-80 transition-all active:scale-95"
+            className="hidden min-h-9 rounded-xl bg-slate-800 px-4 py-2 text-sm font-bold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-slate-900 active:scale-95 sm:inline-flex"
           >
             {t('header.create_sprint')}
           </button>
-          <span className="material-symbols-outlined text-on-surface-variant cursor-pointer">notifications</span>
-          <span className="material-symbols-outlined text-on-surface-variant cursor-pointer">help</span>
-          <div className="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant">
+          <button className="hidden h-9 w-9 place-items-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-950 sm:grid" aria-label="Notifications">
+            <span className="material-symbols-outlined text-[20px]">notifications</span>
+          </button>
+          <button className="hidden h-9 w-9 place-items-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-950 sm:grid" aria-label="Help">
+            <span className="material-symbols-outlined text-[20px]">help</span>
+          </button>
+          <div className="hidden h-9 w-9 overflow-hidden rounded-xl border border-slate-200 bg-slate-100 shadow-sm sm:block">
             <img alt="User Profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYLpMm5rS4oPHKfptYorn3ApjUs8EZPpCiEzO6kWs7aHZGTK176msotL21zBJVMhIgNI-1QVAxie2jLek8BtYiteof08JuddF16FyFtG5Ry6qDpT-e69yiO3cZ3I5Pvj-EAmMkiy8tdPP8f94I3ml1VchqTIWNTSMNiTN1mRlS1L3LPq_jv7XLjRE3omju28JBSAsCVWHKPFmU-Hp5RcY1BBDtczB7dUta3AtL_4LDrEBxkoK5XJRhcyw3bp-tSursPTXAw2J0Yys" />
           </div>
         </div>
@@ -383,11 +411,11 @@ function App() {
       {showCreateProject && (
         <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center">
           <div className="bg-surface rounded-xl p-6 w-[400px] shadow-xl border border-outline-variant">
-            <h3 className="text-xl font-bold mb-4">Tạo dự án mới</h3>
+            <h3 className="text-xl font-bold mb-4">{t('app.project_modal.create_title')}</h3>
             <input 
               autoFocus
               className="w-full px-3 py-2 border border-outline-variant rounded-lg mb-4 focus:outline-none focus:border-primary"
-              placeholder="Nhập tên dự án..."
+              placeholder={t('app.project_modal.create_placeholder')}
               value={newProjectName}
               onChange={e => setNewProjectName(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleCreateProject()}
@@ -397,13 +425,13 @@ function App() {
                 className="px-4 py-2 rounded-lg font-medium text-on-surface-variant hover:bg-surface-container-high"
                 onClick={() => setShowCreateProject(false)}
               >
-                Hủy
+                {t('common.cancel')}
               </button>
               <button 
                 className="px-4 py-2 bg-primary text-on-primary rounded-lg font-medium"
                 onClick={handleCreateProject}
               >
-                Tạo mới
+                {t('app.project_modal.create_confirm')}
               </button>
             </div>
           </div>
@@ -414,11 +442,11 @@ function App() {
       {showEditProject && (
         <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center">
           <div className="bg-surface rounded-xl p-6 w-[400px] shadow-xl border border-outline-variant">
-            <h3 className="text-xl font-bold mb-4">Đổi tên dự án</h3>
+            <h3 className="text-xl font-bold mb-4">{t('app.project_modal.edit_title')}</h3>
             <input 
               autoFocus
               className="w-full px-3 py-2 border border-outline-variant rounded-lg mb-4 focus:outline-none focus:border-primary"
-              placeholder="Nhập tên mới..."
+              placeholder={t('app.project_modal.edit_placeholder')}
               value={editProjectName}
               onChange={e => setEditProjectName(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleUpdateProject()}
@@ -428,13 +456,13 @@ function App() {
                 className="px-4 py-2 rounded-lg font-medium text-on-surface-variant hover:bg-surface-container-high"
                 onClick={() => setShowEditProject(false)}
               >
-                Hủy
+                {t('common.cancel')}
               </button>
               <button 
                 className="px-4 py-2 bg-primary text-on-primary rounded-lg font-medium"
                 onClick={handleUpdateProject}
               >
-                Lưu thay đổi
+                {t('app.project_modal.edit_confirm')}
               </button>
             </div>
           </div>
@@ -445,22 +473,22 @@ function App() {
       {showDeleteProjectConfirm && (
         <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center">
           <div className="bg-surface rounded-xl p-6 w-[400px] shadow-xl border border-outline-variant">
-            <h3 className="text-xl font-bold mb-2 text-error">Xóa dự án</h3>
+            <h3 className="text-xl font-bold mb-2 text-error">{t('app.project_modal.delete_title')}</h3>
             <p className="text-on-surface-variant mb-6 text-sm">
-              Bạn có chắc chắn muốn xóa dự án này? Thao tác này không thể hoàn tác.
+              {t('app.project_modal.delete_message')}
             </p>
             <div className="flex justify-end gap-2">
               <button 
                 className="px-4 py-2 rounded-lg font-medium text-on-surface-variant hover:bg-surface-container-high"
                 onClick={() => setShowDeleteProjectConfirm(false)}
               >
-                Hủy
+                {t('common.cancel')}
               </button>
               <button 
                 className="px-4 py-2 bg-error text-on-error rounded-lg font-medium hover:opacity-90"
                 onClick={handleDeleteProject}
               >
-                Xóa vĩnh viễn
+                {t('app.project_modal.delete_confirm')}
               </button>
             </div>
           </div>
@@ -468,33 +496,35 @@ function App() {
       )}
 
       {/* Side Navigation Bar */}
-      <aside className="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 bg-surface-container-low border-r border-outline-variant flex flex-col p-stack-md z-40">
-        <div className="flex items-center gap-stack-sm mb-stack-lg p-stack-sm">
-          <div className="w-10 h-10 rounded bg-primary-container flex items-center justify-center text-on-primary-container">
+      <aside className="fixed left-0 top-14 z-40 hidden h-[calc(100vh-56px)] w-56 flex-col border-r border-slate-200 bg-white/85 p-3 shadow-sm backdrop-blur-xl md:flex">
+        <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-100 p-3">
+          <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-800 text-white shadow-sm">
             <span className="material-symbols-outlined" style={{fontVariationSettings: "'FILL' 1"}}>folder_open</span>
           </div>
           <div>
-            <p className="font-headline-sm text-headline-sm font-extrabold text-primary">SmartLib</p>
-            <p className="font-label-md text-label-md text-on-surface-variant">{sprintName}</p>
+            <p className="font-headline-sm text-headline-sm font-black text-slate-950">{t('header.smart_lib')}</p>
+            <p className="font-label-md text-label-md text-slate-500">{sprintName}</p>
+          </div>
           </div>
         </div>
         <nav className="flex-1 overflow-y-auto sidebar-scroll space-y-unit">
-          <p className="text-[10px] uppercase tracking-wider font-bold text-outline px-stack-sm mb-unit">{t('sidebar.main')}</p>
+          <p className="px-3 pb-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t('sidebar.main')}</p>
           <a 
-            className={`flex items-center gap-stack-sm p-stack-sm rounded-lg font-label-md text-label-md cursor-pointer transition-colors ${currentView === 'project' ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container-high'}`}
+            className={sideNavClass('project')}
             onClick={() => setCurrentView('project')}
           >
             <span className="material-symbols-outlined">folder_open</span> {t('sidebar.projects')}
           </a>
           <a 
-            className={`flex items-center gap-stack-sm p-stack-sm rounded-lg font-label-md text-label-md cursor-pointer transition-colors ${currentView === 'sprint' ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container-high'}`}
+            className={sideNavClass('sprint')}
             onClick={() => setCurrentView('sprint')}
           >
             <span className="material-symbols-outlined">skateboarding</span> {t('sidebar.sprint')}
           </a>
-          <p className="text-[10px] uppercase tracking-wider font-bold text-outline px-stack-sm mt-stack-md mb-unit">{t('sidebar.settings')}</p>
+          <p className="mt-5 px-3 pb-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t('sidebar.settings')}</p>
           <div 
-            className={`flex items-center justify-between p-stack-sm rounded-lg font-label-md text-label-md cursor-pointer transition-colors ${currentView === 'config_jira' ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container-high'}`}
+            className={sideNavClass('config_jira')}
             onClick={() => setCurrentView('config_jira')}
           >
             <div className="flex items-center gap-stack-sm">
@@ -502,7 +532,7 @@ function App() {
             </div>
           </div>
           <div 
-            className={`flex items-center justify-between p-stack-sm rounded-lg font-label-md text-label-md cursor-pointer transition-colors ${currentView === 'config_slack' ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container-high'}`}
+            className={sideNavClass('config_slack')}
             onClick={() => setCurrentView('config_slack')}
           >
             <div className="flex items-center gap-stack-sm">
@@ -510,48 +540,67 @@ function App() {
             </div>
           </div>
           <div 
-            className={`flex items-center justify-between p-stack-sm rounded-lg font-label-md text-label-md cursor-pointer transition-colors ${currentView === 'config_github' ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container-high'}`}
+            className={sideNavClass('config_github')}
             onClick={() => setCurrentView('config_github')}
           >
             <div className="flex items-center gap-stack-sm">
               <span className="material-symbols-outlined">code</span> {t('sidebar.github_config')}
             </div>
           </div>
-          <p className="text-[10px] uppercase tracking-wider font-bold text-outline px-stack-sm mt-stack-md mb-unit">{t('sidebar.history')}</p>
+          <p className="mt-5 px-3 pb-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t('sidebar.history')}</p>
           <a 
-            className={`flex items-center gap-stack-sm p-stack-sm rounded-lg font-label-md text-label-md cursor-pointer transition-colors ${currentView === 'history' ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container-high'}`}
+            className={sideNavClass('history')}
             onClick={() => setCurrentView('history')}
           >
             <span className="material-symbols-outlined">history</span> {t('sidebar.query_history')}
           </a>
         </nav>
-        <div className="mt-auto border-t border-outline-variant pt-stack-md flex flex-col gap-2">
+        <div className="mt-auto flex flex-col gap-2 border-t border-slate-200 pt-4">
           <div className="px-stack-sm mb-2">
             <LanguageSwitcher />
           </div>
-          <a className="flex items-center gap-stack-sm p-stack-sm text-on-surface-variant hover:bg-surface-container-high rounded-lg font-label-md text-label-md">
+          <a className="flex min-h-10 items-center gap-3 rounded-xl px-3 py-2 font-label-md text-label-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-950">
             <span className="material-symbols-outlined">help</span> {t('sidebar.help')}
           </a>
-          <a className="flex items-center gap-stack-sm p-stack-sm text-error hover:bg-error-container rounded-lg font-label-md text-label-md">
+          <a className="flex min-h-10 items-center gap-3 rounded-xl px-3 py-2 font-label-md text-label-md text-red-600 transition hover:bg-red-50">
             <span className="material-symbols-outlined">logout</span> {t('sidebar.logout')}
           </a>
         </div>
       </aside>
 
-      <main className="ml-64 mt-16 p-margin-page min-h-[calc(100vh-64px)]">
+      <nav className="fixed bottom-3 left-3 right-3 z-50 flex gap-2 rounded-[24px] border border-slate-200 bg-white/90 p-2 shadow-xl shadow-slate-950/10 backdrop-blur-xl md:hidden" aria-label="Mobile navigation">
+        <button className={mobileNavClass('dashboard')} onClick={() => setCurrentView('dashboard')}>
+          <span className="material-symbols-outlined text-[20px]">dashboard</span>
+          {t('header.dashboard')}
+        </button>
+        <button className={mobileNavClass('project')} onClick={() => setCurrentView('project')}>
+          <span className="material-symbols-outlined text-[20px]">folder_open</span>
+          {t('header.smart_lib')}
+        </button>
+        <button className={mobileNavClass('sprint')} onClick={() => setCurrentView('sprint')}>
+          <span className="material-symbols-outlined text-[20px]">skateboarding</span>
+          {t('sidebar.sprint')}
+        </button>
+        <button className={mobileNavClass('history')} onClick={() => setCurrentView('history')}>
+          <span className="material-symbols-outlined text-[20px]">history</span>
+          {t('sidebar.history')}
+        </button>
+      </nav>
+
+      <main className="mt-14 min-h-[calc(100vh-56px)] bg-[radial-gradient(circle_at_18%_0%,rgba(71,85,105,0.10),transparent_28%),linear-gradient(180deg,#f3f4f6_0%,#f8fafc_44%,#ffffff_100%)] p-4 pb-28 md:ml-56 lg:p-5 xl:p-6">
         <div style={{ display: currentView === 'project' ? 'block' : 'none' }}>
-            <div className="space-y-stack-lg">
+            <div className="mx-auto max-w-7xl space-y-6">
               {historyItemView && (
                 <div className="bg-primary/10 text-primary p-4 rounded-xl flex items-center justify-between border border-primary/20">
                   <div>
-                    <h3 className="font-bold">Đang xem lịch sử</h3>
-                    <p className="text-sm">Bạn đang xem một bản phân tích từ lịch sử. Phiên làm việc hiện tại của bạn đã được ẩn đi.</p>
+                    <h3 className="font-bold">{t('app.history_view.title')}</h3>
+                    <p className="text-sm">{t('app.history_view.description')}</p>
                   </div>
                   <button 
                     onClick={() => setHistoryItemView(null)}
                     className="px-4 py-2 bg-primary text-on-primary rounded-lg font-medium text-sm hover:opacity-90 transition-opacity"
                   >
-                    Quay lại dự án đang chạy
+                    {t('app.history_view.back_to_current')}
                   </button>
                 </div>
               )}
@@ -567,7 +616,7 @@ function App() {
                   <div className="bg-error-container text-on-error-container p-4 rounded-xl shadow-sm border border-error/20 flex gap-3">
                     <span className="material-symbols-outlined text-error">error</span>
                     <div>
-                      <h3 className="font-bold">Lỗi sinh luồng</h3>
+                      <h3 className="font-bold">{t('app.errors.flow_generation')}</h3>
                       <p className="text-sm">{error}</p>
                     </div>
                   </div>
@@ -587,7 +636,7 @@ function App() {
                   onProvideClarification={handleClarificationSubmit}
                   onSelectSplit={(splitText) => {
                     handleGenerate({
-                      requirement: `Tập trung phân tích và viết Story cho tính năng này: ${splitText}`,
+                      requirement: `${t('app.requirement.split_focus_prefix')} ${splitText}`,
                       n_results: 5,
                       allow_fallback_without_context: true,
                       forced_context_docs: forcedContextDocs,

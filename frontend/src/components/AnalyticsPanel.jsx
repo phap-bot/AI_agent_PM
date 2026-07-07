@@ -7,6 +7,7 @@ export default function AnalyticsPanel({ projectId }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [animate, setAnimate] = useState(false);
+  const notAvailable = t('common.not_available');
 
   useEffect(() => {
     let intervalId;
@@ -66,7 +67,7 @@ export default function AnalyticsPanel({ projectId }) {
             </div>
             <div className="text-right">
               <span className="text-display-lg font-bold text-primary">{data?.accuracy || 0}%</span>
-              <p className="text-label-md text-on-surface-variant">{data?.accuracyTrend || '--'}</p>
+              <p className="text-label-md text-on-surface-variant">{data?.accuracyTrend || notAvailable}</p>
               {data?.jiraConnected && (
                 <span className="mt-1 inline-flex px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-[10px] font-bold border border-green-200 gap-1 items-center">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
@@ -98,9 +99,9 @@ export default function AnalyticsPanel({ projectId }) {
                 <div key={i} className="flex justify-between items-end border-b border-outline-variant pb-2">
                   <span className="font-body-md">{tv.name}</span>
                   <div className="text-right">
-                    <span className="font-headline-sm text-primary">{tv.pts} <span className="text-label-md text-on-surface-variant font-normal">{t('analytics.pts')}</span></span>
+                    <span className="font-headline-sm text-primary">{tv.pts} <span className="text-label-md text-on-surface-variant font-normal">{t('dashboard.pts')}</span></span>
                     {tv.total_pts > 0 && (
-                      <p className="text-[10px] text-on-surface-variant">{tv.done_pts?.toFixed(0) || 0}/{tv.total_pts?.toFixed(0) || 0} SP</p>
+                      <p className="text-[10px] text-on-surface-variant">{tv.done_pts?.toFixed(0) || 0}/{tv.total_pts?.toFixed(0) || 0} {t('dashboard.sp')}</p>
                     )}
                   </div>
                 </div>
@@ -223,12 +224,12 @@ export default function AnalyticsPanel({ projectId }) {
                   <td className="p-4">
                     {(item.done > 0 || item.in_progress > 0 || item.todo > 0) ? (
                       <div className="flex gap-1 items-center text-[11px]">
-                        <span className="px-1.5 py-0.5 rounded bg-green-100 text-green-700 font-bold">{item.done} {t('analytics.done')}</span>
-                        <span className="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-bold">{item.in_progress} {t('analytics.wip')}</span>
-                        <span className="px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 font-bold">{item.todo} {t('analytics.todo')}</span>
+                        <span className="px-1.5 py-0.5 rounded bg-green-100 text-green-700 font-bold">{item.done} {t('dashboard.done')}</span>
+                        <span className="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-bold">{item.in_progress} {t('dashboard.wip')}</span>
+                        <span className="px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 font-bold">{item.todo} {t('dashboard.todo')}</span>
                       </div>
                     ) : (
-                      <span className="text-on-surface-variant text-sm">--</span>
+                      <span className="text-on-surface-variant text-sm">{notAvailable}</span>
                     )}
                   </td>
                   <td className="p-4">

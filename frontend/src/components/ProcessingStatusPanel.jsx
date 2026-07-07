@@ -19,7 +19,7 @@ export default function ProcessingStatusPanel({ isLoading, context, storyDraft, 
       {/* Researcher Card */}
       <div className={`bg-white/80 backdrop-blur-sm rounded-xl border border-outline-variant p-stack-md border-l-4 shadow-sm transition-all hover:shadow-md ${isResearcherDone ? 'border-l-blue-500' : 'border-l-gray-300'}`}>
         <div className="flex items-center justify-between mb-unit">
-          <span className="text-label-md font-label-md text-outline uppercase tracking-wider">Researcher</span>
+          <span className="text-label-md font-label-md text-outline uppercase tracking-wider">{t('processing_status.researcher')}</span>
           {isResearcherDone && !isResearcherEmpty && (
              <span className="material-symbols-outlined text-blue-500 text-[20px]" style={{fontVariationSettings: "'FILL' 1"}}>verified</span>
           )}
@@ -36,10 +36,10 @@ export default function ProcessingStatusPanel({ isLoading, context, storyDraft, 
               <ul className="list-decimal pl-4 mb-2 space-y-1">
                 {context?.retrieved_sources?.map((src, idx) => (
                   <li key={idx} className="text-xs text-gray-700">
-                    <span className="font-medium">{src.source} <span className="text-gray-400 font-normal">(Chunk {src.chunk_index !== undefined ? src.chunk_index : '?'})</span></span>
+                    <span className="font-medium">{src.source} <span className="text-gray-400 font-normal">({t('processing_status.chunk_label')} {src.chunk_index !== undefined ? src.chunk_index : '?'})</span></span>
                     <span className="text-gray-500">
-                      {' '}– score: {src.score != null ? Number(src.score).toFixed(2) : 'N/A'} 
-                      {' '}– {src.score < 0.5 ? t('processing_status.low_relevance') : t('processing_status.high_relevance')}
+                      {' '} - {t('processing_status.score_label')}: {src.score != null ? Number(src.score).toFixed(2) : t('common.not_available')}
+                      {' '} - {src.score < 0.5 ? t('processing_status.low_relevance') : t('processing_status.high_relevance')}
                     </span>
                   </li>
                 ))}
@@ -57,7 +57,7 @@ export default function ProcessingStatusPanel({ isLoading, context, storyDraft, 
           </p>
         )}
         <div className={`mt-2 text-[10px] font-bold ${isResearcherDone ? 'text-blue-400' : 'text-gray-400'}`}>
-          {isResearcherDone ? 'COMPLETED' : 'PENDING'}
+          {isResearcherDone ? t('processing_status.completed') : t('processing_status.pending')}
         </div>
       </div>
 
@@ -65,7 +65,7 @@ export default function ProcessingStatusPanel({ isLoading, context, storyDraft, 
       <div className={`bg-white/80 backdrop-blur-sm rounded-xl border border-outline-variant p-stack-md border-l-4 relative overflow-hidden shadow-sm transition-all hover:shadow-md ${isPlannerDone ? 'border-l-primary' : (isPlannerWorking ? 'border-l-primary' : 'border-l-gray-300')}`}>
         {isPlannerWorking && <div className="absolute top-0 left-0 w-full h-1 shimmer-bg"></div>}
         <div className="flex items-center justify-between mb-unit">
-          <span className="text-label-md font-label-md text-outline uppercase tracking-wider">Planner</span>
+          <span className="text-label-md font-label-md text-outline uppercase tracking-wider">{t('processing_status.planner')}</span>
           {isPlannerWorking && (
             <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
           )}
@@ -86,9 +86,9 @@ export default function ProcessingStatusPanel({ isLoading, context, storyDraft, 
               <div className="h-1 bg-primary/20 rounded-full flex-1"></div>
             </>
           ) : isPlannerDone ? (
-            <div className="mt-2 text-[10px] text-primary font-bold">COMPLETED</div>
+            <div className="mt-2 text-[10px] text-primary font-bold">{t('processing_status.completed')}</div>
           ) : (
-            <div className="mt-2 text-[10px] text-gray-400 font-bold">PENDING</div>
+            <div className="mt-2 text-[10px] text-gray-400 font-bold">{t('processing_status.pending')}</div>
           )}
         </div>
       </div>
@@ -96,7 +96,7 @@ export default function ProcessingStatusPanel({ isLoading, context, storyDraft, 
       {/* Evaluator Card */}
       <div className={`bg-white/80 backdrop-blur-sm rounded-xl border border-outline-variant p-stack-md border-l-4 shadow-sm transition-all hover:shadow-md ${isEvaluatorDone ? (evaluatorStatus === 'APPROVED' ? 'border-l-green-500' : 'border-l-orange-500') : 'border-l-gray-300'}`}>
         <div className="flex items-center justify-between mb-unit">
-          <span className="text-label-md font-label-md text-outline uppercase tracking-wider">Evaluator</span>
+          <span className="text-label-md font-label-md text-outline uppercase tracking-wider">{t('processing_status.evaluator')}</span>
           {isEvaluatorDone && (
             <span className={`material-symbols-outlined text-[20px] ${evaluatorStatus === 'APPROVED' ? 'text-green-500' : 'text-orange-500'}`} style={{fontVariationSettings: "'FILL' 1"}}>
               {evaluatorStatus === 'APPROVED' ? 'task_alt' : 'warning'}
@@ -112,7 +112,7 @@ export default function ProcessingStatusPanel({ isLoading, context, storyDraft, 
             : (isLoading && isPlannerDone && !isEvaluatorDone ? t('processing_status.evaluator_working') : t('processing_status.waiting'))}
         </p>
         <div className={`mt-2 text-[10px] font-bold ${isEvaluatorDone ? (evaluatorStatus === 'APPROVED' ? 'text-green-500' : 'text-orange-500') : 'text-gray-400'}`}>
-          {isEvaluatorDone ? (evaluatorStatus === 'APPROVED' ? 'SUCCESS' : 'REVISION REQUIRED') : 'PENDING'}
+          {isEvaluatorDone ? (evaluatorStatus === 'APPROVED' ? t('processing_status.success') : t('processing_status.revision_required')) : t('processing_status.pending')}
         </div>
       </div>
     </section>

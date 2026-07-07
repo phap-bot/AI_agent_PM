@@ -66,7 +66,7 @@ export default function GithubConfigPanel({ projectId }) {
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">{t('config.github.base_branch')}</label>
-          <input type="text" name="base_branch" value={config.base_branch} onChange={handleChange} placeholder="main" className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
+          <input type="text" name="base_branch" value={config.base_branch} onChange={handleChange} placeholder={t('config.github.placeholder_base_branch')} className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
           <p className="text-xs text-on-surface-variant mt-1">{t('config.github.base_branch_desc')}</p>
         </div>
         <div>
@@ -74,7 +74,7 @@ export default function GithubConfigPanel({ projectId }) {
             <span>{t('config.github.token')}</span>
             <a href="https://github.com/settings/tokens/new" target="_blank" rel="noreferrer" className="text-primary hover:underline font-normal">{t('config.github.get_token')}</a>
           </label>
-          <input type="password" name="api_token" value={config.api_token} onChange={handleChange} placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxx" className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
+          <input type="password" name="api_token" value={config.api_token} onChange={handleChange} placeholder={t('config.github.placeholder_api_token')} className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
         </div>
         
         <button type="submit" disabled={saving} className="mt-4 px-4 py-2 bg-primary text-on-primary rounded-lg font-medium disabled:opacity-50 flex items-center gap-2">

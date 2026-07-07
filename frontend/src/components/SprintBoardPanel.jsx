@@ -3,16 +3,16 @@ import { fetchSprintBoard, deleteSprintIssue, updateSprintIssueStatus, completeS
 import { useTranslation } from 'react-i18next';
 
 const COLUMN_STATUS_MAP = {
-  'To Do': 'To Do',
-  'In Progress': 'In Progress',
-  'Done': 'Done',
+  todo: 'To Do',
+  in_progress: 'In Progress',
+  done: 'Done',
 };
 
 function classifyIssue(status) {
   const s = status.toLowerCase();
-  if (s.includes('done') || s.includes('closed')) return 'Done';
-  if (s.includes('in progress')) return 'In Progress';
-  return 'To Do';
+  if (s.includes('done') || s.includes('closed')) return 'done';
+  if (s.includes('in progress')) return 'in_progress';
+  return 'todo';
 }
 
 export default function SprintBoardPanel({ isActive, projectId }) {
@@ -26,7 +26,7 @@ export default function SprintBoardPanel({ isActive, projectId }) {
   const [confirmDelete, setConfirmDelete] = useState(null);
 
   // New features state
-  const [groupBy, setGroupBy] = useState('None'); // 'None' or 'Subtask'
+  const [groupBy, setGroupBy] = useState('none'); // 'none' or 'subtask'
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [completeLoading, setCompleteLoading] = useState(false);
   const [moveOpenTo, setMoveOpenTo] = useState('new_sprint');
@@ -78,7 +78,7 @@ export default function SprintBoardPanel({ isActive, projectId }) {
           issues: prev.issues.filter(i => i.key !== issueKey),
         }));
       } else {
-        alert(t('sprint_board.delete_fail') + (result.error || 'Unknown error'));
+        alert(t('sprint_board.delete_fail') + (result.error || t('common.unknown_error')));
       }
     } catch (err) {
       alert(t('sprint_board.delete_fail') + err.message);
@@ -113,7 +113,7 @@ export default function SprintBoardPanel({ isActive, projectId }) {
             i.key === issueKey ? { ...i, status: previousStatus } : i
           ),
         }));
-        alert(t('sprint_board.status_change_fail') + (result.error || 'Unknown error'));
+        alert(t('sprint_board.status_change_fail') + (result.error || t('common.unknown_error')));
       }
     } catch (err) {
       setBoardData(prev => ({
@@ -134,7 +134,7 @@ export default function SprintBoardPanel({ isActive, projectId }) {
     setCompleteLoading(true);
     try {
       const openIssues = boardData.issues
-        .filter(i => classifyIssue(i.status) !== 'Done')
+        .filter(i => classifyIssue(i.status) !== 'done')
         .map(i => i.key);
 
       const result = await completeSprint(boardData.sprint.id, {
@@ -146,7 +146,7 @@ export default function SprintBoardPanel({ isActive, projectId }) {
         setShowCompleteModal(false);
         loadBoard();
       } else {
-        alert(t('sprint_board.complete_fail') + (result.error || 'Unknown error'));
+        alert(t('sprint_board.complete_fail') + (result.error || t('common.unknown_error')));
       }
     } catch (err) {
       alert(t('sprint_board.complete_fail') + err.message);
@@ -188,12 +188,13 @@ export default function SprintBoardPanel({ isActive, projectId }) {
   }
 
   const { sprint, issues } = boardData;
-  const completedCount = issues.filter(i => classifyIssue(i.status) === 'Done').length;
+  const completedCount = issues.filter(i => classifyIssue(i.status) === 'done').length;
   const openCount = issues.length - completedCount;
 
   // Render a single column
-  const renderColumn = (colName, colIssues, dropPrefix = '') => {
-    const targetDropId = dropPrefix ? `${dropPrefix}-${colName}` : colName;
+  const renderColumn = (colKey, colIssues, dropPrefix = '', colLabel = null) => {
+    const targetDropId = dropPrefix ? `${dropPrefix}-${colKey}` : colKey;
+    const displayLabel = colLabel || t(`sprint_board.column_${colKey}`);
     return (
       <div
         key={targetDropId}
@@ -210,11 +211,11 @@ export default function SprintBoardPanel({ isActive, projectId }) {
           e.preventDefault();
           setDropTarget(null);
           const issueKey = e.dataTransfer.getData('text/plain');
-          if (issueKey) handleDrop(issueKey, colName);
+          if (issueKey) handleDrop(issueKey, colKey);
         }}
       >
         <div className="flex justify-between items-center mb-4 px-2">
-          <h3 className="font-bold text-title-md text-on-surface uppercase tracking-wider text-sm">{colName}</h3>
+          <h3 className="font-bold text-title-md text-on-surface uppercase tracking-wider text-sm">{displayLabel}</h3>
           <span className="bg-surface-container-high px-2 py-1 rounded-full text-xs font-bold text-on-surface-variant">
             {colIssues.length}
           </span>
@@ -286,14 +287,14 @@ export default function SprintBoardPanel({ isActive, projectId }) {
                   className="text-[11px] px-2 py-0.5 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
                   title={t('sprint_board.confirm_delete')}
                 >
-                  {t('sprint_board.delete')}
+                      {t('common.delete')}
                 </button>
                 <button
                   onClick={() => setConfirmDelete(null)}
                   className="text-[11px] px-2 py-0.5 bg-surface-container-high text-on-surface-variant rounded hover:bg-surface-container-highest transition-colors"
-                  title={t('sprint_board.cancel')}
+                  title={t('common.cancel')}
                 >
-                  {t('sprint_board.cancel')}
+                    {t('common.cancel')}
                 </button>
               </div>
             ) : (
@@ -314,11 +315,11 @@ export default function SprintBoardPanel({ isActive, projectId }) {
           {displaySummary}
         </p>
         <div className="flex justify-between items-center">
-          <div className="w-6 h-6 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container text-[10px] font-bold" title={issue.assignee ? (issue.assignee.displayName || issue.assignee.name || issue.assignee) : 'Unassigned'}>
+          <div className="w-6 h-6 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container text-[10px] font-bold" title={issue.assignee ? (issue.assignee.displayName || issue.assignee.name || issue.assignee) : t('sprint_board.unassigned')}>
             {issue.assignee ? (typeof issue.assignee === 'string' ? issue.assignee : (issue.assignee.displayName || issue.assignee.name || '??')).substring(0, 2).toUpperCase() : '??'}
           </div>
-          {issue.parent_key && groupBy === 'None' && (
-            <span className="text-[10px] font-bold text-outline border border-outline-variant px-1 rounded truncate max-w-[80px]" title={`Parent: ${issue.parent_key}`}>
+          {issue.parent_key && groupBy === 'none' && (
+            <span className="text-[10px] font-bold text-outline border border-outline-variant px-1 rounded truncate max-w-[80px]" title={`${t('sprint_board.parent_label')}: ${issue.parent_key}`}>
               {issue.parent_key}
             </span>
           )}
@@ -337,7 +338,7 @@ export default function SprintBoardPanel({ isActive, projectId }) {
           </h2>
           <div className="flex items-center gap-4 text-on-surface-variant text-label-md mt-1">
             <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">flag</span> {t('sprint_board.goal')}: {sprint.goal || t('sprint_board.none')}</span>
-            <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">calendar_today</span> {t('sprint_board.start_date')}: {sprint.start_date ? new Date(sprint.start_date).toLocaleDateString() : 'N/A'}</span>
+            <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">calendar_today</span> {t('sprint_board.start_date')}: {sprint.start_date ? new Date(sprint.start_date).toLocaleDateString() : t('common.not_available')}</span>
           </div>
         </div>
 
@@ -349,8 +350,8 @@ export default function SprintBoardPanel({ isActive, projectId }) {
               onChange={(e) => setGroupBy(e.target.value)}
               className="text-sm bg-transparent border-none py-1 pr-6 focus:ring-0 cursor-pointer text-on-surface font-medium"
             >
-              <option value="None">{t('sprint_board.none_group')}</option>
-              <option value="Subtask">{t('sprint_board.subtask')}</option>
+              <option value="none">{t('sprint_board.none_group')}</option>
+              <option value="subtask">{t('sprint_board.subtask')}</option>
             </select>
           </div>
 
@@ -373,13 +374,13 @@ export default function SprintBoardPanel({ isActive, projectId }) {
       </div>
 
       <div className="flex-1 overflow-x-auto overflow-y-auto">
-        {groupBy === 'None' ? (
+        {groupBy === 'none' ? (
           /* Flat Board */
           <div className="flex gap-6 h-full min-w-max pb-4">
-            {['To Do', 'In Progress', 'Done'].map(colName => {
+            {[['todo', t('sprint_board.column_todo')], ['in_progress', t('sprint_board.column_in_progress')], ['done', t('sprint_board.column_done')]].map(([colKey, colLabel]) => {
               // Hide subtasks in flat board view to reduce clutter
-              const flatIssues = issues.filter(i => classifyIssue(i.status) === colName && i.type !== 'Subtask');
-              return renderColumn(colName, flatIssues);
+              const flatIssues = issues.filter(i => classifyIssue(i.status) === colKey && i.type !== 'Subtask');
+              return renderColumn(colKey, flatIssues, '', colLabel);
             })}
           </div>
         ) : (
@@ -421,13 +422,13 @@ export default function SprintBoardPanel({ isActive, projectId }) {
 
                   {/* Swimlane Columns */}
                   <div className="flex gap-0 divide-x divide-outline-variant/30">
-                    {['To Do', 'In Progress', 'Done'].map(colName => {
-                      const colIssues = data.items.filter(i => classifyIssue(i.status) === colName);
+                    {[['todo', t('sprint_board.column_todo')], ['in_progress', t('sprint_board.column_in_progress')], ['done', t('sprint_board.column_done')]].map(([colKey, colLabel]) => {
+                      const colIssues = data.items.filter(i => classifyIssue(i.status) === colKey);
                       // Custom inline column renderer for swimlanes
-                      const targetDropId = `${groupKey}-${colName}`;
+                      const targetDropId = `${groupKey}-${colKey}`;
                       return (
                         <div
-                          key={colName}
+                          key={colKey}
                           className={`flex-1 p-3 min-h-[120px] transition-colors ${dropTarget === targetDropId ? 'bg-primary/5' : 'bg-surface/50'
                             }`}
                           onDragOver={(e) => {
@@ -439,11 +440,11 @@ export default function SprintBoardPanel({ isActive, projectId }) {
                             e.preventDefault();
                             setDropTarget(null);
                             const issueKey = e.dataTransfer.getData('text/plain');
-                            if (issueKey) handleDrop(issueKey, colName);
+                            if (issueKey) handleDrop(issueKey, colKey);
                           }}
                         >
                           <div className="flex justify-between items-center mb-3">
-                            <span className="text-xs font-bold text-on-surface-variant uppercase">{colName}</span>
+                            <span className="text-xs font-bold text-on-surface-variant uppercase">{colLabel}</span>
                             {colIssues.length > 0 && (
                               <span className="text-[10px] font-bold bg-surface-container-high px-1.5 py-0.5 rounded text-on-surface-variant">
                                 {colIssues.length}
@@ -507,7 +508,7 @@ export default function SprintBoardPanel({ isActive, projectId }) {
                   disabled={completeLoading}
                   className="px-5 py-2.5 rounded-full text-primary hover:bg-primary/10 font-medium transition-colors disabled:opacity-50"
                 >
-                  {t('sprint_board.cancel')}
+                  {t('common.cancel')}
                 </button>
                 <button
                   onClick={handleCompleteSprint}
