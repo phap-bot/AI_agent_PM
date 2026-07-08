@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
 from dataclasses import dataclass
 from typing import Any
+from urllib.parse import quote
 
 from ai_scrum_master.core.config.settings import get_settings
 from ai_scrum_master.core.utils.http_client import HttpClient, HttpResponse, UrllibHttpClient
@@ -337,6 +339,38 @@ class JiraTool:
             ]
         return []
 
+    def get_sprint_board(self) -> dict[str, Any]:
+        """Return active sprint metadata plus board issues and subtasks."""
+        if not self.config.is_configured:
+            return {"success": False, "error": "Jira is not configured."}
+        if not self.config.board_id:
+            return {"success": False, "error": "JIRA_BOARD_ID is not configured"}
+
+        sprint_id = self._get_active_sprint(self.config.board_id)
+        if not sprint_id:
+            return {"success": False, "error": "No active sprint found"}
+
+        sprint_data = self._get_sprint_metadata(sprint_id) or {"id": sprint_id, "name": f"Sprint {sprint_id}"}
+        issues = self._get_board_issues_with_subtasks(board_id=self.config.board_id, sprint_id=sprint_id)
+        return {"success": True, "sprint": sprint_data, "issues": issues}
+
+    def create_sprint(self, name: str | None = None, duration_days: int = 14) -> dict[str, Any]:
+        """Create a sprint on the configured Jira board."""
+        if not self.config.is_configured:
+            return {"success": False, "error": "Jira is not configured."}
+        if not self.config.board_id:
+            return {"success": False, "error": "JIRA_BOARD_ID is not configured"}
+
+        payload = self._build_sprint_payload(
+            name=name or f"AI Auto Sprint {datetime.now(timezone.utc).strftime('%d%m')}",
+            board_id=self.config.board_id,
+            duration_days=duration_days,
+        )
+        response = self._post_with_retry(self._sprint_collection_url(), payload)
+        if response.status_code in (200, 201) and response.json_body:
+            return {"success": True, "message": "Sprint created", "sprint": response.json_body}
+        return {"success": False, "error": f"Failed to create sprint: {response.text}"}
+
     def delete_issue(self, issue_key: str) -> dict[str, Any]:
         """Delete a Jira issue by key."""
         if not self.config.is_configured:
@@ -568,23 +602,13 @@ class JiraTool:
             for sprint in values:
                 if sprint.get("name", "").lower() == sprint_name.lower():
                     return sprint.get("id")
-                    
-        # If not found, create it
-        from datetime import datetime, timedelta, timezone
-        now = datetime.now(timezone.utc)
-        end = now + timedelta(days=14)
-        payload = {
-            "name": sprint_name,
-            "startDate": now.isoformat(timespec='milliseconds').replace("+00:00", "+0000"),
-            "endDate": end.isoformat(timespec='milliseconds').replace("+00:00", "+0000"),
-            "originBoardId": int(board_id)
-        }
-        create_url = f"{self.config.base_url.rstrip('/')}/rest/agile/1.0/sprint"
-        create_resp = self._post_with_retry(create_url, payload)
-        if create_resp.status_code in [200, 201] and create_resp.json_body:
-            return create_resp.json_body.get("id")
+
+        create_result = self.create_sprint(name=sprint_name)
+        if create_result.get("success"):
+            sprint = create_result.get("sprint") or {}
+            return sprint.get("id")
             
-        logger.warning("Failed to auto-create sprint '%s': status=%s body=%s", sprint_name, create_resp.status_code, create_resp.text)
+        logger.warning("Failed to auto-create sprint '%s': %s", sprint_name, create_result.get("error"))
         return None
 
     def complete_sprint(self, sprint_id: int, move_open_to: str = "backlog", open_issues: list[str] | None = None) -> dict[str, Any]:
@@ -605,26 +629,17 @@ class JiraTool:
                     logger.warning("Failed to move issues to backlog: %s", resp.text)
             elif move_open_to == "new_sprint" and self.config.board_id:
                 logger.info("Creating new sprint to move %s open issues", len(open_issues))
-                from datetime import datetime, timedelta, timezone
-                now = datetime.now(timezone.utc)
-                end = now + timedelta(days=14)
-                payload = {
-                    "name": f"AI Auto Sprint {now.strftime('%d%m')}",
-                    "startDate": now.isoformat(timespec='milliseconds').replace("+00:00", "+0000"),
-                    "endDate": end.isoformat(timespec='milliseconds').replace("+00:00", "+0000"),
-                    "originBoardId": int(self.config.board_id)
-                }
-                create_url = f"{base}/rest/agile/1.0/sprint"
-                create_resp = self._post_with_retry(create_url, payload)
-                if create_resp.status_code in (200, 201) and create_resp.json_body:
-                    new_sprint_id = create_resp.json_body.get("id")
+                create_result = self.create_sprint()
+                if create_result.get("success"):
+                    sprint = create_result.get("sprint") or {}
+                    new_sprint_id = sprint.get("id")
                     if new_sprint_id:
                         move_url = f"{base}/rest/agile/1.0/sprint/{new_sprint_id}/issue"
                         move_resp = self._post_with_retry(move_url, {"issues": open_issues})
                         if move_resp.status_code not in (200, 204):
                             logger.warning("Failed to move issues to new sprint: %s", move_resp.text)
                 else:
-                    logger.warning("Failed to create new sprint: %s", create_resp.text)
+                    logger.warning("Failed to create new sprint: %s", create_result.get("error"))
 
         # 2. Close the current sprint
         logger.info("Closing sprint %s", sprint_id)
@@ -643,6 +658,74 @@ class JiraTool:
         response = self._post_with_retry(url, payload)
         if response.status_code not in (200, 204):
             raise Exception(f"Jira API returned {response.status_code}: {response.text}")
+
+    def _get_sprint_metadata(self, sprint_id: int) -> dict[str, Any] | None:
+        response = self.http_client.get_json(
+            url=f"{self.config.base_url.rstrip('/')}/rest/agile/1.0/sprint/{sprint_id}",
+            basic_auth=(self.config.email, self.config.api_token),
+            headers={"Accept": "application/json"},
+        )
+        if response.status_code == 200 and response.json_body:
+            return response.json_body
+        return None
+
+    def _get_board_issues_with_subtasks(self, board_id: str, sprint_id: int) -> list[dict[str, Any]]:
+        response = self.http_client.get_json(
+            url=f"{self.config.base_url.rstrip('/')}/rest/agile/1.0/board/{board_id}/sprint/{sprint_id}/issue?maxResults=500",
+            basic_auth=(self.config.email, self.config.api_token),
+            headers={"Accept": "application/json"},
+        )
+        if response.status_code != 200 or not response.json_body:
+            logger.warning("Failed to fetch sprint issues board_id=%s sprint_id=%s status_code=%s", board_id, sprint_id, response.status_code)
+            return []
+
+        mapped_issues = [self._map_board_issue(issue) for issue in response.json_body.get("issues", [])]
+        parent_keys = [issue["key"] for issue in mapped_issues if issue.get("key")]
+        seen_keys = {issue["key"] for issue in mapped_issues if issue.get("key")}
+
+        for chunk_start in range(0, len(parent_keys), 50):
+            chunk = parent_keys[chunk_start:chunk_start + 50]
+            if not chunk:
+                continue
+
+            jql = f"parent in ({','.join(chunk)})"
+            sub_response = self.http_client.get_json(
+                url=f"{self.config.base_url.rstrip('/')}/rest/agile/1.0/board/{board_id}/issue?jql={quote(jql)}&maxResults=500",
+                basic_auth=(self.config.email, self.config.api_token),
+                headers={"Accept": "application/json"},
+            )
+            if sub_response.status_code != 200 or not sub_response.json_body:
+                continue
+
+            for subtask in sub_response.json_body.get("issues", []):
+                key = subtask.get("key")
+                if not key or key in seen_keys:
+                    continue
+                seen_keys.add(key)
+                mapped_issues.append(self._map_board_issue(subtask))
+
+        return mapped_issues
+
+    def _map_board_issue(self, issue: dict[str, Any]) -> dict[str, Any]:
+        fields = issue.get("fields", {})
+        return {
+            "key": issue.get("key"),
+            "summary": fields.get("summary"),
+            "status": fields.get("status", {}).get("name", ""),
+            "type": fields.get("issuetype", {}).get("name", ""),
+            "assignee": fields.get("assignee"),
+            "parent_key": fields.get("parent", {}).get("key"),
+        }
+
+    def _build_sprint_payload(self, *, name: str, board_id: str, duration_days: int) -> dict[str, Any]:
+        now = datetime.now(timezone.utc)
+        end = now + timedelta(days=duration_days)
+        return {
+            "name": name,
+            "startDate": now.isoformat(timespec='milliseconds').replace("+00:00", "+0000"),
+            "endDate": end.isoformat(timespec='milliseconds').replace("+00:00", "+0000"),
+            "originBoardId": int(board_id),
+        }
 
     def _post_with_retry(self, url: str, payload: dict[str, Any]) -> HttpResponse:
         import time
@@ -671,6 +754,9 @@ class JiraTool:
 
     def _issue_url(self) -> str:
         return f"{self.config.base_url.rstrip('/')}/rest/api/3/issue"
+
+    def _sprint_collection_url(self) -> str:
+        return f"{self.config.base_url.rstrip('/')}/rest/agile/1.0/sprint"
 
     def _browse_issue_url(self, key: str) -> str:
         return f"{self.config.base_url.rstrip('/')}/browse/{key}"

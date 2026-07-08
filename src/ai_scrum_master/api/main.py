@@ -6,15 +6,16 @@ from pathlib import Path
 import tempfile
 import shutil
 
-from fastapi import Depends, FastAPI, File, Request, UploadFile
+from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from ai_scrum_master.actions.jira import JiraTool
 from ai_scrum_master.actions.slack import SlackTool
-from ai_scrum_master.api.routers.generate import generate_stories, router as generate_router
-from ai_scrum_master.api.routers.history import router as history_router
+from ai_scrum_master.api.responses import build_envelope_response
+from ai_scrum_master.api.routers.generate import router as generate_router
 from ai_scrum_master.api.schemas import (
+    ApiResponseEnvelope,
     ActionExecutionPlan,
     ActionExecutionResult,
     ActionPlan,
@@ -104,38 +105,39 @@ app.include_router(dashboard_router)
 from ai_scrum_master.worker.tasks import ingest_docs_task
 from celery.result import AsyncResult
 
-def get_jira_tool() -> JiraTool:
-    return JiraTool()
-
-def get_slack_tool() -> SlackTool:
-    return SlackTool()
-
 def get_ingest_runner():
     from ai_scrum_master.ingestion.ingest import ingest_raw_docs
     return ingest_raw_docs
 
-@app.get("/health")
-def health() -> dict[str, str]:
-    return {"status": "ok"}
+@app.get("/health", response_model=ApiResponseEnvelope)
+def health() -> ApiResponseEnvelope:
+    return build_envelope_response(
+        endpoint="health",
+        data={"status": "ok"},
+    )
 
 
-@app.post("/ingest", response_model=IngestResponse)
+@app.post("/ingest", response_model=ApiResponseEnvelope)
 def ingest_documents(
     payload: IngestRequest,
     ingest_runner=Depends(get_ingest_runner),
-) -> IngestResponse:
+) -> ApiResponseEnvelope:
     result = ingest_runner(
         raw_docs_dir=Path(payload.raw_docs_dir) if payload.raw_docs_dir else None,
         project_id=payload.project_id
     )
-    return IngestResponse(**result)
+    return build_envelope_response(
+        endpoint="ingest_create",
+        project_id=payload.project_id,
+        data=IngestResponse(**result).model_dump(),
+    )
 
 
-@app.post("/ingest/upload", response_model=IngestJobResponse)
+@app.post("/ingest/upload", response_model=ApiResponseEnvelope)
 def ingest_uploaded_documents(
     project_id: str | None = None,
     files: list[UploadFile] = File(...),
-) -> IngestJobResponse:
+) -> ApiResponseEnvelope:
     """Accept uploaded files and start ingestion in the background using Celery.
     Returns immediately with a job_id for polling status."""
 
@@ -153,17 +155,21 @@ def ingest_uploaded_documents(
     # Start Celery task
     task = ingest_docs_task.delay(str(temp_dir), project_id)
 
-    return IngestJobResponse(
-        job_id=task.id,
-        status="processing",
-        message=f"Started ingesting {len(saved_files)} file(s) in background",
+    return build_envelope_response(
+        endpoint="ingest_upload",
+        project_id=project_id,
+        data=IngestJobResponse(
+            job_id=task.id,
+            status="processing",
+            message=f"Started ingesting {len(saved_files)} file(s) in background",
+        ).model_dump(),
     )
 
 
 from ai_scrum_master.worker.celery_app import celery_app
 
-@app.get("/ingest/status/{job_id}", response_model=IngestStatusResponse)
-def get_ingest_status(job_id: str) -> IngestStatusResponse:
+@app.get("/ingest/status/{job_id}", response_model=ApiResponseEnvelope)
+def get_ingest_status(job_id: str) -> ApiResponseEnvelope:
     """Poll ingestion job status."""
     task_result = AsyncResult(job_id, app=celery_app)
     
@@ -174,14 +180,14 @@ def get_ingest_status(job_id: str) -> IngestStatusResponse:
             if k in ("collection", "source_dir", "files_indexed", "chunks_indexed", "skipped_count", "indexed_files", "skipped_files")
         }) if raw_result else None
         
-        return IngestStatusResponse(
+        payload = IngestStatusResponse(
             job_id=job_id,
             status="completed",
             message="Job completed successfully.",
             result=result_data,
         )
     elif task_result.state == 'FAILURE':
-        return IngestStatusResponse(
+        payload = IngestStatusResponse(
             job_id=job_id,
             status="failed",
             message=str(task_result.info),
@@ -189,110 +195,158 @@ def get_ingest_status(job_id: str) -> IngestStatusResponse:
         )
     else:
         # PENDING, STARTED, RETRY, RECEIVED, etc.
-        return IngestStatusResponse(
+        payload = IngestStatusResponse(
             job_id=job_id,
             status="processing",
             message=f"Job is {task_result.state.lower()}...",
             result=None,
         )
+    return build_envelope_response(
+        endpoint="ingest_status",
+        project_id=None,
+        data=payload.model_dump(),
+    )
 
 
-@app.post("/actions/jira/preview", response_model=ActionPlan)
+@app.post("/actions/jira/preview", response_model=ApiResponseEnvelope)
 def preview_jira_action(
     payload: ActionPreviewRequest,
-) -> ActionPlan:
+) -> ApiResponseEnvelope:
     story = payload.story.model_dump()
     evaluation = payload.evaluation.model_dump()
     if not actions_are_ready(story, evaluation):
-        return ActionPlan(
+        action_plan = ActionPlan(
             jira={"ready": False, "payload": None, "warnings": [_action_block_warning()]},
             slack={"ready": False, "payload": None, "warnings": ["Slack preview is not part of this endpoint."]},
         )
+        return build_envelope_response(
+            endpoint="actions_jira_preview",
+            project_id=payload.project_id,
+            data=action_plan.model_dump(),
+        )
 
     jira_tool = JiraTool.from_project(payload.project_id)
-    return ActionPlan(
+    action_plan = ActionPlan(
         jira=jira_tool.prepare_action(story),
         slack={"ready": False, "payload": None, "warnings": ["Slack preview is not part of this endpoint."]},
     )
-
-
-@app.post("/actions/slack/preview", response_model=ActionPlan)
-def preview_slack_action(
-    payload: ActionPreviewRequest,
-    slack_tool: SlackTool = Depends(get_slack_tool),
-) -> ActionPlan:
-    story = payload.story.model_dump()
-    evaluation = payload.evaluation.model_dump()
-    if not actions_are_ready(story, evaluation):
-        return ActionPlan(
-            jira={"ready": False, "payload": None, "warnings": ["Jira preview is not part of this endpoint."]},
-            slack={"ready": False, "payload": None, "warnings": [_action_block_warning()]},
-        )
-
-    return ActionPlan(
-        jira={"ready": False, "payload": None, "warnings": ["Jira preview is not part of this endpoint."]},
-        slack=slack_tool.prepare_action(story, evaluation),
+    return build_envelope_response(
+        endpoint="actions_jira_preview",
+        project_id=payload.project_id,
+        data=action_plan.model_dump(),
     )
 
 
-@app.post("/actions/jira/execute", response_model=ActionExecutionPlan)
+@app.post("/actions/slack/preview", response_model=ApiResponseEnvelope)
+def preview_slack_action(
+    payload: ActionPreviewRequest,
+) -> ApiResponseEnvelope:
+    story = payload.story.model_dump()
+    evaluation = payload.evaluation.model_dump()
+    if not actions_are_ready(story, evaluation):
+        action_plan = ActionPlan(
+            jira={"ready": False, "payload": None, "warnings": ["Jira preview is not part of this endpoint."]},
+            slack={"ready": False, "payload": None, "warnings": [_action_block_warning()]},
+        )
+        return build_envelope_response(
+            endpoint="actions_slack_preview",
+            project_id=payload.project_id,
+            data=action_plan.model_dump(),
+        )
+
+    slack_tool = SlackTool.from_project(payload.project_id)
+    action_plan = ActionPlan(
+        jira={"ready": False, "payload": None, "warnings": ["Jira preview is not part of this endpoint."]},
+        slack=slack_tool.prepare_action(story, evaluation),
+    )
+    return build_envelope_response(
+        endpoint="actions_slack_preview",
+        project_id=payload.project_id,
+        data=action_plan.model_dump(),
+    )
+
+
+@app.post("/actions/jira/execute", response_model=ApiResponseEnvelope)
 def execute_jira_action(
     payload: ActionPreviewRequest,
-) -> ActionExecutionPlan:
+) -> ApiResponseEnvelope:
     story = payload.story.model_dump()
     evaluation = payload.evaluation.model_dump()
     logger.info("Jira execute endpoint entered evaluation_status=%s", evaluation["status"])
     if not actions_are_ready(story, evaluation):
-        return ActionExecutionPlan(
+        execution_plan = ActionExecutionPlan(
             jira=_blocked_execution(_action_block_warning()),
             slack=_not_part_of_execution("Slack execution is not part of this endpoint."),
+        )
+        return build_envelope_response(
+            endpoint="actions_jira_execute",
+            project_id=payload.project_id,
+            data=execution_plan.model_dump(),
         )
 
     jira_tool = JiraTool.from_project(payload.project_id)
     if not jira_tool.config.is_configured:
-        from fastapi import HTTPException
         raise HTTPException(status_code=400, detail="Jira configuration is missing for this project. Please configure Jira in Settings first.")
 
-    return ActionExecutionPlan(
+    execution_plan = ActionExecutionPlan(
         jira=jira_tool.execute_action(story),
         slack=_not_part_of_execution("Slack execution is not part of this endpoint."),
     )
+    return build_envelope_response(
+        endpoint="actions_jira_execute",
+        project_id=payload.project_id,
+        data=execution_plan.model_dump(),
+    )
 
 
-@app.post("/actions/slack/execute", response_model=ActionExecutionPlan)
+@app.post("/actions/slack/execute", response_model=ApiResponseEnvelope)
 def execute_slack_action(
     payload: ActionPreviewRequest,
-    slack_tool: SlackTool = Depends(get_slack_tool),
-) -> ActionExecutionPlan:
+) -> ApiResponseEnvelope:
     story = payload.story.model_dump()
     evaluation = payload.evaluation.model_dump()
     logger.info("Slack execute endpoint entered evaluation_status=%s", evaluation["status"])
     if not actions_are_ready(story, evaluation):
-        return ActionExecutionPlan(
+        execution_plan = ActionExecutionPlan(
             jira=_not_part_of_execution("Jira execution is not part of this endpoint."),
             slack=_blocked_execution(_action_block_warning()),
         )
+        return build_envelope_response(
+            endpoint="actions_slack_execute",
+            project_id=payload.project_id,
+            data=execution_plan.model_dump(),
+        )
 
-    return ActionExecutionPlan(
+    slack_tool = SlackTool.from_project(payload.project_id)
+    execution_plan = ActionExecutionPlan(
         jira=_not_part_of_execution("Jira execution is not part of this endpoint."),
         slack=slack_tool.execute_action(story, evaluation),
     )
+    return build_envelope_response(
+        endpoint="actions_slack_execute",
+        project_id=payload.project_id,
+        data=execution_plan.model_dump(),
+    )
 
 
-@app.post("/actions/execute-all", response_model=ActionExecutionPlan)
+@app.post("/actions/execute-all", response_model=ApiResponseEnvelope)
 def execute_all_actions(
     payload: ActionPreviewRequest,
-) -> ActionExecutionPlan:
+) -> ApiResponseEnvelope:
     story = payload.story.model_dump()
     evaluation = payload.evaluation.model_dump()
     logger.info("Execute-all endpoint entered evaluation_status=%s", evaluation["status"])
     if not actions_are_ready(story, evaluation):
         blocked = _blocked_execution(_action_block_warning())
-        return ActionExecutionPlan(jira=blocked, slack=blocked)
+        execution_plan = ActionExecutionPlan(jira=blocked, slack=blocked)
+        return build_envelope_response(
+            endpoint="actions_execute_all",
+            project_id=payload.project_id,
+            data=execution_plan.model_dump(),
+        )
 
     jira_tool = JiraTool.from_project(payload.project_id)
     if not jira_tool.config.is_configured:
-        from fastapi import HTTPException
         raise HTTPException(status_code=400, detail="Jira configuration is missing for this project. Please configure Jira in Settings first.")
 
     # Execute Jira first so we can include the Jira link in the Slack message
@@ -326,14 +380,18 @@ def execute_all_actions(
                 warnings=gh_res.get("warnings", [])
             )
     
-    slack_tool = SlackTool() # If we had SlackTool.from_project, we'd use it. Assuming it uses global or DB config similarly.
-    # Pass the Jira 'created' result to Slack execution
+    slack_tool = SlackTool.from_project(payload.project_id)
     slack_result = slack_tool.execute_action(story, evaluation, jira_created=jira_result.get("created"))
 
-    return ActionExecutionPlan(
+    execution_plan = ActionExecutionPlan(
         jira=jira_result,
         slack=slack_result,
         github=github_result,
+    )
+    return build_envelope_response(
+        endpoint="actions_execute_all",
+        project_id=payload.project_id,
+        data=execution_plan.model_dump(),
     )
 
 

@@ -5,18 +5,18 @@ from typing import Any, cast
 from fastapi import APIRouter
 from celery.result import AsyncResult
 
-from ai_scrum_master.api.schemas import GenerateJobResponse, GenerateStatusResponse
-from ai_scrum_master.api.schemas import GenerateStoriesRequest
+from ai_scrum_master.api.responses import build_envelope_response
+from ai_scrum_master.api.schemas import ApiResponseEnvelope, GenerateJobResponse, GenerateStatusResponse, GenerateStoriesRequest
 from ai_scrum_master.core.utils.database import DatabaseManager
 from ai_scrum_master.worker.celery_app import celery_app
 from ai_scrum_master.worker.tasks import generate_story_task
 
 router = APIRouter()
 
-@router.post("/generate", response_model=GenerateJobResponse)
+@router.post("/generate", response_model=ApiResponseEnvelope)
 def generate_stories(
     payload: GenerateStoriesRequest,
-) -> GenerateJobResponse:
+) -> ApiResponseEnvelope:
     # Trigger Celery task
     task = cast(Any, generate_story_task).delay(
         requirement=payload.requirement,
@@ -32,13 +32,17 @@ def generate_stories(
         project_id=payload.project_id,
         user_id=payload.user_id,
     )
-    return GenerateJobResponse(job_id=task.id)
+    return build_envelope_response(
+        endpoint="generate_create",
+        project_id=payload.project_id,
+        data=GenerateJobResponse(job_id=task.id).model_dump(),
+    )
 
-@router.get("/generate/status/{job_id}", response_model=GenerateStatusResponse)
-def get_generate_status(job_id: str) -> GenerateStatusResponse:
+@router.get("/generate/status/{job_id}", response_model=ApiResponseEnvelope)
+def get_generate_status(job_id: str) -> ApiResponseEnvelope:
     job = DatabaseManager.get_job(job_id)
     if job:
-        return GenerateStatusResponse(
+        status_payload = GenerateStatusResponse(
             job_id=job_id,
             status=job.get("status", "processing"),
             stage=job.get("stage", "processing"),
@@ -46,11 +50,16 @@ def get_generate_status(job_id: str) -> GenerateStatusResponse:
             partial_result=job.get("partial_result") or {},
             result=job.get("result"),
         )
+        return build_envelope_response(
+            endpoint="generate_status",
+            project_id=job.get("project_id"),
+            data=status_payload.model_dump(),
+        )
 
     task_result = AsyncResult(job_id, app=celery_app)
     
     if task_result.state == 'PENDING':
-        return GenerateStatusResponse(
+        status_payload = GenerateStatusResponse(
             job_id=job_id,
             status="processing",
             stage="pending",
@@ -59,7 +68,7 @@ def get_generate_status(job_id: str) -> GenerateStatusResponse:
             result=None
         )
     elif task_result.state == 'STARTED':
-        return GenerateStatusResponse(
+        status_payload = GenerateStatusResponse(
             job_id=job_id,
             status="processing",
             stage="started",
@@ -69,7 +78,7 @@ def get_generate_status(job_id: str) -> GenerateStatusResponse:
         )
     elif task_result.state == 'PROCESSING':
         meta = task_result.info or {}
-        return GenerateStatusResponse(
+        status_payload = GenerateStatusResponse(
             job_id=job_id,
             status="processing",
             stage=meta.get("stage", "processing"),
@@ -78,7 +87,7 @@ def get_generate_status(job_id: str) -> GenerateStatusResponse:
             result=None
         )
     elif task_result.state == 'SUCCESS':
-        return GenerateStatusResponse(
+        status_payload = GenerateStatusResponse(
             job_id=job_id,
             status="completed",
             stage="completed",
@@ -87,7 +96,7 @@ def get_generate_status(job_id: str) -> GenerateStatusResponse:
             result=task_result.result
         )
     elif task_result.state == 'FAILURE':
-        return GenerateStatusResponse(
+        status_payload = GenerateStatusResponse(
             job_id=job_id,
             status="failed",
             stage="failed",
@@ -96,7 +105,7 @@ def get_generate_status(job_id: str) -> GenerateStatusResponse:
             result=None
         )
     else:
-        return GenerateStatusResponse(
+        status_payload = GenerateStatusResponse(
             job_id=job_id,
             status="failed",
             stage="unknown",
@@ -104,3 +113,8 @@ def get_generate_status(job_id: str) -> GenerateStatusResponse:
             partial_result={},
             result=None
         )
+    return build_envelope_response(
+        endpoint="generate_status",
+        project_id=None,
+        data=status_payload.model_dump(),
+    )

@@ -117,6 +117,19 @@ class DatabaseManager:
             return False
 
     @classmethod
+    def project_name_exists(cls, name: str, exclude_project_id: str | None = None) -> bool:
+        from bson.objectid import ObjectId
+
+        try:
+            query: dict[str, Any] = {"name": name}
+            if exclude_project_id:
+                query["_id"] = {"$ne": ObjectId(exclude_project_id)}
+            return cls.get_projects_collection().find_one(query) is not None
+        except Exception as e:
+            logger.error("Failed to check duplicate project name '%s': %s", name, e)
+            return False
+
+    @classmethod
     def save_history(cls, requirement: str, result: dict, project_id: str | None = None) -> str | None:
         """Save a generated story and requirement to history."""
         try:

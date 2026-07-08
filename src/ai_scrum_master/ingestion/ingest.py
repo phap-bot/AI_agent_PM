@@ -298,6 +298,7 @@ def prepare_langchain_chunks(chunks: list[Any], source_dir: Path, ingested_at: s
     source_indexes: dict[str, int] = {}
     ids: list[str] = []
     prepared_chunks = []
+    doc_hashes: dict[Path, str] = {}
 
     for chunk in chunks:
         source_path = resolve_chunk_source_path(chunk, source_dir)
@@ -306,7 +307,11 @@ def prepare_langchain_chunks(chunks: list[Any], source_dir: Path, ingested_at: s
         source_indexes[source_key] = chunk_index + 1
 
         text = normalize_document_text(str(chunk.page_content))
-        document_sha1 = document_hash(source_path, read_source_text(source_path))
+        
+        if source_path not in doc_hashes:
+            doc_hashes[source_path] = _compute_file_hash(source_path)
+            
+        document_sha1 = doc_hashes[source_path]
         chunk_id = build_chunk_id(source_path.relative_to(source_dir), chunk_index, text, project_id)
         metadata = build_chunk_metadata(
             path=source_path,

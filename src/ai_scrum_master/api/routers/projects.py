@@ -1,11 +1,15 @@
+from typing import Optional
+
+from bson import ObjectId
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
-from typing import Any, Optional
-from bson import ObjectId
 
+from ai_scrum_master.api.responses import build_envelope_response
+from ai_scrum_master.api.schemas import ApiResponseEnvelope
 from ai_scrum_master.core.utils.database import DatabaseManager
 
 router = APIRouter(prefix="/projects", tags=["projects"])
+
 
 class JiraConfigModel(BaseModel):
     base_url: str = ""
@@ -16,20 +20,24 @@ class JiraConfigModel(BaseModel):
     subtask_issue_type: str = "Sub-task"
     board_id: str = ""
 
+
 class SlackConfigModel(BaseModel):
     webhook_url: str = ""
     mention_user_id: str = ""
     dev_channel_id: str = ""
     qa_channel_id: str = ""
 
+
 class GithubConfigModel(BaseModel):
     repository: str = ""
     base_branch: str = "main"
     api_token: str = Field(default="", description="Get token at: https://github.com/settings/tokens/new")
 
+
 class ProjectCreateModel(BaseModel):
     name: str
     description: str = ""
+
 
 class ProjectUpdateModel(BaseModel):
     name: Optional[str] = None
@@ -38,82 +46,129 @@ class ProjectUpdateModel(BaseModel):
     slack_config: Optional[SlackConfigModel] = None
     github_config: Optional[GithubConfigModel] = None
 
+
 def serialize_project(project: dict) -> dict:
-    if "_id" in project:
-        project["id"] = str(project["_id"])
-        del project["_id"]
-    return project
+    serialized = dict(project)
+    if "_id" in serialized:
+        serialized["id"] = str(serialized["_id"])
+        del serialized["_id"]
+    return serialized
 
-@router.get("", response_model=list[dict[str, Any]])
-def get_projects():
-    projects = DatabaseManager.get_all_projects()
-    return [serialize_project(p) for p in projects]
 
-@router.get("/{project_id}", response_model=dict[str, Any])
-def get_project(project_id: str):
+def _validate_project_id(project_id: str) -> None:
     if not ObjectId.is_valid(project_id):
         raise HTTPException(status_code=400, detail="Invalid project ID")
+
+
+@router.get("", response_model=ApiResponseEnvelope)
+def get_projects():
+    projects = DatabaseManager.get_all_projects()
+    return build_envelope_response(
+        endpoint="projects_list",
+        data=[serialize_project(project) for project in projects],
+    )
+
+
+@router.get("/{project_id}", response_model=ApiResponseEnvelope)
+def get_project(project_id: str):
+    _validate_project_id(project_id)
     project = DatabaseManager.get_project(project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
-    return serialize_project(project)
+    return build_envelope_response(
+        endpoint="project_detail",
+        project_id=project_id,
+        data=serialize_project(project),
+    )
 
-@router.get("/{project_id}/jira-priorities", response_model=list[dict[str, Any]])
+
+@router.get("/{project_id}/jira-priorities", response_model=ApiResponseEnvelope)
 def get_project_jira_priorities(project_id: str):
     from ai_scrum_master.actions.jira import JiraTool
-    if not ObjectId.is_valid(project_id):
-        raise HTTPException(status_code=400, detail="Invalid project ID")
-    
-    jira = JiraTool.from_project(project_id)
-    return jira.get_priorities()
 
-@router.post("", response_model=dict[str, Any], status_code=status.HTTP_201_CREATED)
+    _validate_project_id(project_id)
+    jira = JiraTool.from_project(project_id)
+    return build_envelope_response(
+        endpoint="project_jira_priorities",
+        project_id=project_id,
+        data=jira.get_priorities(),
+    )
+
+
+@router.post("", response_model=ApiResponseEnvelope, status_code=status.HTTP_201_CREATED)
 def create_project(data: ProjectCreateModel):
     project_data = data.model_dump()
     project_data["jira_config"] = {}
     project_data["slack_config"] = {}
     project_data["github_config"] = {}
-    
-    # Check for duplicate name
-    existing = DatabaseManager.get_projects_collection().find_one({"name": data.name})
-    if existing:
+
+    if DatabaseManager.project_name_exists(data.name):
         raise HTTPException(status_code=400, detail="Project name already exists")
-        
+
     project_id = DatabaseManager.create_project(project_data)
     if not project_id:
         raise HTTPException(status_code=500, detail="Failed to create project")
-    return get_project(project_id)
 
-@router.put("/{project_id}", response_model=dict[str, Any])
+    project = DatabaseManager.get_project(project_id)
+    if not project:
+        raise HTTPException(status_code=500, detail="Created project could not be loaded")
+
+    return build_envelope_response(
+        endpoint="project_create",
+        project_id=project_id,
+        data=serialize_project(project),
+    )
+
+
+@router.put("/{project_id}", response_model=ApiResponseEnvelope)
 def update_project(project_id: str, data: ProjectUpdateModel):
-    if not ObjectId.is_valid(project_id):
-        raise HTTPException(status_code=400, detail="Invalid project ID")
-        
+    _validate_project_id(project_id)
+
     project = DatabaseManager.get_project(project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
-        
+
     updates = data.model_dump(exclude_unset=True)
     if not updates:
-        return serialize_project(project)
-        
+        return build_envelope_response(
+            endpoint="project_update",
+            project_id=project_id,
+            data=serialize_project(project),
+        )
+
+    new_name = updates.get("name")
+    if new_name and DatabaseManager.project_name_exists(new_name, exclude_project_id=project_id):
+        raise HTTPException(status_code=400, detail="Project name already exists")
+
     success = DatabaseManager.update_project(project_id, updates)
     if not success:
         raise HTTPException(status_code=500, detail="Failed to update project")
-        
-    return get_project(project_id)
 
-@router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
+    updated_project = DatabaseManager.get_project(project_id)
+    if not updated_project:
+        raise HTTPException(status_code=500, detail="Updated project could not be loaded")
+
+    return build_envelope_response(
+        endpoint="project_update",
+        project_id=project_id,
+        data=serialize_project(updated_project),
+    )
+
+
+@router.delete("/{project_id}", response_model=ApiResponseEnvelope)
 def delete_project(project_id: str):
-    if not ObjectId.is_valid(project_id):
-        raise HTTPException(status_code=400, detail="Invalid project ID")
-        
+    _validate_project_id(project_id)
+
     project = DatabaseManager.get_project(project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
-        
+
     success = DatabaseManager.delete_project(project_id)
     if not success:
         raise HTTPException(status_code=500, detail="Failed to delete project")
-        
-    return None
+
+    return build_envelope_response(
+        endpoint="project_delete",
+        project_id=project_id,
+        data={"deleted": True, "project_id": project_id},
+    )

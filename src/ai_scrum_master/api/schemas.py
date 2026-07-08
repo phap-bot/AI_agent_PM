@@ -202,3 +202,15 @@ class GenerateStoriesResponse(SanitizedBaseModel):
     evaluation: EvaluationResult = Field(default_factory=EvaluationResult)
     actions: ActionPlan = Field(default_factory=lambda: ActionPlan(jira=PreparedAction(ready=False), slack=PreparedAction(ready=False)))
     next_steps: list[str] = Field(default_factory=list)
+
+
+class ApiResponseMeta(SanitizedBaseModel):
+    endpoint: str
+    project_id: str | None = None
+    generated_at: str
+
+
+class ApiResponseEnvelope(SanitizedBaseModel):
+    success: bool = True
+    data: Any = None
+    meta: ApiResponseMeta

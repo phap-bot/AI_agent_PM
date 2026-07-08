@@ -2,15 +2,13 @@
   "common": {
     "save": "Lưu",
     "cancel": "Hủy",
-    "edit": "Sửa",
     "delete": "Xóa",
-    "create": "Tạo",
     "loading": "Đang tải...",
-    "error": "Lỗi",
-    "success": "Thành công"
+    "success": "Thành công",
+    "unknown_error": "Lỗi không xác định",
+    "not_available": "N/A"
   },
   "sidebar": {
-    "title": "AI Scrum Master",
     "main": "CHÍNH",
     "projects": "Dự Án",
     "sprint": "Sprint",
@@ -39,23 +37,31 @@
       "project_key": "Project Key",
       "email": "Email",
       "api_token": "API Token",
-      "get_token": "Lấy mã Token tại đây \u2192",
+      "get_token": "Lấy mã Token tại đây →",
       "issue_type": "Issue Type",
       "subtask_type": "Subtask Type",
       "board_id": "Board ID (Tùy chọn)",
       "saved": "Đã lưu cấu hình Jira",
       "save_error": "Lỗi khi lưu cấu hình: ",
       "default_task": "Mặc định: Task",
-      "default_subtask": "Mặc định: Sub-task"
+      "default_subtask": "Mặc định: Sub-task",
+      "placeholder_base_url": "https://ten-mien-cua-ban.atlassian.net",
+      "placeholder_project_key": "ví dụ: ALP",
+      "placeholder_email": "Email Atlassian",
+      "placeholder_api_token": "Token"
     },
     "slack": {
       "title": "Cấu hình Slack",
       "webhook_url": "Webhook URL",
-      "create_webhook": "Tạo Webhook tại đây \u2192",
+      "create_webhook": "Tạo Webhook tại đây →",
       "mention_user_id": "Mention User ID (Tùy chọn)",
       "dev_channel_id": "Dev Channel ID (Tùy chọn)",
       "qa_channel_id": "QA Channel ID (Tùy chọn)",
-      "saved": "Đã lưu cấu hình Slack"
+      "saved": "Đã lưu cấu hình Slack",
+      "placeholder_webhook_url": "https://hooks.slack.com/...",
+      "placeholder_mention_user_id": "ví dụ: U123456",
+      "placeholder_dev_channel_id": "ví dụ: C11111",
+      "placeholder_qa_channel_id": "ví dụ: C22222"
     },
     "github": {
       "title": "Cấu hình GitHub (Tự động tạo Branch)",
@@ -63,8 +69,10 @@
       "base_branch": "Nhánh cơ sở (Base Branch)",
       "base_branch_desc": "AI sẽ rẽ nhánh mới từ nhánh cơ sở này.",
       "token": "Personal Access Token (Bắt buộc)",
-      "get_token": "Lấy mã Token tại đây \u2192",
-      "saved": "Đã lưu cấu hình GitHub"
+      "get_token": "Lấy mã Token tại đây →",
+      "saved": "Đã lưu cấu hình GitHub",
+      "placeholder_base_branch": "main",
+      "placeholder_api_token": "ghp_xxxxxxxxxxxxxxxxxxxxxx"
     }
   },
   "dashboard": {
@@ -141,8 +149,6 @@
     "reload_data": "Tải lại dữ liệu",
     "drop_here": "Thả vào đây",
     "confirm_delete": "Xác nhận xoá",
-    "delete": "Xoá",
-    "cancel": "Huỷ",
     "delete_issue": "Xoá issue",
     "goal": "Mục tiêu",
     "none": "Không có",
@@ -160,21 +166,27 @@
     "work_items": "mục công việc.",
     "move_open_to": "Chuyển các mục chưa xong tới",
     "new_sprint": "Sprint mới",
-    "backlog": "Backlog"
+    "backlog": "Backlog",
+    "unassigned": "Chưa gán",
+    "parent_label": "Cha",
+    "column_todo": "Cần làm",
+    "column_in_progress": "Đang làm",
+    "column_done": "Hoàn thành"
   },
   "requirement_input": {
     "title": "Nhập yêu cầu từ khách hàng",
     "placeholder": "Dán email hoặc tin nhắn Slack vào đây...",
     "processing": "Đang xử lý...",
-    "import_docs": "Import Docs",
-    "support_formats": "Hỗ trợ: PDF, DOCX, TXT, MD",
-    "backend_embedding": "Backend đang embedding...",
+    "import_docs": "Nh?p t?i li?u",
+    "support_formats": "H? tr?: PDF, DOCX, TXT, MD",
+    "backend_embedding": "Backend ?ang nh?ng d? li?u...",
     "imported_docs": "Tài liệu đã nhập",
     "remove_file": "Xoá file này khỏi context",
     "search_results": "Kết quả tìm kiếm:",
     "allow_fallback": "Cho phép fallback khi không có context",
     "analyzing": "ĐANG PHÂN TÍCH...",
-    "analyze_create_task": "PHÂN TÍCH & TẠO TASK"
+    "analyze_create_task": "PHÂN TÍCH & TẠO TASK",
+    "select_project_first": "Vui lòng chọn hoặc tạo một dự án ở góc trên bên phải trước khi import tài liệu."
   },
   "story_draft": {
     "draft_desc": "(Bản nháp cần duyệt trước khi đẩy lên Jira)",
@@ -190,7 +202,7 @@
     "add_task_be": "Thêm task BE",
     "add_task_fe": "Thêm task FE",
     "add_task_qa": "Thêm task QA",
-    "ai_clarification": "AI Clarification",
+    "ai_clarification": "AI c?n l?m r?",
     "needs_clarification": "Cần làm rõ",
     "ai_needs_clarification": "AI cần bạn làm rõ các câu hỏi sau để hoàn thiện Story:",
     "input_answer": "Nhập câu trả lời của bạn cho câu hỏi này...",
@@ -201,10 +213,32 @@
     "ai_split_suggestion": "AI Gợi Ý Tách Ticket",
     "split_suggestion_desc": "Yêu cầu của bạn có thể tách thành {{count}} ticket con (Epic).",
     "process_splits": "Xử Lý Splits",
-    "create_new_request": "+ TẠO YÊU CẦU MỚI",
-    "recreate_draft": "↻ TẠO LẠI BẢN NHÁP (PREVIEW)",
-    "executing_actions": "⏳ EXECUTING ACTIONS...",
-    "execute_actions": "✅ EXECUTE ACTIONS (JIRA & SLACK)"
+    "create_new_request": "T?o y?u c?u m?i",
+    "recreate_draft": "T?o l?i b?n nh?p (xem tr??c)",
+    "executing_actions": "?ang th?c thi t?c v?...",
+    "execute_actions": "Th?c thi t?c v? (Jira & Slack)",
+    "human_approval": "Phê duyệt thủ công",
+    "ai_generated": "AI đã tạo",
+    "issues_identified": "Các vấn đề được phát hiện:",
+    "user_stories": "User stories",
+    "acceptance_criteria": "Ti?u ch? ch?p nh?n",
+    "sub_tasks": "Công việc con",
+    "priority_high": "Cao",
+    "priority_medium": "Trung bình",
+    "priority_low": "Thấp",
+    "default_priority": "Trung bình",
+    "question_label": "Câu hỏi",
+    "answer_label": "Trả lời",
+    "additional_info_label": "Thông tin bổ sung",
+    "jira_created": "Đã tạo issue Jira.",
+    "jira_failed": "Đẩy Jira thất bại.",
+    "issue_label": "Issue:",
+    "slack_sent": "Đã gửi thông báo Slack.",
+    "slack_failed": "Thông báo Slack thất bại hoặc đã bị bỏ qua.",
+    "github_created": "Đã tạo nhánh tính năng GitHub.",
+    "github_failed": "Thao tác GitHub thất bại.",
+    "branch_label": "Nhánh:",
+    "view_branch": "Xem nhánh"
   },
   "project_dropdown": {
     "select_project": "-- Chọn dự án --",
@@ -245,26 +279,33 @@
     "planner_working": "Đang viết User Story...",
     "evaluator_pass": "Đánh giá Pass (Score: 5/5)",
     "evaluator_fail": "Cần sửa (Score: thấp)",
-    "evaluator_working": "Đang đánh giá..."
+    "evaluator_working": "Đang đánh giá...",
+    "researcher": "Researcher",
+    "planner": "Planner",
+    "evaluator": "Evaluator",
+    "completed": "HOÀN TẤT",
+    "pending": "CHỜ XỬ LÝ",
+    "success": "THÀNH CÔNG",
+    "revision_required": "CẦN CHỈNH SỬA",
+    "score_label": "điểm",
+    "chunk_label": "Đoạn"
   },
   "split_manager": {
-    "title": "Story Split Manager",
-    "subtitle": "Quản lý và tạo chi tiết cho các ticket con",
-    "list_title": "Danh sách Split Đề Xuất",
-    "list_subtitle": "Chọn một split để bắt đầu AI Generate",
+    "title": "Qu?n l? t?ch story",
+    "subtitle": "Qu?n l? v? chi ti?t h?a c?c ticket con",
+    "list_title": "C?c ph??ng ?n t?ch ?? xu?t",
+    "list_subtitle": "Ch?n m?t ph??ng ?n ?? AI t?o b?n nh?p",
     "analyzing": "Đang phân tích...",
-    "ai_generate": "AI Generate",
+    "ai_generate": "T?o b?n nh?p b?ng AI",
     "no_split_selected": "Chưa chọn Split nào",
     "no_split_desc": "Hãy chọn một Split từ danh sách bên trái để AI bắt đầu phân tích và viết Draft chi tiết cho bạn.",
-    "ai_analyzing_split": "AI Đang Phân Tích Split",
-    "generate_error": "Lỗi sinh luồng",
+    "ai_analyzing_split": "AI ?ang ph?n t?ch ph??ng ?n t?ch",
     "retry": "Thử lại",
-    "draft_for": "Bản Nháp Cho: {{split}}",
+    "draft_for": "B?n nh?p cho: {{split}}",
     "success_created": "Tạo thành công",
-    "sub_ticket": "Sub-ticket",
+    "sub_ticket": "Ticket con",
     "init_agent": "Đang khởi tạo Agent phân tích Split...",
     "ai_reanalyzing": "AI đang phân tích lại với thông tin bổ sung...",
-    "jira_preview_error": "Lỗi Jira Preview: ",
     "jira_execute_error": "Lỗi thực thi Jira: "
   },
   "analytics": {
@@ -280,7 +321,6 @@
     "insight_label": "[ AI INSIGHT ]",
     "loading_insights": "Đang tải insight...",
     "team_velocity": "Vận tốc nhóm (Team Velocity)",
-    "pts": "pts",
     "no_data": "Không có dữ liệu",
     "average_velocity": "Trung bình: {{velocity}} pts / sprint",
     "ticket_lead_time": "Thời gian lead time của Ticket",
@@ -297,9 +337,43 @@
     "col_status": "TRẠNG THÁI",
     "col_ai_automation": "AI TỰ ĐỘNG",
     "col_trend": "XU HƯỚNG",
-    "done": "Hoàn thành",
-    "wip": "Đang làm",
-    "todo": "Cần làm",
     "no_resource_data": "Không có dữ liệu tài nguyên."
+  },
+  "app": {
+    "project_modal": {
+      "create_title": "Tạo dự án mới",
+      "create_placeholder": "Nhập tên dự án...",
+      "create_confirm": "Tạo mới",
+      "create_error": "Lỗi tạo dự án: ",
+      "edit_title": "Đổi tên dự án",
+      "edit_placeholder": "Nhập tên mới...",
+      "edit_confirm": "Lưu thay đổi",
+      "update_error": "Lỗi cập nhật dự án: ",
+      "delete_title": "Xóa dự án",
+      "delete_message": "Bạn có chắc chắn muốn xóa dự án này? Thao tác này không thể hoàn tác.",
+      "delete_confirm": "Xóa vĩnh viễn",
+      "delete_error": "Lỗi xóa dự án: "
+    },
+    "history_view": {
+      "title": "Đang xem lịch sử",
+      "description": "Bạn đang xem một bản phân tích từ lịch sử. Phiên làm việc hiện tại của bạn đã được ẩn đi.",
+      "back_to_current": "Quay lại dự án đang chạy"
+    },
+    "errors": {
+      "flow_generation": "Lỗi sinh luồng"
+    },
+    "requirement": {
+      "duplicate_alert": "Yêu cầu này đã được phân tích. Vui lòng thay đổi nội dung yêu cầu nếu bạn muốn chạy lại!",
+      "initializing_agent": "Đang khởi tạo Agent...",
+      "split_focus_prefix": "Tập trung phân tích và viết Story cho tính năng này:"
+    },
+    "actions": {
+      "jira_preview_error": "Lỗi Jira Preview: ",
+      "execute_error": "Lỗi thực thi: "
+    },
+    "sprint": {
+      "create_success": "Tạo sprint thành công: ",
+      "create_error": "Tạo sprint thất bại: "
+    }
   }
 }
