@@ -15,7 +15,7 @@ export default function ProcessingStatusPanel({ isLoading, context, storyDraft, 
   const evaluatorStatus = evaluation?.status; // APPROVED or REVISION
 
   return (
-    <section className="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+    <section className="grid grid-cols-1 gap-gutter lg:grid-cols-3">
       {/* Researcher Card */}
       <div className={`bg-white/80 backdrop-blur-sm rounded-xl border border-outline-variant p-stack-md border-l-4 shadow-sm transition-all hover:shadow-md ${isResearcherDone ? 'border-l-blue-500' : 'border-l-gray-300'}`}>
         <div className="flex items-center justify-between mb-unit">

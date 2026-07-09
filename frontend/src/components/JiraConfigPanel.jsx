@@ -1,6 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { getProject, updateProject } from '../lib/api';
 import { useTranslation } from 'react-i18next';
+import {
+  ConfigField,
+  ConfigLink,
+  ConfigNotice,
+  ConfigPanelShell,
+  ConfigSaveBar,
+  ConfigSection,
+  configInputClass,
+} from './ConfigPanelLayout';
+
+const ATLASSIAN_TOKEN_URL = 'https://id.atlassian.com/manage-profile/security/api-tokens';
 
 export default function JiraConfigPanel({ projectId }) {
   const { t } = useTranslation();
@@ -57,53 +68,67 @@ export default function JiraConfigPanel({ projectId }) {
     }
   };
 
-  if (loading) return <div>{t('common.loading')}</div>;
-  if (!projectId) return <div>{t('config.please_select_project')}</div>;
+  if (loading) {
+    return <ConfigNotice icon="progress_activity" title={t('common.loading')} description={t('config.common.loading_hint')} />;
+  }
+
+  if (!projectId) {
+    return <ConfigNotice icon="folder_open" title={t('config.common.no_project_title')} description={t('config.please_select_project')} />;
+  }
 
   return (
-    <div className="bg-surface p-6 rounded-xl border border-outline-variant shadow-sm max-w-2xl mx-auto">
-      <h2 className="text-xl font-bold mb-6 text-primary flex items-center gap-2">
-        <span className="material-symbols-outlined">settings_suggest</span> {t('config.jira.title')}
-      </h2>
-      <form onSubmit={handleSave} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">{t('config.jira.base_url')}</label>
-          <input type="text" name="base_url" value={config.base_url} onChange={handleChange} placeholder={t('config.jira.placeholder_base_url')} className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">{t('config.jira.project_key')}</label>
-          <input type="text" name="project_key" value={config.project_key} onChange={handleChange} placeholder={t('config.jira.placeholder_project_key')} className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">{t('config.jira.email')}</label>
-          <input type="email" name="email" value={config.email} onChange={handleChange} placeholder={t('config.jira.placeholder_email')} className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1 flex justify-between">
-            <span>{t('config.jira.api_token')}</span>
-            <a href="https://id.atlassian.com/manage-profile/security/api-tokens" target="_blank" rel="noreferrer" className="text-primary hover:underline font-normal">{t('config.jira.get_token')}</a>
-          </label>
-          <input type="password" name="api_token" value={config.api_token} onChange={handleChange} placeholder={t('config.jira.placeholder_api_token')} className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">{t('config.jira.issue_type')}</label>
-            <input type="text" name="issue_type" value={config.issue_type} onChange={handleChange} placeholder={t('config.jira.default_task')} className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
+    <form onSubmit={handleSave}>
+      <ConfigPanelShell
+        icon="settings_suggest"
+        title={t('config.jira.title')}
+        subtitle={t('config.jira.subtitle')}
+        badge={t('config.common.project_scoped')}
+        footer={(
+          <ConfigSaveBar
+            saving={saving}
+            label={t('config.common.save_changes')}
+            savingLabel={t('config.common.saving')}
+          />
+        )}
+      >
+        <ConfigSection title={t('config.jira.connection_section')} description={t('config.jira.connection_desc')}>
+          <ConfigField label={t('config.jira.base_url')}>
+            <input type="text" name="base_url" value={config.base_url} onChange={handleChange} placeholder={t('config.jira.placeholder_base_url')} className={configInputClass} />
+          </ConfigField>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            <ConfigField label={t('config.jira.project_key')}>
+              <input type="text" name="project_key" value={config.project_key} onChange={handleChange} placeholder={t('config.jira.placeholder_project_key')} className={configInputClass} />
+            </ConfigField>
+            <ConfigField label={t('config.jira.email')}>
+              <input type="email" name="email" value={config.email} onChange={handleChange} placeholder={t('config.jira.placeholder_email')} className={configInputClass} />
+            </ConfigField>
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">{t('config.jira.subtask_type')}</label>
-            <input type="text" name="subtask_issue_type" value={config.subtask_issue_type} onChange={handleChange} placeholder={t('config.jira.default_subtask')} className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
+
+          <ConfigField
+            label={t('config.jira.api_token')}
+            hint={t('config.jira.api_token_hint')}
+            action={<ConfigLink href={ATLASSIAN_TOKEN_URL}>{t('config.jira.get_token')}</ConfigLink>}
+          >
+            <input type="password" name="api_token" value={config.api_token} onChange={handleChange} placeholder={t('config.jira.placeholder_api_token')} className={configInputClass} />
+          </ConfigField>
+        </ConfigSection>
+
+        <ConfigSection title={t('config.jira.work_item_section')} description={t('config.jira.work_item_desc')}>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <ConfigField label={t('config.jira.issue_type')} hint={t('config.jira.issue_type_hint')}>
+              <input type="text" name="issue_type" value={config.issue_type} onChange={handleChange} placeholder={t('config.jira.default_task')} className={configInputClass} />
+            </ConfigField>
+            <ConfigField label={t('config.jira.subtask_type')} hint={t('config.jira.subtask_type_hint')}>
+              <input type="text" name="subtask_issue_type" value={config.subtask_issue_type} onChange={handleChange} placeholder={t('config.jira.default_subtask')} className={configInputClass} />
+            </ConfigField>
           </div>
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">{t('config.jira.board_id')}</label>
-          <input type="text" name="board_id" value={config.board_id} onChange={handleChange} className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
-        </div>
-        <button type="submit" disabled={saving} className="mt-4 px-4 py-2 bg-primary text-on-primary rounded-lg font-medium disabled:opacity-50 flex items-center gap-2">
-          {saving && <span className="material-symbols-outlined animate-spin text-sm">refresh</span>}
-          {t('common.save')}
-        </button>
-      </form>
-    </div>
+
+          <ConfigField label={t('config.jira.board_id')} hint={t('config.jira.board_id_hint')}>
+            <input type="text" name="board_id" value={config.board_id} onChange={handleChange} placeholder={t('config.jira.placeholder_board_id')} className={configInputClass} />
+          </ConfigField>
+        </ConfigSection>
+      </ConfigPanelShell>
+    </form>
   );
 }

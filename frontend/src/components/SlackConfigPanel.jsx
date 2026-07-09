@@ -1,6 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { getProject, updateProject } from '../lib/api';
 import { useTranslation } from 'react-i18next';
+import {
+  ConfigField,
+  ConfigLink,
+  ConfigNotice,
+  ConfigPanelShell,
+  ConfigSaveBar,
+  ConfigSection,
+  configInputClass,
+} from './ConfigPanelLayout';
+
+const SLACK_WEBHOOK_URL = 'https://api.slack.com/messaging/webhooks';
 
 export default function SlackConfigPanel({ projectId }) {
   const { t } = useTranslation();
@@ -45,46 +56,60 @@ export default function SlackConfigPanel({ projectId }) {
       await updateProject(projectId, { slack_config: config });
       alert(t('config.slack.saved'));
     } catch (err) {
-      alert(t('config.jira.save_error') + err.message);
+      alert(t('config.slack.save_error') + err.message);
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) return <div>{t('common.loading')}</div>;
-  if (!projectId) return <div>{t('config.please_select_project')}</div>;
+  if (loading) {
+    return <ConfigNotice icon="progress_activity" title={t('common.loading')} description={t('config.common.loading_hint')} />;
+  }
+
+  if (!projectId) {
+    return <ConfigNotice icon="folder_open" title={t('config.common.no_project_title')} description={t('config.please_select_project')} />;
+  }
 
   return (
-    <div className="bg-surface p-6 rounded-xl border border-outline-variant shadow-sm max-w-2xl mx-auto">
-      <h2 className="text-xl font-bold mb-6 text-primary flex items-center gap-2">
-        <span className="material-symbols-outlined">hub</span> {t('config.slack.title')}
-      </h2>
-      <form onSubmit={handleSave} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-1 flex justify-between">
-            <span>{t('config.slack.webhook_url')}</span>
-            <a href="https://api.slack.com/messaging/webhooks" target="_blank" rel="noreferrer" className="text-primary hover:underline font-normal">{t('config.slack.create_webhook')}</a>
-          </label>
-          <input type="password" name="webhook_url" value={config.webhook_url} onChange={handleChange} placeholder={t('config.slack.placeholder_webhook_url')} className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">{t('config.slack.mention_user_id')}</label>
-          <input type="text" name="mention_user_id" value={config.mention_user_id} onChange={handleChange} placeholder={t('config.slack.placeholder_mention_user_id')} className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">{t('config.slack.dev_channel_id')}</label>
-          <input type="text" name="dev_channel_id" value={config.dev_channel_id} onChange={handleChange} placeholder={t('config.slack.placeholder_dev_channel_id')} className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">{t('config.slack.qa_channel_id')}</label>
-          <input type="text" name="qa_channel_id" value={config.qa_channel_id} onChange={handleChange} placeholder={t('config.slack.placeholder_qa_channel_id')} className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
-        </div>
-        
-        <button type="submit" disabled={saving} className="mt-4 px-4 py-2 bg-primary text-on-primary rounded-lg font-medium disabled:opacity-50 flex items-center gap-2">
-          {saving && <span className="material-symbols-outlined animate-spin text-sm">refresh</span>}
-          {t('common.save')}
-        </button>
-      </form>
-    </div>
+    <form onSubmit={handleSave}>
+      <ConfigPanelShell
+        icon="hub"
+        title={t('config.slack.title')}
+        subtitle={t('config.slack.subtitle')}
+        badge={t('config.common.notification_ready')}
+        footer={(
+          <ConfigSaveBar
+            saving={saving}
+            label={t('config.common.save_changes')}
+            savingLabel={t('config.common.saving')}
+          />
+        )}
+      >
+        <ConfigSection title={t('config.slack.webhook_section')} description={t('config.slack.webhook_desc')}>
+          <ConfigField
+            label={t('config.slack.webhook_url')}
+            hint={t('config.slack.webhook_hint')}
+            action={<ConfigLink href={SLACK_WEBHOOK_URL}>{t('config.slack.create_webhook')}</ConfigLink>}
+          >
+            <input type="password" name="webhook_url" value={config.webhook_url} onChange={handleChange} placeholder={t('config.slack.placeholder_webhook_url')} className={configInputClass} />
+          </ConfigField>
+        </ConfigSection>
+
+        <ConfigSection title={t('config.slack.routing_section')} description={t('config.slack.routing_desc')}>
+          <ConfigField label={t('config.slack.mention_user_id')} hint={t('config.slack.mention_user_hint')}>
+            <input type="text" name="mention_user_id" value={config.mention_user_id} onChange={handleChange} placeholder={t('config.slack.placeholder_mention_user_id')} className={configInputClass} />
+          </ConfigField>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            <ConfigField label={t('config.slack.dev_channel_id')} hint={t('config.slack.dev_channel_hint')}>
+              <input type="text" name="dev_channel_id" value={config.dev_channel_id} onChange={handleChange} placeholder={t('config.slack.placeholder_dev_channel_id')} className={configInputClass} />
+            </ConfigField>
+            <ConfigField label={t('config.slack.qa_channel_id')} hint={t('config.slack.qa_channel_hint')}>
+              <input type="text" name="qa_channel_id" value={config.qa_channel_id} onChange={handleChange} placeholder={t('config.slack.placeholder_qa_channel_id')} className={configInputClass} />
+            </ConfigField>
+          </div>
+        </ConfigSection>
+      </ConfigPanelShell>
+    </form>
   );
 }

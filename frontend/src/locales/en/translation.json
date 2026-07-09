@@ -76,7 +76,7 @@
     }
   },
   "dashboard": {
-    "welcome": "Welcome back, Scrum Lead",
+    "welcome": "Welcome back, Product Lead",
     "no_active_sprint": "No Active Sprint",
     "jira_live": "JIRA LIVE",
     "complete": "Complete",
@@ -176,10 +176,12 @@
   "requirement_input": {
     "title": "Input Requirements from Customer",
     "placeholder": "Paste email or Slack message here...",
-    "processing": "Processing...",
+    "processing": "Preparing...",
     "import_docs": "Import Documents",
-    "support_formats": "Support: PDF, DOCX, TXT, MD",
-    "backend_embedding": "Backend is embedding documents...",
+    "support_formats": "Supported: PDF, DOCX, TXT, MD",
+    "backend_embedding": "Preparing documents for intelligent search...",
+    "backend_embedding_hint": "Large Markdown files can take a few minutes the first time. PM Agent will skip unchanged files on the next import.",
+    "import_complete": "Documents are ready for search.",
     "imported_docs": "Imported Documents",
     "remove_file": "Remove this file from context",
     "search_results": "Search results:",

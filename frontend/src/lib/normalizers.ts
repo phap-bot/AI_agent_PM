@@ -2,6 +2,7 @@ import type { StoryDraft } from '../types/api';
 
 export function normalizeStoryDraft(draft: StoryDraft | null | undefined, originalRequirement?: string): StoryDraft {
   const defaultTasks = { be: [], fe: [], qa: [] };
+  const normalizeArray = (value: unknown): any[] => Array.isArray(value) ? value : [];
   
   if (!draft) {
     return {
@@ -34,9 +35,23 @@ export function normalizeStoryDraft(draft: StoryDraft | null | undefined, origin
   
   return {
     ...draft,
-    tasks: draft.tasks || defaultTasks,
-    acceptance_criteria: draft.acceptance_criteria || [],
-    definition_of_done: draft.definition_of_done || [],
+    title: draft.title || originalRequirement || draft.requirement || '',
+    requirement: draft.requirement || originalRequirement || '',
+    user_story: draft.user_story || '',
+    tasks: {
+      be: normalizeArray(draft.tasks?.be),
+      fe: normalizeArray(draft.tasks?.fe),
+      qa: normalizeArray(draft.tasks?.qa),
+    },
+    acceptance_criteria: normalizeArray(draft.acceptance_criteria),
+    definition_of_done: normalizeArray(draft.definition_of_done),
     priority: draft.priority || 'Medium',
+    planning_status: draft.planning_status || 'DRAFT',
+    clarification_questions: normalizeArray(draft.clarification_questions),
+    assumptions: normalizeArray(draft.assumptions),
+    story_splits: normalizeArray(draft.story_splits),
+    sprint_allocation: normalizeArray(draft.sprint_allocation),
+    context_sources: normalizeArray(draft.context_sources),
+    warnings: normalizeArray(draft.warnings),
   };
 }

@@ -3,6 +3,7 @@ from pathlib import Path
 
 from ai_scrum_master.ingestion.ingest import (
     _compute_file_hash,
+    add_text_context_envelope,
     build_chunk_id,
     build_chunk_metadata,
     chunk_text,
@@ -10,6 +11,7 @@ from ai_scrum_master.ingestion.ingest import (
     read_source_text,
     resolve_chunk_source_path,
 )
+from ai_scrum_master.ingestion.universal_parser.core.parsers.pdf_handler import PdfParser
 from ai_scrum_master.ingestion.pdf_processing import (
     ExtractedPDFDocument,
     ExtractedPDFPage,
@@ -123,11 +125,15 @@ def test_document_hash_uses_pdf_bytes(tmp_path) -> None:
     assert document_hash(path, "extracted text") == hashlib.sha1(path.read_bytes()).hexdigest()
 
 
-def test_compute_file_hash_uses_docx_bytes(tmp_path) -> None:
+def test_compute_file_hash_is_stable_and_includes_index_fingerprint(tmp_path) -> None:
     path = tmp_path / "guide.docx"
     path.write_bytes(b"PK\x03\x04docx-binary")
 
-    assert _compute_file_hash(path) == hashlib.sha1(path.read_bytes()).hexdigest()
+    first = _compute_file_hash(path)
+    second = _compute_file_hash(path)
+
+    assert first == second
+    assert first != hashlib.sha1(path.read_bytes()).hexdigest()
 
 
 def test_resolve_chunk_source_path_accepts_project_relative_loader_source(tmp_path, monkeypatch) -> None:
@@ -211,3 +217,44 @@ def test_chunk_pdf_document_adds_page_metadata() -> None:
     assert chunks[0].metadata["page_numbers"] == "1,2"
     assert chunks[0].metadata["extraction_warnings"] == "low confidence"
     assert chunks[0].metadata["chunk_strategy"] == "pdf_page_semantic_recursive_character"
+
+
+def test_pdf_parser_outputs_page_markdown(monkeypatch, tmp_path) -> None:
+    class FakePage:
+        def get_text(self, mode="text"):
+            return "Alpha context"
+
+        def get_images(self, full=True):
+            return []
+
+    class FakeDoc:
+        def __len__(self):
+            return 1
+
+        def __getitem__(self, index):
+            return FakePage()
+
+    monkeypatch.setattr("fitz.open", lambda path: FakeDoc())
+
+    output = PdfParser().parse(tmp_path / "guide.pdf", tmp_path)
+
+    assert "# guide" in output
+    assert "## Page 1" in output
+    assert "Alpha context" in output
+
+
+def test_pdf_context_envelope_adds_page_metadata() -> None:
+    class Document:
+        def __init__(self, page_content, metadata):
+            self.page_content = page_content
+            self.metadata = metadata
+
+    chunks = add_text_context_envelope([
+        Document("# guide\n\n## Page 3\n\nAlpha context", {"source": "guide.pdf"})
+    ])
+
+    assert chunks[0].page_content.startswith("Document context: guide.pdf")
+    assert chunks[0].metadata["section_path"] == "guide > Page 3"
+    assert chunks[0].metadata["page_start"] == 3
+    assert chunks[0].metadata["page_end"] == 3
+    assert chunks[0].metadata["page_numbers"] == "3"

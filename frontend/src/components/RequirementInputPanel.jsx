@@ -253,7 +253,7 @@ export default function RequirementInputPanel({
         </div>
       </div>
 
-      <div className="grid gap-4 p-4 sm:p-5 xl:grid-cols-[minmax(0,1fr)_280px]">
+      <div className="grid gap-4 p-3 sm:p-4 lg:p-5">
         <div className="space-y-4">
           <label className="block">
             <span className="mb-2 flex items-center justify-between text-sm font-extrabold text-slate-800">
@@ -261,7 +261,7 @@ export default function RequirementInputPanel({
               <span className="text-xs font-bold text-slate-400">{requirement.trim().length} chars</span>
             </span>
             <textarea
-              className="min-h-[160px] w-full resize-none rounded-2xl border border-slate-200 bg-slate-50/80 p-4 text-sm leading-6 text-slate-950 outline-none transition-all placeholder:text-slate-400 focus:border-slate-400 focus:bg-white focus:ring-4 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-60 lg:min-h-[180px]"
+              className="min-h-[clamp(150px,22vh,240px)] w-full resize-none rounded-2xl border border-slate-200 bg-slate-50/80 p-3.5 text-sm leading-6 text-slate-950 outline-none transition-all placeholder:text-slate-400 focus:border-slate-400 focus:bg-white focus:ring-4 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-60 sm:p-4"
               placeholder={t('requirement_input.placeholder')}
               value={requirement}
               onChange={handleRequirementChange}
@@ -269,8 +269,8 @@ export default function RequirementInputPanel({
             />
           </label>
 
-          <div className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50/60 p-3 lg:grid-cols-[1fr_auto] lg:items-center">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-slate-50/80 to-blue-50/40 p-3 shadow-sm">
+            <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
               <input
                 type="file"
                 multiple
@@ -280,45 +280,57 @@ export default function RequirementInputPanel({
                 id="doc-upload"
                 accept=".pdf,.docx,.txt,.md"
               />
-              <label
-                htmlFor="doc-upload"
-                onClick={(e) => {
-                  if (!projectId) {
-                    e.preventDefault();
-                    setIngestError(t('requirement_input.select_project_first'));
-                  }
-                }}
-                className={`inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm font-bold text-slate-700 shadow-sm transition-all ${isIngesting || isLoading ? 'pointer-events-none opacity-50' : 'hover:-translate-y-0.5 hover:border-slate-400 hover:bg-slate-100'}`}
-              >
-                <span className="material-symbols-outlined text-[20px]">upload_file</span>
-                {isIngesting ? t('requirement_input.processing') : t('requirement_input.import_docs')}
-              </label>
-              <p className="text-xs font-bold text-slate-500">{t('requirement_input.support_formats')}</p>
-            </div>
+              <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
+                <label
+                  htmlFor="doc-upload"
+                  onClick={(e) => {
+                    if (!projectId) {
+                      e.preventDefault();
+                      setIngestError(t('requirement_input.select_project_first'));
+                    }
+                  }}
+                  className={`group inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-blue-100 bg-white px-4 py-2 text-sm font-black text-slate-800 shadow-sm shadow-blue-950/5 transition-all ${isIngesting || isLoading ? 'pointer-events-none opacity-50' : 'hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 hover:shadow-md'}`}
+                >
+                  <span className="grid h-7 w-7 place-items-center rounded-xl bg-blue-50 text-blue-700 transition group-hover:bg-blue-100">
+                    <span className="material-symbols-outlined text-[18px]">upload_file</span>
+                  </span>
+                  {isIngesting ? t('requirement_input.processing') : t('requirement_input.import_docs')}
+                </label>
+                <div className="min-w-0">
+                  <p className="text-[11px] font-black uppercase tracking-[0.14em] text-slate-400">Context files</p>
+                  <p className="mt-0.5 text-xs font-semibold text-slate-500">{t('requirement_input.support_formats')}</p>
+                </div>
+              </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <label className="flex items-center gap-2 text-sm font-bold text-slate-600">
-                {t('requirement_input.search_results')}
-                <input
-                  type="number"
-                  min="1"
-                  max="10"
-                  className="h-10 w-14 rounded-xl border border-slate-200 bg-white px-2 text-center font-bold text-slate-900 outline-none transition focus:border-slate-400 focus:ring-4 focus:ring-slate-200"
-                  value={nResults}
-                  onChange={e => setNResults(e.target.value)}
-                  disabled={isLoading}
-                />
-              </label>
-              <label className="flex min-h-10 cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-600 transition hover:border-slate-300 hover:bg-slate-100">
-                <input
-                  type="checkbox"
-                  className="rounded border-slate-300 text-slate-700 focus:ring-slate-500"
-                  checked={allowFallback}
-                  onChange={e => setAllowFallback(e.target.checked)}
-                  disabled={isLoading}
-                />
-                {t('requirement_input.allow_fallback')}
-              </label>
+              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center xl:justify-end">
+                <label className="flex min-h-11 items-center gap-3 rounded-2xl border border-slate-200 bg-white/90 px-3.5 py-2 shadow-sm shadow-slate-950/5">
+                  <span className="material-symbols-outlined text-[18px] text-slate-400">travel_explore</span>
+                  <span className="text-xs font-bold text-slate-500">{t('requirement_input.search_results')}</span>
+                  <input
+                    type="number"
+                    min="1"
+                    max="10"
+                    className="h-8 w-12 rounded-xl border border-slate-100 bg-slate-50 px-2 text-center text-sm font-black text-slate-900 outline-none transition focus:border-blue-200 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                    value={nResults}
+                    onChange={e => setNResults(e.target.value)}
+                    disabled={isLoading}
+                  />
+                </label>
+                <label className={`flex min-h-11 min-w-0 cursor-pointer items-center gap-3 rounded-2xl border px-3.5 py-2 text-sm font-bold shadow-sm shadow-slate-950/5 transition ${
+                  allowFallback
+                    ? 'border-blue-200 bg-blue-50 text-blue-800'
+                    : 'border-slate-200 bg-white/90 text-slate-600 hover:border-slate-300 hover:bg-white'
+                }`}>
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    checked={allowFallback}
+                    onChange={e => setAllowFallback(e.target.checked)}
+                    disabled={isLoading}
+                  />
+                  <span className="min-w-0">{t('requirement_input.allow_fallback')}</span>
+                </label>
+              </div>
             </div>
           </div>
 
@@ -378,12 +390,34 @@ export default function RequirementInputPanel({
               </div>
             </div>
           )}
-        </div>
 
-        <aside className="flex flex-col gap-3">
+          <div className="grid gap-3 rounded-2xl border border-slate-800 bg-slate-900 p-3 text-white shadow-sm lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+            <div className="min-w-0">
+              <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-300">Output contract</p>
+              <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold text-slate-200">
+                <li className="flex items-center gap-1.5 whitespace-nowrap"><span className="material-symbols-outlined text-[15px] text-emerald-300">check</span> As a / I want / So that</li>
+                <li className="flex items-center gap-1.5 whitespace-nowrap"><span className="material-symbols-outlined text-[15px] text-emerald-300">check</span> Given / When / Then AC</li>
+                <li className="flex items-center gap-1.5 whitespace-nowrap"><span className="material-symbols-outlined text-[15px] text-emerald-300">check</span> Fibonacci story points</li>
+                <li className="flex items-center gap-1.5 whitespace-nowrap"><span className="material-symbols-outlined text-[15px] text-emerald-300">check</span> BE / FE / QA tasks</li>
+              </ul>
+            </div>
+
+            <button
+              onClick={handleSubmit}
+              disabled={isLoading || requirement.trim().length < 3 || isIngesting}
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-xs font-black uppercase tracking-[0.04em] text-slate-900 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-slate-100 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 lg:w-auto"
+            >
+              {isLoading ? (
+                <><span className="h-4 w-4 rounded-full border-2 border-slate-900 border-t-transparent animate-spin"></span> {t('requirement_input.analyzing')}</>
+              ) : (
+                <>{t('requirement_input.analyze_create_task')}</>
+              )}
+            </button>
+          </div>
+
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
-            <div className="border-b border-slate-200 bg-white/70 px-4 py-3">
-              <div className="flex items-center justify-between gap-3">
+            <div className="border-b border-slate-200 bg-white/80 px-4 py-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">Agent path</p>
                   <p className="mt-1 text-[11px] font-semibold text-slate-500">
@@ -394,37 +428,41 @@ export default function RequirementInputPanel({
                         : 'Follow the work from context to approval.'}
                   </p>
                 </div>
-                <span className={`relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-[10px] font-black ${
-                  isLoading ? 'border-blue-200 bg-blue-50 text-blue-700' : hasEvaluation ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-500'
-                }`}>
-                  {isLoading && <span className="absolute inset-0 rounded-full bg-blue-400/20 animate-ping" />}
-                  {completedAgentSteps}/4
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className={`relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-[10px] font-black ${
+                    isLoading ? 'border-blue-200 bg-blue-50 text-blue-700' : hasEvaluation ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-500'
+                  }`}>
+                    {isLoading && <span className="absolute inset-0 rounded-full bg-blue-400/20 animate-ping" />}
+                    {completedAgentSteps}/4
+                  </span>
+                  <div className="h-1.5 w-28 overflow-hidden rounded-full bg-slate-200 sm:w-36">
+                    <div
+                      className={`h-full rounded-full transition-all duration-700 ${
+                        evaluationStatus === 'APPROVED'
+                          ? 'bg-emerald-500'
+                          : evaluationStatus === 'REVISION'
+                            ? 'bg-amber-500'
+                            : 'bg-blue-600'
+                      }`}
+                      style={{ width: `${agentProgress}%` }}
+                    />
+                  </div>
+                </div>
               </div>
-              <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-200">
+            </div>
+
+            <div className="relative overflow-x-auto overscroll-x-contain p-4">
+              <div className="absolute left-8 right-8 top-[38px] hidden h-px bg-slate-200 lg:block" />
+              <div className="absolute left-8 right-8 top-[38px] hidden h-px overflow-hidden lg:block">
                 <div
-                  className={`h-full rounded-full transition-all duration-700 ${
-                    evaluationStatus === 'APPROVED'
-                      ? 'bg-emerald-500'
-                      : evaluationStatus === 'REVISION'
-                        ? 'bg-amber-500'
-                        : 'bg-blue-600'
+                  className={`h-full transition-all duration-700 ${
+                    evaluationStatus === 'REVISION' ? 'bg-amber-400' : 'bg-blue-500'
                   }`}
                   style={{ width: `${agentProgress}%` }}
                 />
               </div>
-            </div>
 
-            <div className="relative p-4">
-              <div className="absolute bottom-6 left-[27px] top-6 w-px bg-slate-200" />
-              <div
-                className={`absolute left-[27px] top-6 w-px transition-all duration-700 ${
-                  evaluationStatus === 'REVISION' ? 'bg-amber-400' : 'bg-blue-500'
-                }`}
-                style={{ height: `calc(${agentProgress}% - 24px)` }}
-              />
-
-              <div className="space-y-3">
+              <div className="grid min-w-[880px] grid-cols-4 gap-3">
                 {agentSteps.map((step, index) => {
                   const tone = agentToneClass[step.tone] || agentToneClass.slate;
                   const isCurrent = step.active || (isLoading && currentAgentStep === index);
@@ -437,32 +475,30 @@ export default function RequirementInputPanel({
                   return (
                     <div
                       key={step.title}
-                      className={`relative flex gap-3 rounded-2xl border bg-white p-3 shadow-sm transition-all duration-300 ${
+                      className={`relative min-h-[178px] rounded-2xl border bg-white p-3 shadow-sm transition-all duration-300 ${
                         isCurrent
                           ? `border-slate-300 ring-4 ${tone.ring}`
                           : step.done
                             ? 'border-slate-200'
-                            : 'border-transparent bg-white/60'
+                            : 'border-slate-100 bg-white/70'
                       }`}
                     >
-                      <span className={`relative z-10 grid h-7 w-7 shrink-0 place-items-center rounded-full border border-white text-[17px] shadow-md ${step.done || isCurrent ? tone.dot : agentToneClass.slate.dot}`}>
-                        {isCurrent && <span className="absolute inset-0 rounded-full bg-current opacity-20 animate-ping" />}
-                        <span className="material-symbols-outlined text-[17px]">
-                          {step.done ? 'check' : step.icon}
-                        </span>
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <p className="text-sm font-black text-slate-800">{step.title}</p>
-                            <p className="mt-0.5 text-[11px] leading-4 text-slate-500">{step.description}</p>
-                          </div>
-                          <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.08em] ${step.done || isCurrent ? tone.badge : agentToneClass.slate.badge}`}>
-                            {stateLabel}
+                      <div className="flex items-start justify-between gap-2">
+                        <span className={`relative z-10 grid h-8 w-8 shrink-0 place-items-center rounded-full border border-white text-[18px] shadow-md ${step.done || isCurrent ? tone.dot : agentToneClass.slate.dot}`}>
+                          {isCurrent && <span className="absolute inset-0 rounded-full bg-current opacity-20 animate-ping" />}
+                          <span className="material-symbols-outlined text-[18px]">
+                            {step.done ? 'check' : step.icon}
                           </span>
-                        </div>
-                        <div className="mt-2 flex items-center gap-2">
-                          <span className={`h-1.5 w-1.5 rounded-full ${step.done || isCurrent ? tone.dot.split(' ')[0] : 'bg-slate-300'}`} />
+                        </span>
+                        <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.08em] ${step.done || isCurrent ? tone.badge : agentToneClass.slate.badge}`}>
+                          {stateLabel}
+                        </span>
+                      </div>
+                      <div className="mt-3 min-w-0">
+                        <p className="text-sm font-black text-slate-800">{step.title}</p>
+                        <p className="mt-1 text-[11px] leading-4 text-slate-500">{step.description}</p>
+                        <div className="mt-3 flex items-center gap-2 rounded-xl bg-slate-50 px-2.5 py-2">
+                          <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${step.done || isCurrent ? tone.dot.split(' ')[0] : 'bg-slate-300'}`} />
                           <p className={`truncate text-[10px] font-bold ${step.done || isCurrent ? tone.text : 'text-slate-400'}`}>
                             {step.meta}
                           </p>
@@ -474,29 +510,9 @@ export default function RequirementInputPanel({
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="rounded-2xl border border-slate-800 bg-slate-900 p-4 text-white">
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-300">Output contract</p>
-            <ul className="mt-4 space-y-2.5 text-sm font-semibold text-slate-300">
-              <li className="flex gap-2"><span className="text-slate-300">✓</span> As a / I want / So that</li>
-              <li className="flex gap-2"><span className="text-slate-300">✓</span> Given / When / Then AC</li>
-              <li className="flex gap-2"><span className="text-slate-300">✓</span> Fibonacci story points</li>
-              <li className="flex gap-2"><span className="text-slate-300">✓</span> BE / FE / QA tasks</li>
-            </ul>
-          </div>
 
-          <button
-            onClick={handleSubmit}
-            disabled={isLoading || requirement.trim().length < 3 || isIngesting}
-            className="mt-auto inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-slate-800 px-5 py-3 text-xs font-black uppercase tracking-[0.04em] text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-slate-900 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
-          >
-            {isLoading ? (
-              <><span className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin"></span> {t('requirement_input.analyzing')}</>
-            ) : (
-              <>{t('requirement_input.analyze_create_task')}</>
-            )}
-          </button>
-        </aside>
       </div>
     </section>
   );

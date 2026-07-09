@@ -75,15 +75,15 @@ export default {
           "stack-sm": "8px"
       },
       "fontFamily": {
-          "sans": ["IBM Plex Sans", "system-ui", "sans-serif"],
-          "mono": ["IBM Plex Sans", "system-ui", "sans-serif"],
-          "display-lg": ["IBM Plex Sans", "system-ui", "sans-serif"],
-          "body-md": ["IBM Plex Sans", "system-ui", "sans-serif"],
-          "headline-sm": ["IBM Plex Sans", "system-ui", "sans-serif"],
-          "mono-sm": ["IBM Plex Sans", "system-ui", "sans-serif"],
-          "headline-md": ["IBM Plex Sans", "system-ui", "sans-serif"],
-          "label-md": ["IBM Plex Sans", "system-ui", "sans-serif"],
-          "body-lg": ["IBM Plex Sans", "system-ui", "sans-serif"]
+          "sans": ["Roboto", "system-ui", "sans-serif"],
+          "mono": ["Roboto", "system-ui", "sans-serif"],
+          "display-lg": ["Roboto", "system-ui", "sans-serif"],
+          "body-md": ["Roboto", "system-ui", "sans-serif"],
+          "headline-sm": ["Roboto", "system-ui", "sans-serif"],
+          "mono-sm": ["Roboto", "system-ui", "sans-serif"],
+          "headline-md": ["Roboto", "system-ui", "sans-serif"],
+          "label-md": ["Roboto", "system-ui", "sans-serif"],
+          "body-lg": ["Roboto", "system-ui", "sans-serif"]
       },
       "fontSize": {
           "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "0", "fontWeight": "700"}],

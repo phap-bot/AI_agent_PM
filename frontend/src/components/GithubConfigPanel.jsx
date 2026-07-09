@@ -1,6 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { getProject, updateProject } from '../lib/api';
 import { useTranslation } from 'react-i18next';
+import {
+  ConfigField,
+  ConfigLink,
+  ConfigNotice,
+  ConfigPanelShell,
+  ConfigSaveBar,
+  ConfigSection,
+  configInputClass,
+} from './ConfigPanelLayout';
+
+const GITHUB_TOKEN_URL = 'https://github.com/settings/tokens/new';
 
 export default function GithubConfigPanel({ projectId }) {
   const { t } = useTranslation();
@@ -18,7 +29,6 @@ export default function GithubConfigPanel({ projectId }) {
       getProject(projectId)
         .then(res => {
           if (res.github_config) {
-            // If base_branch is 'main' from backend default, we can show it as empty to show placeholder
             const branch = res.github_config.base_branch === 'main' ? '' : (res.github_config.base_branch || '');
             setConfig({
               repository: res.github_config.repository || '',
@@ -45,43 +55,55 @@ export default function GithubConfigPanel({ projectId }) {
       await updateProject(projectId, { github_config: config });
       alert(t('config.github.saved'));
     } catch (err) {
-      alert(t('config.jira.save_error') + err.message);
+      alert(t('config.github.save_error') + err.message);
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) return <div>{t('common.loading')}</div>;
-  if (!projectId) return <div>{t('config.please_select_project')}</div>;
+  if (loading) {
+    return <ConfigNotice icon="progress_activity" title={t('common.loading')} description={t('config.common.loading_hint')} />;
+  }
+
+  if (!projectId) {
+    return <ConfigNotice icon="folder_open" title={t('config.common.no_project_title')} description={t('config.please_select_project')} />;
+  }
 
   return (
-    <div className="bg-surface p-6 rounded-xl border border-outline-variant shadow-sm max-w-2xl mx-auto">
-      <h2 className="text-xl font-bold mb-6 text-primary flex items-center gap-2">
-        <span className="material-symbols-outlined">code</span> {t('config.github.title')}
-      </h2>
-      <form onSubmit={handleSave} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">{t('config.github.repo')}</label>
-          <input type="text" name="repository" value={config.repository} onChange={handleChange} placeholder="VD: phap-bot/AI_agent_PM hoặc https://github.com/..." className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">{t('config.github.base_branch')}</label>
-          <input type="text" name="base_branch" value={config.base_branch} onChange={handleChange} placeholder={t('config.github.placeholder_base_branch')} className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
-          <p className="text-xs text-on-surface-variant mt-1">{t('config.github.base_branch_desc')}</p>
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1 flex justify-between">
-            <span>{t('config.github.token')}</span>
-            <a href="https://github.com/settings/tokens/new" target="_blank" rel="noreferrer" className="text-primary hover:underline font-normal">{t('config.github.get_token')}</a>
-          </label>
-          <input type="password" name="api_token" value={config.api_token} onChange={handleChange} placeholder={t('config.github.placeholder_api_token')} className="w-full px-3 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary" />
-        </div>
-        
-        <button type="submit" disabled={saving} className="mt-4 px-4 py-2 bg-primary text-on-primary rounded-lg font-medium disabled:opacity-50 flex items-center gap-2">
-          {saving && <span className="material-symbols-outlined animate-spin text-sm">refresh</span>}
-          {t('common.save')}
-        </button>
-      </form>
-    </div>
+    <form onSubmit={handleSave}>
+      <ConfigPanelShell
+        icon="code"
+        title={t('config.github.title')}
+        subtitle={t('config.github.subtitle')}
+        badge={t('config.common.branch_ready')}
+        footer={(
+          <ConfigSaveBar
+            saving={saving}
+            label={t('config.common.save_changes')}
+            savingLabel={t('config.common.saving')}
+          />
+        )}
+      >
+        <ConfigSection title={t('config.github.repository_section')} description={t('config.github.repository_desc')}>
+          <ConfigField label={t('config.github.repo')} hint={t('config.github.repo_hint')}>
+            <input type="text" name="repository" value={config.repository} onChange={handleChange} placeholder={t('config.github.placeholder_repo')} className={configInputClass} />
+          </ConfigField>
+
+          <ConfigField label={t('config.github.base_branch')} hint={t('config.github.base_branch_desc')}>
+            <input type="text" name="base_branch" value={config.base_branch} onChange={handleChange} placeholder={t('config.github.placeholder_base_branch')} className={configInputClass} />
+          </ConfigField>
+        </ConfigSection>
+
+        <ConfigSection title={t('config.github.token_section')} description={t('config.github.token_desc')}>
+          <ConfigField
+            label={t('config.github.token')}
+            hint={t('config.github.token_hint')}
+            action={<ConfigLink href={GITHUB_TOKEN_URL}>{t('config.github.get_token')}</ConfigLink>}
+          >
+            <input type="password" name="api_token" value={config.api_token} onChange={handleChange} placeholder={t('config.github.placeholder_api_token')} className={configInputClass} />
+          </ConfigField>
+        </ConfigSection>
+      </ConfigPanelShell>
+    </form>
   );
 }

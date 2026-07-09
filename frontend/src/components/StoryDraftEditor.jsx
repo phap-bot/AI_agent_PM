@@ -74,6 +74,17 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
 
   const isApproved = evaluation?.status === 'APPROVED';
   const isJiraReady = actions?.jira?.ready;
+  const actionBlocked = !isApproved || (actions && !isJiraReady);
+  const missingDraftFields = [
+    !draft.user_story?.trim() ? t('story_draft.missing_user_story') : null,
+    (draft.acceptance_criteria || []).filter(Boolean).length < 3 ? t('story_draft.missing_acceptance_criteria') : null,
+    !draft.story_points ? t('story_draft.missing_story_points') : null,
+    !(draft.tasks?.be || []).some(Boolean) ? t('story_draft.missing_be_task') : null,
+    !(draft.tasks?.fe || []).some(Boolean) ? t('story_draft.missing_fe_task') : null,
+    !(draft.tasks?.qa || []).some(Boolean) ? t('story_draft.missing_qa_task') : null,
+    (draft.definition_of_done || []).filter(Boolean).length === 0 ? t('story_draft.missing_dod') : null,
+  ].filter(Boolean);
+  const hasCompleteDraftShape = missingDraftFields.length === 0;
   const needsClarification = evaluation?.status === 'NEEDS_CONTEXT' 
     || evaluation?.status === 'REVISION'
     || (draft.clarification_questions?.length > 0);
@@ -115,7 +126,12 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
   };
 
   const hasIssues = evaluation?.issues?.length > 0;
-  const showAllClear = unansweredQuestions.length === 0 && !hasIssues;
+  const hasRevisionInstructions = evaluation?.revision_instructions?.length > 0;
+  const hasWarnings = (evaluation?.warnings?.length || 0) > 0 || (draft.warnings?.length || 0) > 0;
+  const showAllClear = unansweredQuestions.length === 0 && !hasIssues && isApproved && hasCompleteDraftShape;
+  const statusBadge = isApproved && hasCompleteDraftShape
+    ? { className: 'bg-green-50/80 text-green-700 border-green-200', dot: 'bg-green-500', text: t('story_draft.ready_for_approval') }
+    : { className: 'bg-amber-50/90 text-amber-800 border-amber-200', dot: 'bg-amber-500', text: t('story_draft.needs_revision') };
 
   return (
     <section className="bg-white/40 glass-panel rounded-2xl border border-white/40 overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.08)] border-l-4 border-l-primary-container max-h-[800px] overflow-y-auto">
@@ -132,14 +148,55 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
           </div>
         </div>
         <div className="flex items-center gap-stack-sm">
-          <span className="ai-badge-pulse bg-green-50/80 text-green-700 text-[10px] font-bold px-3 py-1.5 rounded-full border border-green-200 uppercase tracking-widest flex items-center gap-1">
-            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-            {t('story_draft.ai_generated')}
+          <span className={`ai-badge-pulse text-[10px] font-bold px-3 py-1.5 rounded-full border uppercase tracking-widest flex items-center gap-1 ${statusBadge.className}`}>
+            <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${statusBadge.dot}`}></span>
+            {statusBadge.text}
           </span>
         </div>
       </div>
 
       <div className="p-container-padding space-y-stack-lg">
+        {(!isApproved || !hasCompleteDraftShape) && (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-900">
+            <div className="flex gap-3">
+              <span className="material-symbols-outlined text-amber-600">block</span>
+              <div className="min-w-0 flex-1">
+                <h4 className="font-bold">{t('story_draft.action_blocked_title')}</h4>
+                <p className="mt-1 text-sm text-amber-800">{t('story_draft.action_blocked_desc')}</p>
+                {missingDraftFields.length > 0 && (
+                  <div className="mt-3">
+                    <p className="text-xs font-bold uppercase tracking-wider text-amber-700">{t('story_draft.missing_output')}</p>
+                    <ul className="mt-2 grid gap-1 text-sm sm:grid-cols-2">
+                      {missingDraftFields.map((field, i) => (
+                        <li key={`missing-${i}`} className="flex items-start gap-2">
+                          <span className="material-symbols-outlined mt-0.5 text-[16px] text-amber-600">warning</span>
+                          <span>{field}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {hasRevisionInstructions && (
+                  <div className="mt-3">
+                    <p className="text-xs font-bold uppercase tracking-wider text-amber-700">{t('story_draft.revision_instructions')}</p>
+                    <ul className="mt-2 list-disc pl-5 text-sm">
+                      {evaluation.revision_instructions.map((instruction, i) => <li key={`instruction-${i}`}>{instruction}</li>)}
+                    </ul>
+                  </div>
+                )}
+                {hasWarnings && (
+                  <div className="mt-3">
+                    <p className="text-xs font-bold uppercase tracking-wider text-amber-700">{t('story_draft.warnings')}</p>
+                    <ul className="mt-2 list-disc pl-5 text-sm">
+                      {[...(draft.warnings || []), ...(evaluation?.warnings || [])].map((warning, i) => <li key={`warning-${i}`}>{warning}</li>)}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Error/Warning Issues from Evaluator */}
         {evaluation && evaluation.issues && evaluation.issues.length > 0 && !(draft.story_type === 'oversized_request' || draft.planning_status === 'SPLIT_RECOMMENDED') && (
           <div className="bg-red-50 border border-red-200 p-4 rounded-xl text-red-800 text-body-md">
@@ -229,6 +286,7 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
                   <textarea 
                     className="w-full p-3 bg-white/40 border border-outline-variant/20 rounded-lg text-body-md focus:ring-2 focus:ring-primary/20 outline-none resize-none h-24"
                     value={draft.user_story}
+                    placeholder={t('story_draft.empty_user_story_placeholder')}
                     onChange={(e) => handleChange('user_story', e.target.value)}
                   />
                 </div>
@@ -248,6 +306,11 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
                       <button onClick={() => handleRemoveArrayItem('acceptance_criteria', i)} className="text-red-400 hover:text-red-600 p-2"><span className="material-symbols-outlined text-[18px]">delete</span></button>
                     </div>
                   ))}
+                  {(draft.acceptance_criteria || []).length === 0 && (
+                    <div className="rounded-lg border border-dashed border-outline-variant/40 bg-white/30 p-3 text-sm text-on-surface-variant">
+                      {t('story_draft.empty_ac_placeholder')}
+                    </div>
+                  )}
                   <button onClick={() => handleAddArrayItem('acceptance_criteria')} className="text-primary text-[12px] font-bold flex items-center gap-1 hover:underline"><span className="material-symbols-outlined text-[16px]">add</span>{t('story_draft.add_ac')}</button>
                 </div>
               </div>
@@ -262,6 +325,11 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
                       <button onClick={() => handleRemoveTask('be', i)} className="text-red-400 hover:text-red-600 p-1"><span className="material-symbols-outlined text-[14px]">close</span></button>
                     </div>
                   ))}
+                  {(draft.tasks?.be || []).length === 0 && (draft.tasks?.fe || []).length === 0 && (draft.tasks?.qa || []).length === 0 && (
+                    <div className="rounded-lg border border-dashed border-outline-variant/40 bg-white/30 p-3 text-sm text-on-surface-variant">
+                      {t('story_draft.empty_tasks_placeholder')}
+                    </div>
+                  )}
                   <button onClick={() => handleAddTask('be')} className="text-primary text-[12px] font-bold flex items-center gap-1 hover:underline"><span className="material-symbols-outlined text-[16px]">add</span>{t('story_draft.add_task_be')}</button>
                   
                   {draft.tasks?.fe?.map((task, i) => (
@@ -502,11 +570,12 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
             </button>
           )}
           <button
-            disabled={isPushingJira || !isApproved || (actions && !isJiraReady) || isRegenerating}
+            disabled={isPushingJira || actionBlocked || isRegenerating}
             onClick={onPushToJira}
-            className={`flex-[2] py-4 font-bold text-label-md rounded-xl shadow-lg transition-all ${(isPushingJira || !isApproved || (actions && !isJiraReady) || isRegenerating) ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-primary text-on-primary shadow-primary/20 hover:opacity-90 active:scale-95'}`}
+            title={actionBlocked ? t('story_draft.action_blocked_tooltip') : ''}
+            className={`flex-[2] py-4 font-bold text-label-md rounded-xl shadow-lg transition-all ${(isPushingJira || actionBlocked || isRegenerating) ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-primary text-on-primary shadow-primary/20 hover:opacity-90 active:scale-95'}`}
           >
-            {isPushingJira ? t('story_draft.executing_actions') : t('story_draft.execute_actions')}
+            {isPushingJira ? t('story_draft.executing_actions') : actionBlocked ? t('story_draft.resolve_before_actions') : t('story_draft.execute_actions')}
           </button>
         </div>
         

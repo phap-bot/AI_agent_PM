@@ -321,13 +321,15 @@ function App() {
   const displayEvaluation = historyItemView?.result?.evaluation || evaluation;
   const displayActions = historyItemView?.result?.actions || actions;
   const topNavClass = (view) => `cursor-pointer rounded-full px-3.5 py-1.5 font-label-md text-label-md transition-all ${
-    currentView === view ? 'bg-slate-200 text-slate-950 shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-950'
+    currentView === view ? 'bg-slate-200 text-slate-950 shadow-sm' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-950'
   }`;
-  const sideNavClass = (view) => `flex min-h-10 cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 font-label-md text-label-md transition-all ${
-    currentView === view ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950'
+  const sideNavClass = (view) => `group flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm font-bold transition-all ${
+    currentView === view
+      ? 'bg-slate-900 text-white shadow-sm shadow-slate-950/10'
+      : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950'
   }`;
   const mobileNavClass = (view) => `flex flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 text-[10px] font-black transition ${
-    currentView === view ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-500'
+    currentView === view ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-700'
   }`;
 
   if (showLanding) {
@@ -349,7 +351,7 @@ function App() {
             <span className="grid h-9 w-9 place-items-center rounded-xl bg-slate-800 text-sm font-black text-white shadow-sm">PM</span>
             <span className="hidden text-headline-sm font-black tracking-normal text-slate-950 sm:inline">PM Agent</span>
           </button>
-          <nav className="hidden md:flex items-center gap-stack-lg ml-stack-lg">
+          <nav className="ml-stack-lg hidden items-center gap-4 lg:flex xl:gap-stack-lg">
             <a 
               onClick={() => setCurrentView('dashboard')}
               className={topNavClass('dashboard')}>
@@ -374,7 +376,7 @@ function App() {
         </div>
         <div className="flex min-w-0 items-center gap-2 sm:gap-stack-md">
           <div className="relative flex items-center gap-2">
-            <span className="hidden text-sm font-medium text-on-surface-variant sm:inline">{t('header.project')}</span>
+            <span className="hidden text-sm font-semibold text-slate-800 sm:inline">{t('header.project')}</span>
             <ProjectDropdown
               projects={projects}
               activeProjectId={activeProjectId}
@@ -406,10 +408,10 @@ function App() {
           >
             {t('header.create_sprint')}
           </button>
-          <button className="hidden h-9 w-9 place-items-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-950 sm:grid" aria-label="Notifications">
+          <button className="hidden h-9 w-9 place-items-center rounded-xl text-slate-700 transition hover:bg-slate-100 hover:text-slate-950 sm:grid" aria-label="Notifications">
             <span className="material-symbols-outlined text-[20px]">notifications</span>
           </button>
-          <button className="hidden h-9 w-9 place-items-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-950 sm:grid" aria-label="Help">
+          <button className="hidden h-9 w-9 place-items-center rounded-xl text-slate-700 transition hover:bg-slate-100 hover:text-slate-950 sm:grid" aria-label="Help">
             <span className="material-symbols-outlined text-[20px]">help</span>
           </button>
           <div className="hidden h-9 w-9 overflow-hidden rounded-xl border border-slate-200 bg-slate-100 shadow-sm sm:block">
@@ -507,79 +509,87 @@ function App() {
       )}
 
       {/* Side Navigation Bar */}
-      <aside className="fixed left-0 top-14 z-40 hidden h-[calc(100vh-56px)] w-56 flex-col border-r border-slate-200 bg-white/85 p-3 shadow-sm backdrop-blur-xl md:flex">
-        <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-100 p-3">
+      <aside className="fixed left-0 top-14 z-40 hidden h-[calc(100vh-56px)] w-56 flex-col border-r border-slate-200 bg-white/90 p-3 shadow-sm backdrop-blur-xl lg:flex">
+        <div className="mb-4 rounded-[22px] border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-blue-50/60 p-3 shadow-sm shadow-slate-950/5">
           <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-800 text-white shadow-sm">
-            <span className="material-symbols-outlined" style={{fontVariationSettings: "'FILL' 1"}}>folder_open</span>
-          </div>
-          <div>
-            <p className="font-headline-sm text-headline-sm font-black text-slate-950">{t('header.smart_lib')}</p>
-            <p className="font-label-md text-label-md text-slate-500">{sprintName}</p>
-          </div>
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-sm shadow-slate-950/15">
+              <span className="material-symbols-outlined text-[23px]" style={{fontVariationSettings: "'FILL' 1"}}>folder_open</span>
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-base font-black tracking-[-0.02em] text-slate-950">{t('header.smart_lib')}</p>
+              <p className="mt-0.5 truncate text-xs font-bold text-slate-700">{sprintName}</p>
+            </div>
           </div>
         </div>
-        <nav className="flex-1 overflow-y-auto sidebar-scroll space-y-unit">
-          <p className="px-3 pb-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t('sidebar.main')}</p>
-          <a 
+        <nav className="flex-1 overflow-y-auto sidebar-scroll space-y-1">
+          <p className="px-3 pb-2 pt-1 text-[10px] font-black uppercase tracking-[0.24em] text-slate-600">{t('sidebar.main')}</p>
+          <button
+            type="button"
             className={sideNavClass('project')}
             onClick={() => setCurrentView('project')}
           >
-            <span className="material-symbols-outlined">folder_open</span> {t('sidebar.projects')}
-          </a>
-          <a 
+            <span className="material-symbols-outlined text-[22px]">folder_open</span>
+            <span className="truncate">{t('sidebar.projects')}</span>
+          </button>
+          <button
+            type="button"
             className={sideNavClass('sprint')}
             onClick={() => setCurrentView('sprint')}
           >
-            <span className="material-symbols-outlined">skateboarding</span> {t('sidebar.sprint')}
-          </a>
-          <p className="mt-5 px-3 pb-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t('sidebar.settings')}</p>
-          <div 
+            <span className="material-symbols-outlined text-[22px]">view_kanban</span>
+            <span className="truncate">{t('sidebar.sprint')}</span>
+          </button>
+          <p className="mt-5 px-3 pb-2 text-[10px] font-black uppercase tracking-[0.24em] text-slate-600">{t('sidebar.settings')}</p>
+          <button
+            type="button"
             className={sideNavClass('config_jira')}
             onClick={() => setCurrentView('config_jira')}
           >
-            <div className="flex items-center gap-stack-sm">
-              <span className="material-symbols-outlined">settings_suggest</span> {t('sidebar.jira_config')}
-            </div>
-          </div>
-          <div 
+            <span className="material-symbols-outlined text-[22px]">settings_suggest</span>
+            <span className="truncate">{t('sidebar.jira_config')}</span>
+          </button>
+          <button
+            type="button"
             className={sideNavClass('config_slack')}
             onClick={() => setCurrentView('config_slack')}
           >
-            <div className="flex items-center gap-stack-sm">
-              <span className="material-symbols-outlined">hub</span> {t('sidebar.slack_config')}
-            </div>
-          </div>
-          <div 
+            <span className="material-symbols-outlined text-[22px]">hub</span>
+            <span className="truncate">{t('sidebar.slack_config')}</span>
+          </button>
+          <button
+            type="button"
             className={sideNavClass('config_github')}
             onClick={() => setCurrentView('config_github')}
           >
-            <div className="flex items-center gap-stack-sm">
-              <span className="material-symbols-outlined">code</span> {t('sidebar.github_config')}
-            </div>
-          </div>
-          <p className="mt-5 px-3 pb-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t('sidebar.history')}</p>
-          <a 
+            <span className="material-symbols-outlined text-[22px]">code</span>
+            <span className="truncate">{t('sidebar.github_config')}</span>
+          </button>
+          <p className="mt-5 px-3 pb-2 text-[10px] font-black uppercase tracking-[0.24em] text-slate-600">{t('sidebar.history')}</p>
+          <button
+            type="button"
             className={sideNavClass('history')}
             onClick={() => setCurrentView('history')}
           >
-            <span className="material-symbols-outlined">history</span> {t('sidebar.query_history')}
-          </a>
+            <span className="material-symbols-outlined text-[22px]">history</span>
+            <span className="truncate">{t('sidebar.query_history')}</span>
+          </button>
         </nav>
         <div className="mt-auto flex flex-col gap-2 border-t border-slate-200 pt-4">
           <div className="px-stack-sm mb-2">
             <LanguageSwitcher />
           </div>
-          <a className="flex min-h-10 items-center gap-3 rounded-xl px-3 py-2 font-label-md text-label-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-950">
-            <span className="material-symbols-outlined">help</span> {t('sidebar.help')}
-          </a>
-          <a className="flex min-h-10 items-center gap-3 rounded-xl px-3 py-2 font-label-md text-label-md text-red-600 transition hover:bg-red-50">
-            <span className="material-symbols-outlined">logout</span> {t('sidebar.logout')}
-          </a>
+          <button type="button" className="flex min-h-11 w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm font-bold text-slate-800 transition hover:bg-slate-100 hover:text-slate-950">
+            <span className="material-symbols-outlined text-[22px]">help</span>
+            <span>{t('sidebar.help')}</span>
+          </button>
+          <button type="button" className="flex min-h-11 w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm font-bold text-red-600 transition hover:bg-red-50">
+            <span className="material-symbols-outlined text-[22px]">logout</span>
+            <span>{t('sidebar.logout')}</span>
+          </button>
         </div>
       </aside>
 
-      <nav className="fixed bottom-3 left-3 right-3 z-50 flex gap-2 rounded-[24px] border border-slate-200 bg-white/90 p-2 shadow-xl shadow-slate-950/10 backdrop-blur-xl md:hidden" aria-label="Mobile navigation">
+      <nav className="fixed bottom-3 left-3 right-3 z-50 flex gap-2 rounded-[24px] border border-slate-200 bg-white/90 p-2 shadow-xl shadow-slate-950/10 backdrop-blur-xl lg:hidden" aria-label="Mobile navigation">
         <button className={mobileNavClass('dashboard')} onClick={() => setCurrentView('dashboard')}>
           <span className="material-symbols-outlined text-[20px]">dashboard</span>
           {t('header.dashboard')}
@@ -589,7 +599,7 @@ function App() {
           {t('header.smart_lib')}
         </button>
         <button className={mobileNavClass('sprint')} onClick={() => setCurrentView('sprint')}>
-          <span className="material-symbols-outlined text-[20px]">skateboarding</span>
+          <span className="material-symbols-outlined text-[20px]">view_kanban</span>
           {t('sidebar.sprint')}
         </button>
         <button className={mobileNavClass('history')} onClick={() => setCurrentView('history')}>
@@ -598,7 +608,7 @@ function App() {
         </button>
       </nav>
 
-      <main className="mt-14 min-h-[calc(100vh-56px)] bg-[radial-gradient(circle_at_18%_0%,rgba(71,85,105,0.10),transparent_28%),linear-gradient(180deg,#f3f4f6_0%,#f8fafc_44%,#ffffff_100%)] p-4 pb-28 md:ml-56 lg:p-5 xl:p-6">
+      <main className="mt-14 min-h-[calc(100vh-56px)] bg-[radial-gradient(circle_at_18%_0%,rgba(71,85,105,0.10),transparent_28%),linear-gradient(180deg,#f3f4f6_0%,#f8fafc_44%,#ffffff_100%)] p-3 pb-28 sm:p-4 lg:ml-56 lg:p-5 xl:p-6">
         <div style={{ display: currentView === 'project' ? 'block' : 'none' }}>
             <div className="mx-auto max-w-7xl space-y-6">
               {historyItemView && (

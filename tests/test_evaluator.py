@@ -72,7 +72,26 @@ def test_evaluator_revises_split_recommended_before_jira_creation() -> None:
     result = evaluator.run(story)
 
     assert result["status"] == "REVISION"
-    assert "Oversized requests must be split into sprint-ready stories before Jira creation." in result["issues"]
+
+
+def test_evaluator_accepts_revision_planning_status_as_blocked_revision() -> None:
+    evaluator = EvaluatorAgent(use_llm=False)
+    story = {
+        **VALID_STORY,
+        "planning_status": "REVISION",
+        "user_story": "",
+        "acceptance_criteria": [],
+        "story_points": None,
+        "tasks": {"be": [], "fe": [], "qa": []},
+        "definition_of_done": [],
+        "warnings": ["Planner LLM request exceeded available context size."],
+    }
+
+    result = evaluator.run(story)
+
+    assert result["status"] == "REVISION"
+    assert "Planner returned REVISION; resolve planner warnings before Jira-ready approval." in result["issues"]
+    assert "Planner LLM request exceeded available context size." in result["warnings"]
 
 
 def test_evaluator_revises_shallow_definition_of_done() -> None:
