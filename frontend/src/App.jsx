@@ -723,7 +723,7 @@ function App() {
         </div>
 
         <div style={{ display: currentView === 'dashboard' ? 'block' : 'none' }}>
-          <DashboardPanel projectId={activeProjectId} />
+          <DashboardPanel isActive={currentView === 'dashboard'} projectId={activeProjectId} />
         </div>
 
         <div style={{ display: currentView === 'history' ? 'block' : 'none' }} className="h-full">
@@ -754,11 +754,11 @@ function App() {
         </div>
 
         <div style={{ display: currentView === 'analytics' ? 'block' : 'none' }}>
-          <AnalyticsPanel projectId={activeProjectId} />
+          <AnalyticsPanel isActive={currentView === 'analytics'} projectId={activeProjectId} />
         </div>
 
         <div style={{ display: currentView === 'team' ? 'block' : 'none' }}>
-          <TeamPanel projectId={activeProjectId} />
+          <TeamPanel isActive={currentView === 'team'} projectId={activeProjectId} />
         </div>
       </main>
 

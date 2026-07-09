@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { fetchAnalyticsOverview } from '../lib/api';
 import { useTranslation } from 'react-i18next';
 
-export default function AnalyticsPanel({ projectId }) {
+export default function AnalyticsPanel({ isActive, projectId }) {
   const { t } = useTranslation();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -11,6 +11,8 @@ export default function AnalyticsPanel({ projectId }) {
 
   useEffect(() => {
     let intervalId;
+    if (!isActive) return undefined;
+
     async function loadData(showLoading = false) {
       if (showLoading) {
         setLoading(true);
@@ -37,7 +39,7 @@ export default function AnalyticsPanel({ projectId }) {
     intervalId = setInterval(() => loadData(false), 5000);
 
     return () => clearInterval(intervalId);
-  }, [projectId]);
+  }, [isActive, projectId]);
 
   return (
     <div className="p-margin-page max-w-[1600px] w-full mx-auto space-y-stack-lg">

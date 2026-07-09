@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { fetchTeamMembers } from '../lib/api';
 import { useTranslation } from 'react-i18next';
 
-export default function TeamPanel({ projectId }) {
+export default function TeamPanel({ isActive, projectId }) {
   const { t } = useTranslation();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -15,6 +15,8 @@ export default function TeamPanel({ projectId }) {
 
   useEffect(() => {
     let intervalId;
+    if (!isActive) return undefined;
+
     async function loadData(showLoading = false) {
       if (showLoading) setLoading(true);
       try {
@@ -34,7 +36,7 @@ export default function TeamPanel({ projectId }) {
     intervalId = setInterval(() => loadData(false), 5000);
 
     return () => clearInterval(intervalId);
-  }, [projectId]);
+  }, [isActive, projectId]);
 
   return (
     <div className="p-margin-page space-y-stack-lg w-full">

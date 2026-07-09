@@ -25,13 +25,15 @@ function priorityBadge(priority) {
   return 'bg-surface-container-highest text-on-surface-variant';
 }
 
-export default function DashboardPanel({ projectId }) {
+export default function DashboardPanel({ isActive, projectId }) {
   const { t } = useTranslation();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let intervalId;
+    if (!isActive) return undefined;
+
     async function loadData(showLoading = false) {
       if (showLoading) setLoading(true);
       try {
@@ -52,7 +54,7 @@ export default function DashboardPanel({ projectId }) {
     intervalId = setInterval(() => loadData(false), 5000);
 
     return () => clearInterval(intervalId);
-  }, [projectId]);
+  }, [isActive, projectId]);
 
   const sb = data?.statusBreakdown || { todo: 0, in_progress: 0, done: 0 };
   const totalIssues = sb.todo + sb.in_progress + sb.done;
