@@ -63,7 +63,7 @@ def _path_env(name: str, default: Path) -> str:
 @dataclass(frozen=True)
 class Settings:
     config_profile: str = field(default_factory=lambda: _profile_name() or "default")
-    app_name: str = field(default_factory=lambda: os.getenv("APP_NAME", "AI Scrum Master Agent"))
+    app_name: str = field(default_factory=lambda: os.getenv("APP_NAME", "PM Agent"))
     app_version: str = field(default_factory=lambda: os.getenv("APP_VERSION", "0.1.0"))
     ollama_base_url: str = field(default_factory=lambda: os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"))
     reasoning_model: str = field(default_factory=lambda: os.getenv("OLLAMA_REASONING_MODEL", "pm-agent"))
@@ -83,6 +83,9 @@ class Settings:
     jira_board_id: str = field(default_factory=lambda: os.getenv("JIRA_BOARD_ID", ""))
     rag_chunk_size: int = field(default_factory=lambda: int(os.getenv("RAG_CHUNK_SIZE", "4000")))
     rag_chunk_overlap: int = field(default_factory=lambda: int(os.getenv("RAG_CHUNK_OVERLAP", "400")))
+    rag_markdown_chunk_size: int = field(default_factory=lambda: int(os.getenv("RAG_MARKDOWN_CHUNK_SIZE", "12000")))
+    rag_markdown_chunk_overlap: int = field(default_factory=lambda: int(os.getenv("RAG_MARKDOWN_CHUNK_OVERLAP", "300")))
+    rag_embed_batch_size: int = field(default_factory=lambda: int(os.getenv("RAG_EMBED_BATCH_SIZE", "256")))
     pdf_extractor: str = field(default_factory=lambda: os.getenv("PDF_EXTRACTOR", "auto"))
     pdf_remove_headers_footers: bool = field(default_factory=lambda: _bool_env("PDF_REMOVE_HEADERS_FOOTERS", True))
     pdf_semantic_chunking: bool = field(default_factory=lambda: _bool_env("PDF_SEMANTIC_CHUNKING", True))

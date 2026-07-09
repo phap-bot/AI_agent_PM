@@ -34,10 +34,10 @@ NEEDS_SPLIT = "NEEDS_SPLIT"
 
 logger = get_logger(__name__)
 
-MAX_CONTEXT_BLOCK_CHARS = 6000
-MAX_CONTEXT_ITEM_CHARS = 1200
-MAX_CONTEXT_ITEMS = 3
-MAX_REQUIREMENT_PROMPT_CHARS = 2500
+MAX_CONTEXT_BLOCK_CHARS = 2800
+MAX_CONTEXT_ITEM_CHARS = 700
+MAX_CONTEXT_ITEMS = 2
+MAX_REQUIREMENT_PROMPT_CHARS = 1600
 
 
 class PlannerAgent:
@@ -119,6 +119,9 @@ class PlannerAgent:
         context_block = self._build_context_block(context)
         if tech_classification and tech_classification.get("tech_stack"):
             context_block += f"\n\n[Identified Tech Stack from requirement]: {tech_classification.get('tech_stack')}"
+
+        if self.settings.ollama_num_ctx <= 2048:
+            return self._build_compact_prompt(requirement, context_block, planning_status)
             
         role = self.profile.role if self.profile else "Planner Agent"
         goal = self.profile.goal if self.profile else "Convert the requirement into sprint-ready user stories."
@@ -135,7 +138,7 @@ class PlannerAgent:
         )
         try:
             from ai_scrum_master.core.llm.prompts import render_prompt as load_prompt
-            few_shot = load_prompt("planner_few_shot.md")
+            few_shot = "" if self.settings.ollama_num_ctx <= 2048 else load_prompt("planner_few_shot.md")
         except Exception:
             few_shot = ""
 
@@ -151,6 +154,47 @@ class PlannerAgent:
             planning_status=planning_status,
             few_shot_examples=few_shot,
         )
+
+    def _build_compact_prompt(self, requirement: str, context_block: str, planning_status: str) -> str:
+        return f"""
+You are a Scrum Story Planner. Return only valid JSON.
+
+Requirement:
+{self._compact_requirement_for_prompt(requirement)}
+
+Retrieved context:
+{self._truncate_context_text(context_block, 1800)}
+
+Local planning status: {planning_status}
+
+Rules:
+- If the request is too vague, return planning_status "NEEDS_CLARIFICATION" with at least 3 clarification_questions and leave ready-story fields empty.
+- If the request is too large for one sprint, return "SPLIT_RECOMMENDED" or "NEEDS_SPLIT" with story_splits and sprint_allocation.
+- Otherwise return "READY".
+- READY output must include: user_story in As a / I want / so that format; at least 3 Given/When/Then acceptance_criteria; Fibonacci story_points only 1,2,3,5,8,13; tasks.be, tasks.fe, tasks.qa each with at least one concrete action; at least 4 definition_of_done items.
+- Do not invent unsupported facts. Put uncertainty in assumptions or warnings.
+
+JSON schema:
+{{
+  "title": "string",
+  "story_type": "software_feature | process_improvement | oversized_request | ambiguous_request",
+  "jira_issue_type": "Story | Task | Bug | Epic",
+  "jira_labels": ["string"],
+  "jira_linked_items": [],
+  "user_story": "string",
+  "acceptance_criteria": ["Given ..., When ..., Then ..."],
+  "story_points": 1,
+  "tasks": {{"be": ["string"], "fe": ["string"], "qa": ["string"]}},
+  "definition_of_done": ["string"],
+  "planning_status": "READY | NEEDS_CLARIFICATION | NEEDS_SPLIT | SPLIT_RECOMMENDED | REVISION",
+  "clarification_questions": ["string"],
+  "assumptions": ["string"],
+  "story_splits": [],
+  "sprint_allocation": [],
+  "context_sources": [],
+  "warnings": []
+}}
+""".strip()
 
     def _attach_latency_metadata(
         self,

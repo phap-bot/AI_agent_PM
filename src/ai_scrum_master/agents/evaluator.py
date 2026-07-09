@@ -24,6 +24,7 @@ READY = "READY"
 NEEDS_CLARIFICATION = "NEEDS_CLARIFICATION"
 SPLIT_RECOMMENDED = "SPLIT_RECOMMENDED"
 NEEDS_SPLIT = "NEEDS_SPLIT"
+REVISION = "REVISION"
 
 logger = get_logger(__name__)
 
@@ -231,15 +232,20 @@ class EvaluatorAgent:
                 issues.append("Clarification-needed stories must include at least 3 clarification questions.")
             if self._has_ready_story_fields(story):
                 issues.append("Clarification-needed stories must not include story points, acceptance criteria, tasks, or Definition of Done.")
+            issues.append("Requirement needs clarification before Jira-ready planning.")
             warnings = ["Requirement needs clarification before Jira-ready planning."]
         elif planning_status in {NEEDS_SPLIT, SPLIT_RECOMMENDED}:
             if not story.get("story_splits"):
                 issues.append("Oversized requests must include story_splits.")
             if not story.get("sprint_allocation"):
                 issues.append("Oversized requests must include sprint_allocation.")
+            issues.append("Oversized requests must be split into sprint-ready stories before Jira creation.")
             warnings = ["Oversized requests must be split into sprint-ready stories before Jira creation."]
+        elif planning_status == REVISION:
+            issues.append("Planner returned REVISION; resolve planner warnings before Jira-ready approval.")
+            warnings = list(story.get("warnings", [])) or ["Planner output requires revision before Jira creation."]
         elif planning_status != READY:
-            issues.append("planning_status must be READY, NEEDS_CLARIFICATION, NEEDS_SPLIT, or SPLIT_RECOMMENDED.")
+            issues.append("planning_status must be READY, NEEDS_CLARIFICATION, NEEDS_SPLIT, SPLIT_RECOMMENDED, or REVISION.")
             warnings = []
         else:
             warnings = []

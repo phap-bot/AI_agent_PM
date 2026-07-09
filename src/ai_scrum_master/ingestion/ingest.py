@@ -21,6 +21,7 @@ DEFAULT_CHUNK_SIZE = 1200
 DEFAULT_CHUNK_OVERLAP = 200
 DEFAULT_CHUNK_SEPARATORS = ("\n\n", "\n", ". ", " ", "")
 CHUNK_STRATEGY = "langchain_recursive_character"
+INGESTION_SCHEMA_VERSION = "markdown_context_envelope_v2"
 
 
 class IngestionDependencyError(ImportError):
@@ -195,6 +196,7 @@ def build_chunk_metadata(path: Path, source_dir: Path, chunk_index: int, chunk: 
         "file_type": path.suffix.lower(),
         "chunk_sha1": hashlib.sha1(chunk.encode("utf-8")).hexdigest(),
         "document_sha1": document_sha1,
+        "ingestion_schema_version": INGESTION_SCHEMA_VERSION,
         "ingested_at": ingested_at,
         "chunk_strategy": CHUNK_STRATEGY,
         "chunk_size": get_settings().rag_chunk_size,
@@ -284,14 +286,194 @@ def load_source_documents_from_paths(paths: list[Path], source_dir: Path) -> lis
 
 def split_loaded_documents(documents: list[Any]) -> list[Any]:
     settings = get_settings()
+    documents = merge_markdown_documents(
+        documents,
+        target_size=settings.rag_markdown_chunk_size,
+    )
     splitter = build_text_splitter(
         chunk_size=settings.rag_chunk_size,
         chunk_overlap=settings.rag_chunk_overlap,
         separators=DEFAULT_CHUNK_SEPARATORS,
     )
+    markdown_splitter = build_text_splitter(
+        chunk_size=settings.rag_markdown_chunk_size,
+        chunk_overlap=settings.rag_markdown_chunk_overlap,
+        separators=DEFAULT_CHUNK_SEPARATORS,
+    )
     if splitter is None:
         raise IngestionDependencyError(LANGCHAIN_INSTALL_HINT)
-    return splitter.split_documents(documents)
+    if markdown_splitter is None:
+        markdown_splitter = splitter
+
+    context_enveloped_docs = []
+    other_docs = []
+    for document in documents:
+        metadata = dict(document.metadata or {})
+        source = str(metadata.get("source") or "")
+        if Path(source).suffix.lower() in {".md", ".docx", ".txt", ".pdf"}:
+            context_enveloped_docs.append(document)
+        else:
+            other_docs.append(document)
+
+    chunks = []
+    if other_docs:
+        chunks.extend(splitter.split_documents(other_docs))
+    if context_enveloped_docs:
+        context_chunks = markdown_splitter.split_documents(context_enveloped_docs)
+        chunks.extend(add_text_context_envelope(context_chunks))
+    return chunks
+
+
+def add_text_context_envelope(chunks: list[Any]) -> list[Any]:
+    """Prepend stable source/section context so split text chunks stay grounded."""
+    if not chunks:
+        return chunks
+
+    heading_stack_by_source: dict[str, list[str]] = {}
+    txt_section_by_source: dict[str, str] = {}
+    enriched = []
+    for chunk in chunks:
+        metadata = dict(chunk.metadata or {})
+        source = str(metadata.get("source") or metadata.get("file_name") or "")
+        suffix = Path(source).suffix.lower()
+
+        if suffix in {".md", ".docx", ".pdf"}:
+            stack = heading_stack_by_source.get(source) or _heading_stack_from_metadata(metadata)
+            stack = _update_heading_stack_from_text(str(chunk.page_content), stack)
+            heading_stack_by_source[source] = stack
+            section_path = " > ".join(stack) if stack else Path(source).name if source else "General context"
+            envelope_type = "heading_path"
+        else:
+            section = _detect_txt_section(str(chunk.page_content)) or txt_section_by_source.get(source) or "General notes"
+            txt_section_by_source[source] = section
+            section_path = section
+            envelope_type = "txt_section"
+
+        context_prefix = f"Document context: {Path(source).name if source else 'uploaded document'}"
+        if section_path:
+            context_prefix = f"{context_prefix}\nSection path: {section_path}"
+
+        content = normalize_document_text(str(chunk.page_content))
+        if not content.startswith("Document context:"):
+            chunk.page_content = f"{context_prefix}\n\n{content}".strip()
+        metadata["section_path"] = section_path
+        metadata["context_envelope"] = envelope_type
+        if suffix == ".pdf":
+            page_number = _page_number_from_section_path(section_path)
+            if page_number is not None:
+                metadata.setdefault("page_start", page_number)
+                metadata.setdefault("page_end", page_number)
+                metadata.setdefault("page_numbers", str(page_number))
+        chunk.metadata = metadata
+        enriched.append(chunk)
+    return enriched
+
+
+def _heading_stack_from_metadata(metadata: dict[str, Any]) -> list[str]:
+    stack = []
+    for level in range(1, 7):
+        value = metadata.get(f"Header {level}")
+        if isinstance(value, str) and value.strip():
+            stack.append(_clean_markdown_heading(value))
+    return stack
+
+
+def _update_heading_stack_from_text(text: str, current_stack: list[str]) -> list[str]:
+    stack = list(current_stack)
+    in_code_block = False
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
+        if line.startswith("```") or line.startswith("~~~"):
+            in_code_block = not in_code_block
+            continue
+        if in_code_block:
+            continue
+        match = re.match(r"^(#{1,6})\s+(.+?)\s*$", line)
+        if not match:
+            continue
+        level = len(match.group(1))
+        heading = _clean_markdown_heading(match.group(2))
+        stack = stack[: level - 1]
+        stack.append(heading)
+    return stack
+
+
+def _clean_markdown_heading(value: str) -> str:
+    value = re.sub(r"\s+#*$", "", value.strip())
+    value = re.sub(r"[*_`]+", "", value)
+    value = re.sub(r"\s+", " ", value)
+    return value[:180]
+
+
+def _page_number_from_section_path(section_path: str) -> int | None:
+    match = re.search(r"(?:^|>)\s*Page\s+(\d+)\s*(?:$|>)", section_path, flags=re.IGNORECASE)
+    if not match:
+        return None
+    return int(match.group(1))
+
+
+def _detect_txt_section(text: str) -> str | None:
+    for raw_line in text.splitlines()[:20]:
+        line = raw_line.strip().strip(":")
+        if not line or len(line) > 120:
+            continue
+        if re.match(r"^\d+(\.\d+)*\s+.+", line):
+            return _clean_markdown_heading(line)
+        words = line.split()
+        if 2 <= len(words) <= 12 and (line.isupper() or raw_line.strip().endswith(":")):
+            return _clean_markdown_heading(line)
+    return None
+
+
+def merge_markdown_documents(documents: list[Any], target_size: int) -> list[Any]:
+    """Merge tiny Markdown header sections so large .md files do not explode into thousands of embeddings."""
+    if not documents or target_size <= 0:
+        return documents
+
+    Document = _load_langchain_attr("langchain_core.documents", "Document")
+    merged: list[Any] = []
+    pending_by_source: dict[str, dict[str, Any]] = {}
+
+    def flush(source: str) -> None:
+        pending = pending_by_source.pop(source, None)
+        if not pending or not pending["parts"]:
+            return
+        merged.append(
+            Document(
+                page_content="\n\n".join(pending["parts"]).strip(),
+                metadata=pending["metadata"],
+            )
+        )
+
+    for document in documents:
+        metadata = dict(document.metadata or {})
+        source = str(metadata.get("source") or "")
+        if Path(source).suffix.lower() != ".md":
+            if source in pending_by_source:
+                flush(source)
+            merged.append(document)
+            continue
+
+        content = normalize_document_text(str(document.page_content))
+        if not content:
+            continue
+
+        pending = pending_by_source.setdefault(source, {"parts": [], "size": 0, "metadata": metadata})
+        candidate_size = pending["size"] + len(content) + (2 if pending["parts"] else 0)
+        if pending["parts"] and candidate_size > target_size:
+            flush(source)
+            pending = pending_by_source.setdefault(source, {"parts": [], "size": 0, "metadata": metadata})
+
+        separator_size = 2 if pending["parts"] else 0
+        pending["parts"].append(content)
+        pending["size"] += len(content) + separator_size
+
+    for source in list(pending_by_source):
+        flush(source)
+
+    if len(merged) != len(documents):
+        logger.info("[INGEST] Merged Markdown sections from %d to %d documents before recursive chunking", len(documents), len(merged))
+    return merged
 
 
 def prepare_langchain_chunks(chunks: list[Any], source_dir: Path, ingested_at: str, project_id: str | None = None) -> tuple[list[Any], list[str]]:
@@ -332,6 +514,8 @@ def prepare_langchain_chunks(chunks: list[Any], source_dir: Path, ingested_at: s
             "block_types",
             "extraction_warnings",
             "text_quality_flags",
+            "section_path",
+            "context_envelope",
         ):
             if key in chunk.metadata and chunk.metadata[key] not in (None, ""):
                 metadata[key] = chunk.metadata[key]
@@ -405,10 +589,23 @@ def _get_existing_doc_hashes(collection_name: str, project_id: str | None = None
 
 
 def _compute_file_hash(path: Path) -> str:
-    """Compute document hash from raw file bytes (fast, no parsing needed)."""
+    """Compute the index hash from file bytes plus chunking settings."""
     if path.suffix.lower() in {".pdf", ".docx"}:
-        return hashlib.sha1(path.read_bytes()).hexdigest()
-    return hashlib.sha1(path.read_text(encoding="utf-8", errors="ignore").encode("utf-8")).hexdigest()
+        raw_hash = hashlib.sha1(path.read_bytes()).hexdigest()
+    else:
+        raw_hash = hashlib.sha1(path.read_text(encoding="utf-8", errors="ignore").encode("utf-8")).hexdigest()
+    settings = get_settings()
+    fingerprint = ":".join(
+        [
+            INGESTION_SCHEMA_VERSION,
+            CHUNK_STRATEGY,
+            str(settings.rag_chunk_size),
+            str(settings.rag_chunk_overlap),
+            str(settings.rag_markdown_chunk_size),
+            str(settings.rag_markdown_chunk_overlap),
+        ]
+    )
+    return hashlib.sha1(f"{raw_hash}:{fingerprint}".encode("utf-8")).hexdigest()
 
 
 def ingest_raw_docs(raw_docs_dir: Path | None = None, collection_name: str | None = None, project_id: str | None = None) -> dict:
@@ -475,6 +672,13 @@ def ingest_raw_docs(raw_docs_dir: Path | None = None, collection_name: str | Non
 
         # --- Step 5: Upsert (NOT clear+add) for incremental ---
         if chunks:
+            from ai_scrum_master.retrieval.vector_store import delete_documents_by_filenames
+
+            delete_documents_by_filenames(
+                filenames=[path.name for path in new_files],
+                project_id=project_id,
+                collection_name=target_collection,
+            )
             t_embed = time.time()
             add_langchain_documents(
                 documents=chunks,

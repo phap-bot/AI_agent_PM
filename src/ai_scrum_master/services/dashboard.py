@@ -308,11 +308,11 @@ class DashboardService:
         if jira_connected:
             return (
                 f"Sprint '{sprint_name}': {status_breakdown['done']}/{total_issues_count} tickets Done "
-                f"({sprint_progress}%). T?ng {done_sprint_points:.0f}/{total_sprint_points:.0f} Story Points ?? ho?n th?nh."
+                f"({sprint_progress}%). Completed {done_sprint_points:.0f}/{total_sprint_points:.0f} Story Points."
             )
         return (
-            f"H? th?ng ?? ph?n t?ch v? ??y th?nh c?ng {total_tickets} tickets "
-            f"l?n Jira v?i ?? ch?nh x?c {confidence_percentage}%."
+            f"PM Agent has analyzed and prepared {total_tickets} Jira tickets "
+            f"with {confidence_percentage}% confidence."
         )
 
     def _build_project_analytics_summary(self, project: dict[str, Any], history_col: Any) -> dict[str, Any]:
@@ -421,24 +421,24 @@ class DashboardService:
     ) -> str:
         if jira_connected:
             insight = (
-                f"Ph?n t?ch Sprint th?c t?: {sprint_status_breakdown['done']}/{sprint_total_issues} tickets Done "
+                f"Live sprint analysis: {sprint_status_breakdown['done']}/{sprint_total_issues} tickets Done "
                 f"({sprint_done_points:.0f}/{sprint_total_points:.0f} SP). "
             )
             if sprint_total_points > 0:
                 pct = int((sprint_done_points / sprint_total_points) * 100)
                 if pct >= 80:
-                    insight += "Ti?n ?? t?t, sprint c? kh? n?ng ho?n th?nh ??ng h?n."
+                    insight += "Progress is strong and the sprint is likely to finish on time."
                 elif pct >= 50:
-                    insight += "C?n ??y nhanh c?c ticket c?n l?i ?? ??m b?o deadline."
+                    insight += "Remaining tickets should be accelerated to protect the deadline."
                 else:
-                    insight += "Ti?n ?? ch?m, c?n review l?i scope sprint."
+                    insight += "Progress is slow; review sprint scope and blockers."
             if confidence_percentage > 0:
                 insight += f" AI Confidence: {confidence_percentage}%."
             return insight
 
-        insight = f"Ph?n t?ch d? li?u th?c t?: H? th?ng ghi nh?n {total_tickets} tickets. "
+        insight = f"Real data analysis: PM Agent has recorded {total_tickets} tickets. "
         if confidence_percentage > 90:
-            insight += "?? ch?nh x?c hi?n t?i r?t cao, g?i ? ti?p t?c duy tr?."
+            insight += "Current confidence is very high; keep the workflow steady."
         else:
-            insight += "?? ch?nh x?c c?n c?i thi?n."
+            insight += "Confidence needs improvement; review input quality and context coverage."
         return insight

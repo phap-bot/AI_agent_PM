@@ -71,8 +71,8 @@ def upsert_documents(
     if not documents:
         return
         
-    # Process in batches to avoid Ollama memory crash
-    BATCH_SIZE = 128
+    # Process in batches to reduce Ollama round-trips while keeping memory bounded.
+    batch_size = max(1, int(getattr(get_settings(), "rag_embed_batch_size", 128)))
     documents_list = list(documents)
     ids_list = list(ids)
     metadatas_list = list(metadatas) if metadatas else [{}] * len(documents_list)
@@ -84,12 +84,14 @@ def upsert_documents(
     vector_size = len(sample_embedding)
     _ensure_collection_exists(client, collection, vector_size)
 
-    for i in range(0, len(documents_list), BATCH_SIZE):
-        batch_docs = documents_list[i:i + BATCH_SIZE]
-        batch_ids = ids_list[i:i + BATCH_SIZE]
-        batch_metas = metadatas_list[i:i + BATCH_SIZE]
+    for i in range(0, len(documents_list), batch_size):
+        batch_docs = documents_list[i:i + batch_size]
+        batch_ids = ids_list[i:i + batch_size]
+        batch_metas = metadatas_list[i:i + batch_size]
         
-        logger.info("[EMBED] Processing batch %d to %d...", i, i + len(batch_docs))
+        batch_number = (i // batch_size) + 1
+        batch_total = ((len(documents_list) - 1) // batch_size) + 1
+        logger.info("[EMBED] Processing batch %d/%d (%d chunks)...", batch_number, batch_total, len(batch_docs))
         batch_embeddings = embedder.embed_documents(batch_docs)
         
         points = []
@@ -132,6 +134,37 @@ def delete_project_documents(project_id: str, collection_name: str | None = None
             )
         )
         logger.info("[VECTOR_STORE] Deleted documents for project_id=%s from collection='%s'", project_id, collection)
+
+
+def delete_documents_by_filenames(
+    filenames: Sequence[str],
+    project_id: str | None = None,
+    collection_name: str | None = None,
+) -> None:
+    if not filenames:
+        return
+
+    client = get_qdrant_client()
+    collection = canonical_collection_name(collection_name)
+    if not client.collection_exists(collection_name=collection):
+        return
+
+    should_conditions: list[Any] = [
+        rest.FieldCondition(key="file_name", match=rest.MatchValue(value=str(filename)))
+        for filename in filenames
+    ]
+    must_conditions: list[Any] = []
+    if project_id:
+        must_conditions.append(rest.FieldCondition(key="project_id", match=rest.MatchValue(value=project_id)))
+
+    client.delete(
+        collection_name=collection,
+        points_selector=rest.FilterSelector(
+            filter=rest.Filter(must=must_conditions, should=should_conditions)
+        ),
+        wait=True,
+    )
+    logger.info("[VECTOR_STORE] Deleted stale chunks for files=%s project_id=%s from collection='%s'", list(filenames), project_id, collection)
 
 
 def add_documents(
