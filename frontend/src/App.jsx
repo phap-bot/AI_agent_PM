@@ -63,6 +63,11 @@ function App() {
     setCurrentView('project');
   };
 
+  const handleOpenLanding = () => {
+    localStorage.removeItem('skipLanding');
+    setShowLanding(true);
+  };
+
   useEffect(() => {
     localStorage.setItem('activeProjectId', activeProjectId);
   }, [activeProjectId]);
@@ -334,10 +339,16 @@ function App() {
       {/* Top Navigation Bar */}
       <header className="fixed left-0 top-0 z-50 flex h-14 w-full items-center justify-between gap-3 border-b border-slate-200 bg-white/90 px-3 shadow-sm backdrop-blur-xl sm:px-5">
         <div className="flex items-center gap-gutter">
-          <div className="flex items-center gap-3">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-slate-800 text-sm font-black text-white shadow-sm">AI</span>
-            <span className="hidden text-headline-sm font-black tracking-[-0.03em] text-slate-950 sm:inline">AI Scrum Master</span>
-          </div>
+          <button
+            type="button"
+            onClick={handleOpenLanding}
+            className="flex min-h-11 items-center gap-3 rounded-2xl px-1.5 pr-3 text-left transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2"
+            aria-label="Open PM Agent landing page"
+            title="Open PM Agent landing page"
+          >
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-slate-800 text-sm font-black text-white shadow-sm">PM</span>
+            <span className="hidden text-headline-sm font-black tracking-normal text-slate-950 sm:inline">PM Agent</span>
+          </button>
           <nav className="hidden md:flex items-center gap-stack-lg ml-stack-lg">
             <a 
               onClick={() => setCurrentView('dashboard')}
@@ -609,6 +620,9 @@ function App() {
                   onSubmit={handleGenerate} 
                   isLoading={isLoading} 
                   generationMessage={generationMessage}
+                  context={displayContext}
+                  storyDraft={displayStoryDraft}
+                  evaluation={displayEvaluation}
                   projectId={activeProjectId} 
                 />
                 {isLoading && <ProcessingStatusPanel isLoading={isLoading} context={displayContext} storyDraft={displayStoryDraft} evaluation={displayEvaluation} />}

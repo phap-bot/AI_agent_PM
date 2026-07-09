@@ -2,7 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { uploadDocumentsAsync, getIngestStatus } from '../lib/api';
 import { useTranslation } from 'react-i18next';
 
-export default function RequirementInputPanel({ onSubmit, isLoading, projectId }) {
+export default function RequirementInputPanel({
+  onSubmit,
+  isLoading,
+  projectId,
+  context,
+  storyDraft,
+  evaluation,
+  generationMessage,
+}) {
   const { t } = useTranslation();
   const storageKey = `draftRequirement_${projectId || 'default'}`;
   const [requirement, setRequirement] = useState('');
@@ -123,6 +131,103 @@ export default function RequirementInputPanel({ onSubmit, isLoading, projectId }
     }
   };
 
+  const evaluationStatus = evaluation?.status || '';
+  const hasContext = Boolean(context);
+  const hasStoryDraft = Boolean(storyDraft);
+  const hasEvaluation = Boolean(evaluation);
+  const contextHasWarning = hasContext && ['empty', 'failed'].includes(context?.retrieval_status);
+  const currentAgentStep = !isLoading && !hasEvaluation
+    ? 0
+    : !hasContext
+      ? 0
+      : !hasStoryDraft
+        ? 1
+        : !hasEvaluation
+          ? 2
+          : 3;
+  const completedAgentSteps = [
+    hasContext,
+    hasStoryDraft,
+    hasEvaluation,
+    hasEvaluation && evaluationStatus === 'APPROVED',
+  ].filter(Boolean).length;
+  const agentProgress = Math.min(100, Math.max(12, (completedAgentSteps / 4) * 100));
+  const agentSteps = [
+    {
+      title: 'Researcher',
+      icon: 'manage_search',
+      description: contextHasWarning
+        ? 'No strong context found; assumptions will be explicit.'
+        : 'Retrieves project context and prepares evidence.',
+      done: hasContext,
+      active: isLoading && !hasContext,
+      tone: contextHasWarning ? 'warning' : 'blue',
+      meta: hasContext ? `${context?.raw_match_count || 0} matches` : 'Scanning docs',
+    },
+    {
+      title: 'Planner',
+      icon: 'account_tree',
+      description: 'Drafts story, AC, story points, DoD and BE / FE / QA tasks.',
+      done: hasStoryDraft,
+      active: isLoading && hasContext && !hasStoryDraft,
+      tone: 'violet',
+      meta: hasStoryDraft ? (storyDraft?.planning_status || 'Draft ready') : 'Waiting for context',
+    },
+    {
+      title: 'Evaluator',
+      icon: 'fact_check',
+      description: 'Checks readiness, scope, traceability and Jira safety.',
+      done: hasEvaluation,
+      active: isLoading && hasStoryDraft && !hasEvaluation,
+      tone: evaluationStatus === 'REVISION' ? 'warning' : 'green',
+      meta: hasEvaluation ? evaluationStatus : 'Waiting for draft',
+    },
+    {
+      title: 'Human approval',
+      icon: 'verified_user',
+      description: evaluationStatus === 'APPROVED'
+        ? 'Ready for PM review before Jira / Slack execution.'
+        : 'Blocked until the evaluator approves the story.',
+      done: hasEvaluation && evaluationStatus === 'APPROVED',
+      active: hasEvaluation && evaluationStatus === 'APPROVED',
+      tone: evaluationStatus === 'APPROVED' ? 'green' : 'slate',
+      meta: evaluationStatus === 'APPROVED' ? 'Approval gate open' : 'Final gate',
+    },
+  ];
+
+  const agentToneClass = {
+    blue: {
+      dot: 'bg-blue-600 text-white shadow-blue-500/25',
+      ring: 'ring-blue-100',
+      badge: 'bg-blue-50 text-blue-700 border-blue-200',
+      text: 'text-blue-700',
+    },
+    violet: {
+      dot: 'bg-violet-600 text-white shadow-violet-500/25',
+      ring: 'ring-violet-100',
+      badge: 'bg-violet-50 text-violet-700 border-violet-200',
+      text: 'text-violet-700',
+    },
+    green: {
+      dot: 'bg-emerald-600 text-white shadow-emerald-500/25',
+      ring: 'ring-emerald-100',
+      badge: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      text: 'text-emerald-700',
+    },
+    warning: {
+      dot: 'bg-amber-500 text-white shadow-amber-500/25',
+      ring: 'ring-amber-100',
+      badge: 'bg-amber-50 text-amber-700 border-amber-200',
+      text: 'text-amber-700',
+    },
+    slate: {
+      dot: 'bg-white text-slate-500 shadow-slate-900/5',
+      ring: 'ring-slate-100',
+      badge: 'bg-slate-100 text-slate-500 border-slate-200',
+      text: 'text-slate-500',
+    },
+  };
+
   return (
     <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_14px_36px_rgba(15,23,42,0.05)]">
       <div className="border-b border-slate-200 bg-slate-50 px-4 py-4 sm:px-5">
@@ -188,7 +293,7 @@ export default function RequirementInputPanel({ onSubmit, isLoading, projectId }
                 <span className="material-symbols-outlined text-[20px]">upload_file</span>
                 {isIngesting ? t('requirement_input.processing') : t('requirement_input.import_docs')}
               </label>
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">{t('requirement_input.support_formats')}</p>
+              <p className="text-xs font-bold text-slate-500">{t('requirement_input.support_formats')}</p>
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -228,9 +333,24 @@ export default function RequirementInputPanel({ onSubmit, isLoading, projectId }
           )}
 
           {isIngesting && (
-            <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-100 p-3">
-              <span className="h-4 w-4 rounded-full border-2 border-slate-700 border-t-transparent animate-spin"></span>
-              <p className="text-sm font-extrabold text-slate-700">{t('requirement_input.backend_embedding')}</p>
+            <div className="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 p-3 text-blue-950">
+              <span className="mt-0.5 h-4 w-4 rounded-full border-2 border-blue-700 border-t-transparent animate-spin"></span>
+              <div>
+                <p className="text-sm font-extrabold">{t('requirement_input.backend_embedding')}</p>
+                <p className="mt-1 text-xs font-semibold leading-5 text-blue-700">{t('requirement_input.backend_embedding_hint')}</p>
+              </div>
+            </div>
+          )}
+
+          {!isIngesting && ingestData?.result && (
+            <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-emerald-950">
+              <span className="material-symbols-outlined mt-0.5 text-[18px] text-emerald-600">check_circle</span>
+              <div>
+                <p className="text-sm font-extrabold">{t('requirement_input.import_complete')}</p>
+                <p className="mt-1 text-xs font-semibold leading-5 text-emerald-700">
+                  {ingestData.result.files_indexed} indexed · {ingestData.result.skipped_count} unchanged · {ingestData.result.chunks_indexed} search chunks
+                </p>
+              </div>
             </div>
           )}
 
@@ -261,15 +381,97 @@ export default function RequirementInputPanel({ onSubmit, isLoading, projectId }
         </div>
 
         <aside className="flex flex-col gap-3">
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">Agent path</p>
-            <div className="mt-4 space-y-3">
-              {['Researcher', 'Planner', 'Evaluator', 'Human approval'].map((step, index) => (
-                <div key={step} className="flex items-center gap-2.5">
-                  <span className="grid h-6 w-6 place-items-center rounded-full bg-white text-xs font-black text-slate-700 shadow-sm">{index + 1}</span>
-                  <span className="text-sm font-extrabold text-slate-700">{step}</span>
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+            <div className="border-b border-slate-200 bg-white/70 px-4 py-3">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">Agent path</p>
+                  <p className="mt-1 text-[11px] font-semibold text-slate-500">
+                    {isLoading
+                      ? (generationMessage || 'Agents are working in sequence...')
+                      : hasEvaluation
+                        ? 'Pipeline completed. Review the gate result.'
+                        : 'Follow the work from context to approval.'}
+                  </p>
                 </div>
-              ))}
+                <span className={`relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-[10px] font-black ${
+                  isLoading ? 'border-blue-200 bg-blue-50 text-blue-700' : hasEvaluation ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-500'
+                }`}>
+                  {isLoading && <span className="absolute inset-0 rounded-full bg-blue-400/20 animate-ping" />}
+                  {completedAgentSteps}/4
+                </span>
+              </div>
+              <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-200">
+                <div
+                  className={`h-full rounded-full transition-all duration-700 ${
+                    evaluationStatus === 'APPROVED'
+                      ? 'bg-emerald-500'
+                      : evaluationStatus === 'REVISION'
+                        ? 'bg-amber-500'
+                        : 'bg-blue-600'
+                  }`}
+                  style={{ width: `${agentProgress}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="relative p-4">
+              <div className="absolute bottom-6 left-[27px] top-6 w-px bg-slate-200" />
+              <div
+                className={`absolute left-[27px] top-6 w-px transition-all duration-700 ${
+                  evaluationStatus === 'REVISION' ? 'bg-amber-400' : 'bg-blue-500'
+                }`}
+                style={{ height: `calc(${agentProgress}% - 24px)` }}
+              />
+
+              <div className="space-y-3">
+                {agentSteps.map((step, index) => {
+                  const tone = agentToneClass[step.tone] || agentToneClass.slate;
+                  const isCurrent = step.active || (isLoading && currentAgentStep === index);
+                  const stateLabel = step.done
+                    ? 'Done'
+                    : isCurrent
+                      ? 'Running'
+                      : 'Queued';
+
+                  return (
+                    <div
+                      key={step.title}
+                      className={`relative flex gap-3 rounded-2xl border bg-white p-3 shadow-sm transition-all duration-300 ${
+                        isCurrent
+                          ? `border-slate-300 ring-4 ${tone.ring}`
+                          : step.done
+                            ? 'border-slate-200'
+                            : 'border-transparent bg-white/60'
+                      }`}
+                    >
+                      <span className={`relative z-10 grid h-7 w-7 shrink-0 place-items-center rounded-full border border-white text-[17px] shadow-md ${step.done || isCurrent ? tone.dot : agentToneClass.slate.dot}`}>
+                        {isCurrent && <span className="absolute inset-0 rounded-full bg-current opacity-20 animate-ping" />}
+                        <span className="material-symbols-outlined text-[17px]">
+                          {step.done ? 'check' : step.icon}
+                        </span>
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <p className="text-sm font-black text-slate-800">{step.title}</p>
+                            <p className="mt-0.5 text-[11px] leading-4 text-slate-500">{step.description}</p>
+                          </div>
+                          <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.08em] ${step.done || isCurrent ? tone.badge : agentToneClass.slate.badge}`}>
+                            {stateLabel}
+                          </span>
+                        </div>
+                        <div className="mt-2 flex items-center gap-2">
+                          <span className={`h-1.5 w-1.5 rounded-full ${step.done || isCurrent ? tone.dot.split(' ')[0] : 'bg-slate-300'}`} />
+                          <p className={`truncate text-[10px] font-bold ${step.done || isCurrent ? tone.text : 'text-slate-400'}`}>
+                            {step.meta}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
 

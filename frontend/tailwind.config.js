@@ -75,21 +75,23 @@ export default {
           "stack-sm": "8px"
       },
       "fontFamily": {
-          "display-lg": ["Inter", "sans-serif"],
-          "body-md": ["Inter", "sans-serif"],
-          "headline-sm": ["Inter", "sans-serif"],
-          "mono-sm": ["JetBrains Mono", "monospace"],
-          "headline-md": ["Inter", "sans-serif"],
-          "label-md": ["Inter", "sans-serif"],
-          "body-lg": ["Inter", "sans-serif"]
+          "sans": ["IBM Plex Sans", "system-ui", "sans-serif"],
+          "mono": ["IBM Plex Sans", "system-ui", "sans-serif"],
+          "display-lg": ["IBM Plex Sans", "system-ui", "sans-serif"],
+          "body-md": ["IBM Plex Sans", "system-ui", "sans-serif"],
+          "headline-sm": ["IBM Plex Sans", "system-ui", "sans-serif"],
+          "mono-sm": ["IBM Plex Sans", "system-ui", "sans-serif"],
+          "headline-md": ["IBM Plex Sans", "system-ui", "sans-serif"],
+          "label-md": ["IBM Plex Sans", "system-ui", "sans-serif"],
+          "body-lg": ["IBM Plex Sans", "system-ui", "sans-serif"]
       },
       "fontSize": {
-          "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+          "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "0", "fontWeight": "700"}],
           "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
           "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
-          "mono-sm": ["12px", {"lineHeight": "18px", "fontWeight": "450"}],
-          "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
-          "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+          "mono-sm": ["12px", {"lineHeight": "18px", "fontWeight": "500"}],
+          "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "0", "fontWeight": "600"}],
+          "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0", "fontWeight": "600"}],
           "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
       }
     },
