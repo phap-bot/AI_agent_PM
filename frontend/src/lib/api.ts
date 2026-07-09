@@ -77,6 +77,24 @@ export async function getGenerateStatus(jobId: string): Promise<GenerateStatusRe
   return handleResponse<GenerateStatusResponse>(response);
 }
 
+export async function cancelGenerateJob(jobId: string): Promise<{ job_id: string; status: string; cancelled: boolean }> {
+  const response = await fetch(`${API_BASE_URL}/generate/cancel/${jobId}`, {
+    method: 'POST',
+  });
+
+  return handleResponse<{ job_id: string; status: string; cancelled: boolean }>(response);
+}
+
+export function sendGenerateCancelBeacon(jobId: string): boolean {
+  const url = `${API_BASE_URL}/generate/cancel/${jobId}`;
+  if (navigator.sendBeacon) {
+    return navigator.sendBeacon(url, new Blob([], { type: 'application/json' }));
+  }
+
+  fetch(url, { method: 'POST', keepalive: true }).catch(() => undefined);
+  return true;
+}
+
 export async function previewJiraAction(request: ActionPreviewRequest): Promise<ActionPlan> {
   const response = await fetch(`${API_BASE_URL}/actions/jira/preview`, {
     method: 'POST',

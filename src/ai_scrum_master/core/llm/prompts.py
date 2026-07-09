@@ -21,6 +21,7 @@ def render_prompt(template_name: str, **values: object) -> str:
         values.setdefault("task_description", "")
         values.setdefault("expected_output", "")
         values.setdefault("repair_blockers", "[]")
+        values.setdefault("clarification_block", "No structured clarification answers were provided.")
         return template.format(**values).strip()
     except KeyError as exc:
         missing_key = exc.args[0]

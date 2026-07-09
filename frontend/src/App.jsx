@@ -3,7 +3,7 @@ import RequirementInputPanel from './components/RequirementInputPanel';
 import ProcessingStatusPanel from './components/ProcessingStatusPanel';
 import StoryDraftEditor from './components/StoryDraftEditor';
 import StorySplitManagerModal from './components/StorySplitManagerModal';
-import { createSprint, executeAllActions, fetchSprintBoard, generateStoriesAsync, getGenerateStatus, previewJiraAction } from './lib/api';
+import { createSprint, executeAllActions, fetchSprintBoard, generateStoriesAsync, getGenerateStatus, previewJiraAction, sendGenerateCancelBeacon } from './lib/api';
 import { normalizeStoryDraft } from './lib/normalizers';
 import HistoryPanel from './components/HistoryPanel';
 import SprintBoardPanel from './components/SprintBoardPanel';
@@ -21,11 +21,28 @@ import LandingPage from './components/LandingPage';
 
 const GENERATE_POLL_INITIAL_MS = 3000;
 const GENERATE_POLL_MAX_MS = 10000;
+const APP_CURRENT_VIEW_KEY = 'pmAgentCurrentView';
+const APP_VIEWS = new Set([
+  'dashboard',
+  'analytics',
+  'team',
+  'project',
+  'sprint',
+  'config_jira',
+  'config_slack',
+  'config_github',
+  'history',
+]);
+
+function getStoredCurrentView() {
+  const storedView = localStorage.getItem(APP_CURRENT_VIEW_KEY);
+  return APP_VIEWS.has(storedView) ? storedView : 'dashboard';
+}
 
 function App() {
   const { t } = useTranslation();
   const [showLanding, setShowLanding] = useState(() => localStorage.getItem('skipLanding') !== 'true');
-  const [currentView, setCurrentView] = useState('dashboard');
+  const [currentView, setCurrentView] = useState(getStoredCurrentView);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   
@@ -45,6 +62,7 @@ function App() {
   const [forcedContextDocs, setForcedContextDocs] = useState([]);
   const generatePollingRef = useRef(null);
   const generatePollDelayRef = useRef(GENERATE_POLL_INITIAL_MS);
+  const generateJobIdRef = useRef(null);
 
   const [projects, setProjects] = useState([]);
   const [activeProjectId, setActiveProjectId] = useState(() => localStorage.getItem('activeProjectId') || '');
@@ -71,6 +89,32 @@ function App() {
   useEffect(() => {
     localStorage.setItem('activeProjectId', activeProjectId);
   }, [activeProjectId]);
+
+  useEffect(() => {
+    if (APP_VIEWS.has(currentView)) {
+      localStorage.setItem(APP_CURRENT_VIEW_KEY, currentView);
+    }
+  }, [currentView]);
+
+  useEffect(() => {
+    generateJobIdRef.current = generateJobId;
+  }, [generateJobId]);
+
+  useEffect(() => {
+    const cancelActiveGenerateJob = () => {
+      if (generateJobIdRef.current) {
+        sendGenerateCancelBeacon(generateJobIdRef.current);
+      }
+    };
+
+    window.addEventListener('pagehide', cancelActiveGenerateJob);
+    window.addEventListener('beforeunload', cancelActiveGenerateJob);
+
+    return () => {
+      window.removeEventListener('pagehide', cancelActiveGenerateJob);
+      window.removeEventListener('beforeunload', cancelActiveGenerateJob);
+    };
+  }, []);
 
   useEffect(() => {
     getProjects().then(data => {
@@ -156,6 +200,7 @@ function App() {
     const finishPolling = () => {
       cancelled = true;
       clearGeneratePoll();
+      generateJobIdRef.current = null;
       setGenerateJobId(null);
       setIsLoading(false);
       setGenerationMessage('');
@@ -187,6 +232,9 @@ function App() {
              setEvaluation(finalResult.evaluation);
              setActions(finalResult.actions);
           }
+        } else if (status.status === 'cancelled') {
+          finishPolling();
+          setGenerationMessage('');
         } else if (status.status === 'failed') {
           finishPolling();
           setError(status.message);

@@ -38,6 +38,33 @@ def generate_stories(
         data=GenerateJobResponse(job_id=task.id).model_dump(),
     )
 
+
+@router.post("/generate/cancel/{job_id}", response_model=ApiResponseEnvelope)
+def cancel_generate_job(job_id: str) -> ApiResponseEnvelope:
+    job = DatabaseManager.get_job(job_id)
+    project_id = job.get("project_id") if job else None
+    already_finished = job and job.get("status") in {"completed", "failed", "cancelled"}
+
+    if not already_finished:
+        celery_app.control.revoke(job_id, terminate=True, signal="SIGTERM")
+        DatabaseManager.update_job(
+            job_id,
+            status="cancelled",
+            stage="cancelled",
+            message="Generation cancelled by client.",
+            error="client_cancelled",
+        )
+
+    return build_envelope_response(
+        endpoint="generate_cancel",
+        project_id=project_id,
+        data={
+            "job_id": job_id,
+            "status": "cancelled" if not already_finished else job.get("status"),
+            "cancelled": not already_finished or job.get("status") == "cancelled",
+        },
+    )
+
 @router.get("/generate/status/{job_id}", response_model=ApiResponseEnvelope)
 def get_generate_status(job_id: str) -> ApiResponseEnvelope:
     job = DatabaseManager.get_job(job_id)
@@ -101,6 +128,15 @@ def get_generate_status(job_id: str) -> ApiResponseEnvelope:
             status="failed",
             stage="failed",
             message=str(task_result.info),
+            partial_result={},
+            result=None
+        )
+    elif task_result.state == 'REVOKED':
+        status_payload = GenerateStatusResponse(
+            job_id=job_id,
+            status="cancelled",
+            stage="cancelled",
+            message="Generation cancelled by client.",
             partial_result={},
             result=None
         )

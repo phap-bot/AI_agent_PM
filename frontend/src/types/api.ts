@@ -160,7 +160,7 @@ export interface GenerateJobResponse {
 
 export interface GenerateStatusResponse {
   job_id: string;
-  status: string; // processing | completed | failed
+  status: string; // processing | completed | failed | cancelled
   stage?: string;
   message: string;
   result?: GenerateStoriesResponse | null;

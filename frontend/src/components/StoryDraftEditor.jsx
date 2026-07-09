@@ -90,22 +90,42 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
     || (draft.clarification_questions?.length > 0);
 
   const unansweredQuestions = draft.clarification_questions || [];
+  const questionIdFor = (question, index) => {
+    const slug = String(question || 'question')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .slice(0, 48);
+    return `q${index + 1}_${slug || 'clarification'}`;
+  };
 
   const handleSendClarification = () => {
     let combinedText = '';
+    const structuredClarifications = [];
     
     unansweredQuestions.forEach((q, idx) => {
       const ans = answers[idx]?.trim();
       if (ans) {
+         structuredClarifications.push({
+           question_id: questionIdFor(q, idx),
+           question: q,
+           answer: ans,
+         });
          combinedText += `${t('story_draft.question_label')}: ${q}\n${t('story_draft.answer_label')}: ${ans}\n\n`;
       }
     });
 
+    const additionalInfo = clarificationInput.trim();
     if (clarificationInput.trim()) {
-       combinedText += `${t('story_draft.additional_info_label')}: ${clarificationInput.trim()}\n`;
+       combinedText += `${t('story_draft.additional_info_label')}: ${additionalInfo}\n`;
     }
 
     if (!combinedText || isRegenerating) return;
+    const structuredPayload = {
+      clarifications: structuredClarifications,
+      additional_info: additionalInfo,
+    };
+    const modelInput = `[Clarification Answers JSON]:\n${JSON.stringify(structuredPayload, null, 2)}\n\n[Clarification Answers Text]:\n${combinedText}`;
 
     // Add user reply to chat history
     setChatHistory(prev => [...prev, { role: 'user', text: combinedText }]);
@@ -114,7 +134,7 @@ export default function StoryDraftEditor({ draft, evaluation, actions, actionExe
 
     // Trigger re-generation with the clarification
     if (onProvideClarification) {
-      onProvideClarification(combinedText);
+      onProvideClarification(modelInput);
     }
   };
 

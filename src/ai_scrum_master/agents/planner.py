@@ -38,6 +38,12 @@ MAX_CONTEXT_BLOCK_CHARS = 2800
 MAX_CONTEXT_ITEM_CHARS = 700
 MAX_CONTEXT_ITEMS = 2
 MAX_REQUIREMENT_PROMPT_CHARS = 1600
+MAX_REPAIR_OUTPUT_CHARS = 700
+MAX_REPAIR_REQUIREMENT_CHARS = 900
+MAX_REPAIR_CONTEXT_CHARS = 550
+MAX_REPAIR_CLARIFICATION_CHARS = 700
+CLARIFICATION_JSON_MARKER = "[Clarification Answers JSON]:"
+CLARIFICATION_TEXT_MARKER = "[Clarification Answers Text]:"
 
 
 class PlannerAgent:
@@ -79,7 +85,7 @@ class PlannerAgent:
             return self._attach_latency_metadata(unavailable, started_at, llm_latencies_ms, repair_attempts_used)
 
         try:
-            llm = self.llm or build_llm()
+            llm = self.llm or build_llm(format="json", num_predict=self.settings.planner_num_predict)
             messages = self._build_messages(requirement, filtered_context, planning_status, tech_classification)
             logger.info(
                 "LLM trace planner request stage=initial messages=%s prompt_chars=%s context_sources=%s retrieval_status=%s",
@@ -94,12 +100,26 @@ class PlannerAgent:
             llm_latencies_ms.append(initial_llm_ms)
             logger.info("LLM trace planner response stage=initial raw_chars=%s latency_ms=%s", len(str(raw_output)), initial_llm_ms)
             logger.info("--- LLM THINKING OUTPUT (INITIAL) ---\n%s\n---------------------------------------", str(raw_output))
-            story = self._parse_story(raw_output)
-            logger.info("LLM trace planner parsed stage=initial keys=%s", sorted(story.keys()))
+            try:
+                story = self._parse_story(raw_output)
+                logger.info("LLM trace planner parsed stage=initial keys=%s", sorted(story.keys()))
+            except Exception as parse_exc:
+                story, repair_attempts_used = self._repair_llm_output(
+                    llm=llm,
+                    requirement=requirement,
+                    context=filtered_context,
+                    planning_status=planning_status,
+                    tech_classification=tech_classification,
+                    raw_output=raw_output,
+                    parse_error=parse_exc,
+                    llm_latencies_ms=llm_latencies_ms,
+                )
             story["warnings"] = warnings + story.get("warnings", [])
             normalized = self._normalize_story(story, requirement, warnings, planning_status, context_sources, requirement_type, route)
             return self._attach_latency_metadata(normalized, started_at, llm_latencies_ms, repair_attempts_used)
         except Exception as exc:
+            if len(llm_latencies_ms) > 1:
+                repair_attempts_used = len(llm_latencies_ms) - 1
             logger.warning("Planner failed to use LLM output. Reason: %s", exc)
             unavailable = self._llm_unavailable_story(requirement, warnings, planning_status, context_sources, requirement_type, route)
             failure_type = "planner_timeout" if "timeout" in str(exc).lower() or "timed out" in str(exc).lower() else "planner_exception"
@@ -113,12 +133,178 @@ class PlannerAgent:
             {"role": "user", "content": self._build_prompt(requirement, context, planning_status, tech_classification)},
         ]
 
+    def _repair_llm_output(
+        self,
+        llm: Any,
+        requirement: str,
+        context: dict,
+        planning_status: str,
+        tech_classification: dict | None,
+        raw_output: Any,
+        parse_error: Exception,
+        llm_latencies_ms: list[int],
+    ) -> tuple[dict, int]:
+        max_attempts = max(0, int(self.settings.planner_max_repair_attempts))
+        if max_attempts <= 0:
+            raise parse_error
+
+        logger.warning(
+            "Planner initial JSON parse failed; attempting repair attempts=%s reason=%s",
+            max_attempts,
+            parse_error,
+        )
+        last_error: Exception = parse_error
+        last_output = raw_output
+
+        for attempt in range(1, max_attempts + 1):
+            messages = self._build_repair_messages(
+                requirement=requirement,
+                context=context,
+                planning_status=planning_status,
+                tech_classification=tech_classification,
+                raw_output=last_output,
+                parse_error=last_error,
+            )
+            logger.info(
+                "LLM trace planner request stage=repair attempt=%s messages=%s prompt_chars=%s",
+                attempt,
+                len(messages),
+                sum(len(message["content"]) for message in messages),
+            )
+            llm_started_at = time.perf_counter()
+            repair_output = llm.call(messages)
+            repair_llm_ms = self._elapsed_ms(llm_started_at)
+            llm_latencies_ms.append(repair_llm_ms)
+            logger.info(
+                "LLM trace planner response stage=repair attempt=%s raw_chars=%s latency_ms=%s",
+                attempt,
+                len(str(repair_output)),
+                repair_llm_ms,
+            )
+            logger.info("--- LLM THINKING OUTPUT (REPAIR %s) ---\n%s\n---------------------------------------", attempt, str(repair_output))
+            try:
+                story = self._parse_story(repair_output)
+                logger.info("LLM trace planner parsed stage=repair attempt=%s keys=%s", attempt, sorted(story.keys()))
+                repair_warnings = story.get("warnings", [])
+                repair_warning = f"LLM JSON repair succeeded on attempt {attempt}."
+                if isinstance(repair_warnings, list):
+                    story["warnings"] = repair_warnings + [repair_warning]
+                else:
+                    story["warnings"] = [repair_warning]
+                return story, attempt
+            except Exception as repair_exc:
+                logger.warning(
+                    "Planner repair attempt failed attempt=%s/%s reason=%s",
+                    attempt,
+                    max_attempts,
+                    repair_exc,
+                )
+                last_error = repair_exc
+                last_output = repair_output
+
+        raise last_error
+
+    def _build_repair_messages(
+        self,
+        requirement: str,
+        context: dict,
+        planning_status: str,
+        tech_classification: dict | None,
+        raw_output: Any,
+        parse_error: Exception,
+    ) -> list[dict[str, str]]:
+        context_block = self._build_context_block(context)
+        if tech_classification and tech_classification.get("tech_stack"):
+            context_block += f"\n\n[Identified Tech Stack from requirement]: {tech_classification.get('tech_stack')}"
+        clarification_block = self._build_clarification_block(requirement)
+        repair_prompt = f"""
+You are repairing a truncated planner JSON response.
+Return ONLY one complete valid JSON object. No markdown fences. No prose.
+
+Error:
+{self._truncate_context_text(str(parse_error), 500)}
+
+Requirement:
+{self._truncate_context_text(requirement, MAX_REPAIR_REQUIREMENT_CHARS)}
+
+Structured clarification answers:
+{self._truncate_context_text(clarification_block, MAX_REPAIR_CLARIFICATION_CHARS)}
+
+Retrieved context:
+{self._truncate_context_text(context_block, MAX_REPAIR_CONTEXT_CHARS)}
+
+Previous incomplete output excerpt:
+{self._truncate_context_text(str(raw_output), MAX_REPAIR_OUTPUT_CHARS)}
+
+Required keys:
+title, story_type, jira_issue_type, jira_labels, jira_linked_items, user_story,
+acceptance_criteria, story_points, tasks, definition_of_done, planning_status,
+clarification_questions, assumptions, story_splits, sprint_allocation, context_sources, warnings.
+
+Rules:
+- If evidence is insufficient for concrete BE/FE/QA tasks, return NEEDS_CLARIFICATION or REVISION with empty ready-story fields.
+- READY requires exactly 3-4 acceptance_criteria, story_points in 1/2/3/5/8/13, tasks.be/fe/qa arrays, and exactly 4 definition_of_done items.
+- Keep every string concise.
+
+JSON shape reminder:
+{{"title":"","story_type":"software_feature","jira_issue_type":"Story","jira_labels":[],"jira_linked_items":[],"user_story":"","acceptance_criteria":[],"story_points":null,"tasks":{{"be":[],"fe":[],"qa":[]}},"definition_of_done":[],"planning_status":"{planning_status}","clarification_questions":[],"assumptions":[],"story_splits":[],"sprint_allocation":[],"context_sources":[],"warnings":[]}}
+""".strip()
+        return [{"role": "user", "content": repair_prompt}]
+
+
+    def _build_clarification_block(self, requirement: str) -> str:
+        payload = self._extract_structured_clarification_payload(requirement)
+        if not payload:
+            return "No structured clarification answers were provided."
+
+        clarifications = payload.get("clarifications")
+        lines: list[str] = []
+        if isinstance(clarifications, list):
+            for item in clarifications:
+                if not isinstance(item, dict):
+                    continue
+                question_id = str(item.get("question_id") or "").strip()
+                question = str(item.get("question") or "").strip()
+                answer = str(item.get("answer") or "").strip()
+                if not answer:
+                    continue
+                lines.append(
+                    "- "
+                    f"question_id={question_id or 'unknown'}; "
+                    f"question={self._truncate_context_text(question, 360)}; "
+                    f"answer={self._truncate_context_text(answer, 700)}"
+                )
+
+        additional_info = payload.get("additional_info")
+        if isinstance(additional_info, str) and additional_info.strip():
+            lines.append(f"- additional_info={self._truncate_context_text(additional_info, 700)}")
+
+        return "\n".join(lines) if lines else "No answered structured clarification items were provided."
+
+    def _extract_structured_clarification_payload(self, requirement: str) -> dict:
+        marker_index = requirement.find(CLARIFICATION_JSON_MARKER)
+        if marker_index < 0:
+            return {}
+
+        json_text = requirement[marker_index + len(CLARIFICATION_JSON_MARKER):].strip()
+        text_marker_index = json_text.find(CLARIFICATION_TEXT_MARKER)
+        if text_marker_index >= 0:
+            json_text = json_text[:text_marker_index].strip()
+
+        try:
+            payload, _end = json.JSONDecoder().raw_decode(json_text)
+        except json.JSONDecodeError:
+            logger.warning("Planner could not parse structured clarification JSON block.")
+            return {}
+
+        return payload if isinstance(payload, dict) else {}
 
 
     def _build_prompt(self, requirement: str, context: dict, planning_status: str, tech_classification: dict | None = None) -> str:
         context_block = self._build_context_block(context)
         if tech_classification and tech_classification.get("tech_stack"):
             context_block += f"\n\n[Identified Tech Stack from requirement]: {tech_classification.get('tech_stack')}"
+        clarification_block = self._build_clarification_block(requirement)
 
         if self.settings.ollama_num_ctx <= 2048:
             return self._build_compact_prompt(requirement, context_block, planning_status)
@@ -151,6 +337,7 @@ class PlannerAgent:
             expected_output=expected_output,
             requirement=self._compact_requirement_for_prompt(requirement),
             context_block=context_block,
+            clarification_block=clarification_block,
             planning_status=planning_status,
             few_shot_examples=few_shot,
         )
@@ -165,10 +352,15 @@ Requirement:
 Retrieved context:
 {self._truncate_context_text(context_block, 1800)}
 
+Structured clarification answers:
+{self._build_clarification_block(requirement)}
+
 Local planning status: {planning_status}
 
 Rules:
 - If the request is too vague, return planning_status "NEEDS_CLARIFICATION" with at least 3 clarification_questions and leave ready-story fields empty.
+- Treat structured clarification answers as scoped evidence for their exact question only.
+- Do not invent BE / FE / QA tasks from a broad title or weak context. If explicit context or clarification answers do not support concrete tasks, return NEEDS_CLARIFICATION or REVISION.
 - If the request is too large for one sprint, return "SPLIT_RECOMMENDED" or "NEEDS_SPLIT" with story_splits and sprint_allocation.
 - Otherwise return "READY".
 - READY output must include: user_story in As a / I want / so that format; at least 3 Given/When/Then acceptance_criteria; Fibonacci story_points only 1,2,3,5,8,13; tasks.be, tasks.fe, tasks.qa each with at least one concrete action; at least 4 definition_of_done items.

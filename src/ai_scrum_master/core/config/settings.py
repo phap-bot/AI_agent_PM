@@ -94,6 +94,7 @@ class Settings:
     rag_vector_fetch_k: int = field(default_factory=lambda: int(os.getenv("RAG_VECTOR_FETCH_K", "20")))
     planner_prompt_version: str = field(default_factory=lambda: os.getenv("PLANNER_PROMPT_VERSION", "current"))
     planner_max_repair_attempts: int = field(default_factory=lambda: int(os.getenv("PLANNER_MAX_REPAIR_ATTEMPTS", "3")))
+    planner_num_predict: int = field(default_factory=lambda: int(os.getenv("PLANNER_NUM_PREDICT", "2048")))
     retrieval_min_score: float = field(default_factory=lambda: float(os.getenv("RETRIEVAL_MIN_SCORE", "0.6")))
     retrieval_excerpt_chars: int = field(default_factory=lambda: int(os.getenv("RETRIEVAL_EXCERPT_CHARS", "500")))
     retrieval_context_top_k: int = field(default_factory=lambda: int(os.getenv("RETRIEVAL_CONTEXT_TOP_K", "5")))

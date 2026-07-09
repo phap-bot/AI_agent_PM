@@ -351,12 +351,23 @@ def execute_all_actions(
 
     # Execute Jira first so we can include the Jira link in the Slack message
     jira_result = jira_tool.execute_action(story)
+    if not jira_result.get("executed"):
+        execution_plan = ActionExecutionPlan(
+            jira=jira_result,
+            github=None,
+            slack=_skipped_execution("Slack notification skipped because Jira creation failed."),
+        )
+        return build_envelope_response(
+            endpoint="actions_execute_all",
+            project_id=payload.project_id,
+            data=execution_plan.model_dump(),
+        )
     
     # Execute GitHub if configured and Jira was successful
     github_result = None
     from ai_scrum_master.actions.github import GithubTool
     github_tool = GithubTool.from_project(payload.project_id)
-    if github_tool.config.is_configured and jira_result.get("executed"):
+    if github_tool.config.is_configured:
         story_key = jira_result.get("created", {}).get("story_key")
         if story_key:
             import re
@@ -378,6 +389,20 @@ def execute_all_actions(
                 created={"branch_url": gh_res.get("branch_url")} if gh_res.get("ready") else {},
                 failed=[] if gh_res.get("ready") else [{"error": "Failed to create branch"}],
                 warnings=gh_res.get("warnings", [])
+            )
+        else:
+            github_result = _skipped_execution("GitHub branch skipped because Jira did not return a story key.")
+
+        if github_result and not github_result.executed:
+            execution_plan = ActionExecutionPlan(
+                jira=jira_result,
+                github=github_result,
+                slack=_skipped_execution("Slack notification skipped because GitHub branch creation failed."),
+            )
+            return build_envelope_response(
+                endpoint="actions_execute_all",
+                project_id=payload.project_id,
+                data=execution_plan.model_dump(),
             )
     
     slack_tool = SlackTool.from_project(payload.project_id)
@@ -413,6 +438,19 @@ def _blocked_execution(warning: str) -> ActionExecutionResult:
 
 
 def _not_part_of_execution(warning: str) -> ActionExecutionResult:
+    return ActionExecutionResult(
+        ready=False,
+        executed=False,
+        payload=None,
+        created={},
+        failed=[],
+        warnings=[warning],
+        status_code=None,
+    )
+
+
+def _skipped_execution(warning: str) -> ActionExecutionResult:
+    logger.info(warning)
     return ActionExecutionResult(
         ready=False,
         executed=False,

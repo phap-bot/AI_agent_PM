@@ -248,6 +248,15 @@ class DatabaseManager:
             return None
 
     @classmethod
+    def is_job_cancelled(cls, job_id: str) -> bool:
+        try:
+            doc = cls.get_jobs_collection().find_one({"job_id": job_id}, {"status": 1})
+            return bool(doc and doc.get("status") == "cancelled")
+        except Exception as e:
+            logger.error("Failed to check job cancellation job_id=%s: %s", job_id, e)
+            return False
+
+    @classmethod
     def get_history(cls, project_id: str | None = None, limit: int = 50) -> list[dict[str, Any]]:
         """Fetch history sorted by creation date."""
         try:
